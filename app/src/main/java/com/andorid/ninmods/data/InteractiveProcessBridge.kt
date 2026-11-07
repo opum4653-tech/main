@@ -114,6 +114,7 @@ class InteractiveProcessBridge(
                 out.flush()
 
                 val reader = BufferedReader(InputStreamReader(proc.inputStream, Charsets.UTF_8))
+                var lastLogOutput = ""
                 readerJob = launch(Dispatchers.IO) {
                     val buffer = CharArray(1024)
                     val accumulated = StringBuilder()
@@ -122,6 +123,7 @@ class InteractiveProcessBridge(
                         while (reader.read(buffer).also { charsRead = it } != -1) {
                             val chunk = String(buffer, 0, charsRead)
                             accumulated.append(chunk)
+                            lastLogOutput = accumulated.takeLast(1000).toString()
 
                             // Emit lines or chunks to output stream
                             _outputLines.tryEmit(chunk)
@@ -172,9 +174,15 @@ class InteractiveProcessBridge(
                 _isReadyToStart.value = false
                 _executionStatus.value = if (exitCode == 0) "Completed" else "Exited (Code $exitCode)"
 
-                if (exitCode != 0 && !wasRunning && !wasReady) {
+                if (exitCode != 0) {
                     launch(Dispatchers.Main) {
-                        onError("Root binary terminated before initialization (Exit code: $exitCode). Ensure Superuser access is granted.")
+                        val cleanedLogs = lastLogOutput.trim()
+                        val msg = if (cleanedLogs.isNotBlank()) {
+                            "Binary terminated (Exit code $exitCode):\n$cleanedLogs"
+                        } else {
+                            "Root binary terminated before initialization (Exit code: $exitCode). Ensure Superuser access is granted."
+                        }
+                        onError(msg)
                     }
                 }
 
