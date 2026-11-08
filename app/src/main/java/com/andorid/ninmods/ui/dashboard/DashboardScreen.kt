@@ -14,6 +14,7 @@ import androidx.compose.ui.unit.dp
 import com.andorid.ninmods.data.SessionManager
 import com.andorid.ninmods.ui.clock.LicenseClockCard
 import com.andorid.ninmods.ui.dashboard.external_mods.ExternalModsCard
+import com.andorid.ninmods.ui.dashboard.kernel_mods.KernelModsCard
 
 @Composable
 fun DashboardScreen(
@@ -32,7 +33,10 @@ fun DashboardScreen(
         // 1. Digital License Expiry Countdown Clock (Real-Time, hidden if no active plan)
         LicenseClockCard(sessionManager = sessionManager)
 
-        // 2. EXTERNAL MODS Card (Single official external mod from refer/nin)
+        // 2. KERNEL MODS Card (Ring 0 Kernel Driver Floating Engine)
+        KernelModsCard(sessionManager = sessionManager)
+
+        // 3. EXTERNAL MODS Card (Single official external mod from refer/nin)
         ExternalModsCard(sessionManager = sessionManager)
 
         Spacer(modifier = Modifier.height(20.dp))

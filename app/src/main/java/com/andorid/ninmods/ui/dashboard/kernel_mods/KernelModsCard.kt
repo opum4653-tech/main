@@ -1,7 +1,10 @@
 package com.andorid.ninmods.ui.dashboard.kernel_mods
 
+import android.content.Context
+import android.os.Build
 import android.os.Environment
 import android.widget.Toast
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -17,14 +20,10 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.CloudDownload
 import androidx.compose.material.icons.filled.Memory
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material.icons.filled.Security
-import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -35,32 +34,39 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.andorid.ninmods.R
+import com.andorid.ninmods.config.AppConfig
 import com.andorid.ninmods.data.InteractiveProcessBridge
 import com.andorid.ninmods.data.ModDownloader
 import com.andorid.ninmods.data.SessionManager
-import com.andorid.ninmods.ui.dialogs.ApatchConfirmDownloadDialog
-import com.andorid.ninmods.ui.dialogs.ApatchDownloadDialog
-import com.andorid.ninmods.ui.dialogs.ApatchLicenseKeyDialog
-import com.andorid.ninmods.ui.dialogs.ApatchWarningDialog
+import com.andorid.ninmods.data.ShellExecutor
+import com.andorid.ninmods.ui.dialogs.ApatchUnifiedModDialog
+import com.andorid.ninmods.ui.dialogs.UnifiedModDialogState
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
+import java.io.FileOutputStream
+
+// Cyber Purple theme color
+private val CyberPurple = Color(0xFFAD47FA)
 
 data class KernelModItem(
     val id: String,
@@ -68,8 +74,7 @@ data class KernelModItem(
     val fileName: String,
     val downloadPackage: String,
     val file: File,
-    val isDownloaded: Boolean,
-    val icon: ImageVector
+    val isDownloaded: Boolean
 )
 
 @Composable
@@ -82,26 +87,30 @@ fun KernelModsCard(
 
     val processBridge = remember { InteractiveProcessBridge(scope) }
     val isProcessRunning by processBridge.isRunning.collectAsState()
-    val isLicensePromptTriggered by processBridge.licensePromptTriggered.collectAsState()
 
     var mods by remember { mutableStateOf<List<KernelModItem>>(emptyList()) }
     var activeModId by remember { mutableStateOf<String?>(null) }
 
-    // Dialog state holders
-    var confirmDownloadMod by remember { mutableStateOf<KernelModItem?>(null) }
-    var downloadingMod by remember { mutableStateOf<KernelModItem?>(null) }
-    var downloadProgress by remember { mutableIntStateOf(0) }
+    // Unified Dialog state holders
+    var unifiedDialogState by remember { mutableStateOf<UnifiedModDialogState?>(null) }
+    var selectedModForAction by remember { mutableStateOf<KernelModItem?>(null) }
 
-    var warningMod by remember { mutableStateOf<KernelModItem?>(null) }
-
-    var showLicenseDialog by remember { mutableStateOf(false) }
-    var isSubmittingLicense by remember { mutableStateOf(false) }
-    var licenseErrorMessage by remember { mutableStateOf<String?>(null) }
-
-    // Automatically trigger license pop-up dialog when stdin prompt is detected
-    LaunchedEffect(isLicensePromptTriggered) {
-        if (isLicensePromptTriggered) {
-            showLicenseDialog = true
+    // Intercept output logs from running binary to catch missing driver or failure
+    LaunchedEffect(Unit) {
+        processBridge.outputLines.collect { chunk ->
+            val lines = chunk.split("\n").map { it.trimEnd() }.filter { it.isNotBlank() }
+            val fatalDriverMsg = lines.firstOrNull {
+                it.contains("Driver not loaded", ignoreCase = true) ||
+                it.contains("driver not found", ignoreCase = true) ||
+                it.contains("FATAL", ignoreCase = true)
+            }
+            if (fatalDriverMsg != null) {
+                unifiedDialogState = UnifiedModDialogState.RootRequired(
+                    "Kernel Driver Missing: $fatalDriverMsg\n\nPlease load your matching kernel driver in the Driver Loader tab before starting NinMods Kernel."
+                )
+                processBridge.stop()
+                activeModId = null
+            }
         }
     }
 
@@ -110,53 +119,100 @@ fun KernelModsCard(
             mods = withContext(Dispatchers.IO) {
                 val internalDir = File(context.filesDir, "kernel_mods").also { if (!it.exists()) it.mkdirs() }
 
-                // 1. Core Built-In Official Kernel Mods (downloaded directly from backend server /downloads/kernel/)
-                val defaultSpecs = listOf(
-                    Triple("Kernel Core Engine", "run_ram.sh", "kernel/run_ram.sh"),
-                    Triple("Driver Node Loader", "driver_loader.sh", "kernel/driver_loader.sh"),
-                    Triple("Kernel Security Bypass", "sec_bypass.sh", "kernel/sec_bypass.sh")
-                )
+                val officialFileName = "ninmods-kernel"
+                val officialZipName = "ninmods-kernel.zip"
+                val officialFile = File(internalDir, officialFileName)
 
-                val defaultItems = defaultSpecs.map { (name, fileName, downloadPkg) ->
-                    val file = File(internalDir, fileName)
-                    KernelModItem(
-                        id = fileName,
-                        name = name,
-                        fileName = fileName,
-                        downloadPackage = downloadPkg,
-                        file = file,
-                        isDownloaded = file.exists(),
-                        icon = resolveKernelIcon(fileName)
-                    )
+                // 0. Auto-extract from bundled APK assets if present
+                try {
+                    val prefs = context.getSharedPreferences("ninmods_kernel_engine_prefs", Context.MODE_PRIVATE)
+                    val lastInstalledVer = prefs.getInt("bundled_kernel_ver", 0)
+                    val currentAppVer = try {
+                        val pInfo = context.packageManager.getPackageInfo(context.packageName, 0)
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) pInfo.longVersionCode.toInt() else pInfo.versionCode
+                    } catch (_: Exception) { AppConfig.VERSION_CODE }
+
+                    if (!officialFile.exists() || officialFile.length() == 0L || currentAppVer > lastInstalledVer) {
+                        try {
+                            context.assets.open("kernel/$officialZipName").use { assetIn ->
+                                val assetZip = File(internalDir, officialZipName)
+                                FileOutputStream(assetZip).use { assetOut ->
+                                    assetIn.copyTo(assetOut)
+                                }
+                                ModDownloader.unzip(assetZip, internalDir)
+                                officialFile.setExecutable(true, false)
+                                prefs.edit().putInt("bundled_kernel_ver", currentAppVer).apply()
+                            }
+                        } catch (_: Exception) {
+                            // If zip not in assets, try standalone binary
+                            try {
+                                context.assets.open("kernel/$officialFileName").use { assetIn ->
+                                    FileOutputStream(officialFile).use { assetOut ->
+                                        assetIn.copyTo(assetOut)
+                                    }
+                                    officialFile.setExecutable(true, false)
+                                    prefs.edit().putInt("bundled_kernel_ver", currentAppVer).apply()
+                                }
+                            } catch (_: Exception) {}
+                        }
+                    }
+                } catch (_: Exception) {}
+
+                // Self-healing: if zip exists but binary missing, unpack
+                val internalZip = File(internalDir, officialZipName)
+                if (internalZip.exists() && (!officialFile.exists() || officialFile.length() == 0L)) {
+                    try {
+                        ModDownloader.unzip(internalZip, internalDir)
+                        officialFile.setExecutable(true, false)
+                    } catch (_: Exception) {}
                 }
 
-                // 2. Custom User Mods (from sdcard / internal)
+                // Check Download folder
+                try {
+                    val publicDownloadDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+                    val publicZip = File(publicDownloadDir, officialZipName)
+                    if (publicZip.exists() && (!officialFile.exists() || officialFile.length() == 0L)) {
+                        ModDownloader.unzip(publicZip, internalDir)
+                        officialFile.setExecutable(true, false)
+                    }
+                    val publicBin = File(publicDownloadDir, officialFileName)
+                    if (publicBin.exists() && (!officialFile.exists() || officialFile.length() == 0L)) {
+                        publicBin.copyTo(officialFile, overwrite = true)
+                        officialFile.setExecutable(true, false)
+                    }
+                } catch (_: Exception) {}
+
+                val officialMod = KernelModItem(
+                    id = officialFileName,
+                    name = "NINMODS Kernel",
+                    fileName = officialZipName,
+                    downloadPackage = "kernel/$officialZipName",
+                    file = officialFile,
+                    isDownloaded = officialFile.exists() && officialFile.length() > 0L
+                )
+
+                // Optional custom kernel scripts from sdcard
                 val sdcardDir = try {
                     File(Environment.getExternalStorageDirectory(), "NinMods/kernel_mods").also {
                         if (!it.exists()) it.mkdirs()
                     }
                 } catch (_: Exception) { null }
 
-                val customFiles = (internalDir.listFiles()?.toList() ?: emptyList()) +
-                        (sdcardDir?.listFiles()?.toList() ?: emptyList())
-
-                val userItems = customFiles
-                    .filter { it.isFile && !it.name.startsWith(".") && it.name.endsWith(".sh") }
-                    .filter { file -> defaultSpecs.none { it.second == file.name } }
+                val customFiles = (sdcardDir?.listFiles()?.toList() ?: emptyList())
+                    .filter { it.isFile && !it.name.startsWith(".") && (it.name.endsWith(".sh") || !it.name.contains(".")) && it.name != officialFileName }
                     .distinctBy { it.name }
                     .map { file ->
                         KernelModItem(
-                            id = "custom_${file.name}",
+                            id = file.name,
                             name = formatModName(file.name),
                             fileName = file.name,
                             downloadPackage = file.name,
                             file = file,
-                            isDownloaded = true,
-                            icon = resolveKernelIcon(file.name)
+                            isDownloaded = true
                         )
                     }
 
-                defaultItems + userItems
+                listOf(officialMod) + customFiles
             }
         }
     }
@@ -165,127 +221,98 @@ fun KernelModsCard(
         refreshMods()
     }
 
-    var kernelDownloadJob by remember { mutableStateOf<Job?>(null) }
-
-    // ─── 0. APATCH CONFIRM DOWNLOAD POP-UP DIALOG ───
-    confirmDownloadMod?.let { mod ->
-        ApatchConfirmDownloadDialog(
-            modName = mod.name,
-            onDismiss = { confirmDownloadMod = null },
-            onConfirmDownload = {
-                confirmDownloadMod = null
-                downloadingMod = mod
-                downloadProgress = 0
-                kernelDownloadJob?.cancel()
-                kernelDownloadJob = scope.launch {
-                    val result = ModDownloader.downloadMod(
-                        context = context,
-                        downloadUrl = mod.downloadPackage,
-                        targetDir = mod.file.parentFile ?: File(context.filesDir, "kernel_mods"),
-                        fileName = mod.fileName,
-                        onProgress = { p -> downloadProgress = p }
-                    )
-                    downloadingMod = null
-                    if (result.isSuccess) {
-                        Toast.makeText(context, "${mod.name} downloaded successfully!", Toast.LENGTH_SHORT).show()
-                        refreshMods()
-                    } else {
-                        Toast.makeText(context, result.exceptionOrNull()?.message ?: "Download failed", Toast.LENGTH_LONG).show()
-                    }
-                }
+    fun launchMod(mod: KernelModItem) {
+        selectedModForAction = mod
+        scope.launch {
+            val isRooted = withContext(Dispatchers.IO) {
+                ShellExecutor.isRootAvailable()
             }
-        )
-    }
-
-    // ─── 1. APATCH ANIMATED DOWNLOAD DIALOG ───
-    downloadingMod?.let { mod ->
-        ApatchDownloadDialog(
-            modName = mod.name,
-            progress = downloadProgress,
-            onCancel = {
-                kernelDownloadJob?.cancel()
-                kernelDownloadJob = null
-                downloadingMod = null
-                downloadProgress = 0
-            }
-        )
-    }
-
-    // ─── 2. APATCH WARNING CONFIRMATION DIALOG ───
-    warningMod?.let { mod ->
-        ApatchWarningDialog(
-            modName = mod.name,
-            onDismiss = { warningMod = null },
-            onConfirmLaunch = {
-                val targetMod = mod
-                warningMod = null
-                activeModId = targetMod.id
-                licenseErrorMessage = null
-                Toast.makeText(context, "Launching ${targetMod.name} into memory...", Toast.LENGTH_SHORT).show()
-                val deviceHwid = com.andorid.ninmods.util.DeviceIdentifier.getHwid(context)
-                val initialKey = sessionManager?.activeLicenseKey ?: ""
-                processBridge.start(
-                    executableFile = targetMod.file,
-                    deviceHwid = deviceHwid,
-                    licenseKey = initialKey,
-                    onLicensePrompt = {
-                        showLicenseDialog = true
-                    }
+            if (!isRooted) {
+                unifiedDialogState = UnifiedModDialogState.RootRequired(
+                    "Superuser Denied: Root access (APatch, KernelSU, or Magisk) is mandatory to interact with the Ring 0 kernel driver and render the floating overlay."
                 )
+                return@launch
             }
-        )
+
+            activeModId = mod.id
+            Toast.makeText(context, "Initializing ${mod.name}...", Toast.LENGTH_SHORT).show()
+
+            val deviceHwid = com.andorid.ninmods.util.DeviceIdentifier.getHwid(context)
+            val initialKey = sessionManager?.activeLicenseKey ?: ""
+
+            processBridge.start(
+                executableFile = mod.file,
+                deviceHwid = deviceHwid,
+                licenseKey = initialKey,
+                onLicensePrompt = {},
+                onError = { errMsg ->
+                    unifiedDialogState = UnifiedModDialogState.RootRequired(
+                        "Kernel Engine Error: $errMsg\n\nPlease ensure Superuser is granted and a compatible kernel driver is loaded."
+                    )
+                    activeModId = null
+                }
+            )
+        }
     }
 
-    // ─── 3. APATCH MATERIAL 3 LICENSE KEY POP-UP DIALOG ───
-    if (showLicenseDialog) {
-        val initialKey = sessionManager?.activeLicenseKey ?: ""
-        ApatchLicenseKeyDialog(
-            initialKey = initialKey,
-            isSubmitting = isSubmittingLicense,
-            errorMessage = licenseErrorMessage,
-            onDismiss = {
-                showLicenseDialog = false
-                isSubmittingLicense = false
-                licenseErrorMessage = null
-            },
-            onSubmitKey = { submittedKey ->
-                isSubmittingLicense = true
-                licenseErrorMessage = null
-                scope.launch {
-                    val deviceHwid = com.andorid.ninmods.util.DeviceIdentifier.getHwid(context)
-                    val activationResult = com.andorid.ninmods.network.AuthApiClient.activateLicense(
-                        licenseKey = submittedKey,
-                        hwid = deviceHwid
-                    )
-                    if (activationResult.isSuccess) {
-                        val licInfo = activationResult.getOrNull()
-                        sessionManager?.let { sm ->
-                            sm.activeLicenseKey = submittedKey
-                            sm.serverRemainingSeconds = licInfo?.remainingSeconds ?: 86400L
-                        }
-                    }
+    var downloadJob by remember { mutableStateOf<Job?>(null) }
 
-                    val sent = processBridge.sendInput(submittedKey)
-                    isSubmittingLicense = false
-                    if (sent && processBridge.isProcessAlive.value) {
-                        showLicenseDialog = false
-                        Toast.makeText(context, "License dispatched to core engine.", Toast.LENGTH_SHORT).show()
-                    } else {
-                        val runningMod = mods.find { it.id == activeModId }
-                        if (runningMod != null) {
-                            processBridge.stop()
-                            processBridge.start(
-                                executableFile = runningMod.file,
-                                deviceHwid = deviceHwid,
-                                licenseKey = submittedKey,
-                                onLicensePrompt = { showLicenseDialog = true }
-                            )
-                            showLicenseDialog = false
-                            Toast.makeText(context, "Engine reloaded with active license.", Toast.LENGTH_SHORT).show()
-                        } else {
-                            licenseErrorMessage = "Failed to communicate with running background process."
-                        }
-                    }
+    fun startDownload(mod: KernelModItem) {
+        selectedModForAction = mod
+        unifiedDialogState = UnifiedModDialogState.Downloading(mod.name, 0)
+        downloadJob?.cancel()
+        downloadJob = scope.launch {
+            val result = ModDownloader.downloadMod(
+                context = context,
+                downloadUrl = mod.downloadPackage,
+                targetDir = mod.file.parentFile ?: File(context.filesDir, "kernel_mods"),
+                fileName = mod.fileName,
+                onProgress = { p ->
+                    unifiedDialogState = UnifiedModDialogState.Downloading(mod.name, p)
+                }
+            )
+            if (result.isSuccess) {
+                Toast.makeText(context, "${mod.name} downloaded successfully!", Toast.LENGTH_SHORT).show()
+                refreshMods()
+                launchMod(mod)
+            } else {
+                Toast.makeText(context, result.exceptionOrNull()?.message ?: "Download failed", Toast.LENGTH_LONG).show()
+                unifiedDialogState = null
+            }
+        }
+    }
+
+    // Unified Dialog
+    unifiedDialogState?.let { state ->
+        ApatchUnifiedModDialog(
+            state = state,
+            onDismiss = {
+                downloadJob?.cancel()
+                downloadJob = null
+                if (state is UnifiedModDialogState.LicenseAuth) {
+                    processBridge.stop()
+                    activeModId = null
+                }
+                unifiedDialogState = null
+            },
+            onConfirmDownload = {
+                selectedModForAction?.let { startDownload(it) }
+            },
+            onCancelDownload = {
+                downloadJob?.cancel()
+                downloadJob = null
+                unifiedDialogState = null
+            },
+            onSubmitKey = {},
+            onStartMod = {
+                unifiedDialogState = null
+            },
+            onConfirmStop = {
+                unifiedDialogState = null
+                processBridge.stop()
+                activeModId = null
+                selectedModForAction?.let {
+                    Toast.makeText(context, "${it.name} stopped.", Toast.LENGTH_SHORT).show()
                 }
             }
         )
@@ -312,17 +339,17 @@ fun KernelModsCard(
                 Icon(
                     imageVector = Icons.Filled.Memory,
                     contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary,
+                    tint = CyberPurple,
                     modifier = Modifier.size(20.dp)
                 )
 
                 Spacer(modifier = Modifier.width(8.dp))
 
                 Text(
-                    text = "KERNEL MODS",
+                    text = "KERNEL MOD",
                     style = MaterialTheme.typography.labelLarge,
                     fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.primary
+                    color = CyberPurple
                 )
 
                 Spacer(modifier = Modifier.weight(1f))
@@ -349,7 +376,7 @@ fun KernelModsCard(
                     color = MaterialTheme.colorScheme.surface
                 ) {
                     Text(
-                        text = "No kernel mods configured",
+                        text = "No kernel mod configured",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         textAlign = TextAlign.Center,
@@ -357,126 +384,129 @@ fun KernelModsCard(
                     )
                 }
             } else {
-                val rows = mods.chunked(3)
                 Column(
                     modifier = Modifier.fillMaxWidth(),
                     verticalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
-                    rows.forEach { rowMods ->
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    mods.forEach { mod ->
+                        val isRunning = isProcessRunning && activeModId == mod.id
+
+                        ElevatedCard(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    if (!mod.isDownloaded) {
+                                        selectedModForAction = mod
+                                        unifiedDialogState = UnifiedModDialogState.ConfirmDownload(mod.name)
+                                    } else if (isRunning) {
+                                        selectedModForAction = mod
+                                        unifiedDialogState = UnifiedModDialogState.StopConfirm(mod.name)
+                                    } else {
+                                        launchMod(mod)
+                                    }
+                                },
+                            shape = RoundedCornerShape(16.dp),
+                            colors = CardDefaults.elevatedCardColors(
+                                containerColor = MaterialTheme.colorScheme.surface
+                            ),
+                            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
                         ) {
-                            rowMods.forEach { mod ->
-                                val isRunning = isProcessRunning && activeModId == mod.id
-
-                                ElevatedCard(
-                                    modifier = Modifier
-                                        .weight(1f)
-                                        .clickable {
-                                            if (!mod.isDownloaded) {
-                                                // Trigger APatch Official Download Confirmation Dialog
-                                                confirmDownloadMod = mod
-                                            } else {
-                                                // Trigger APatch Official Warning Dialog
-                                                warningMod = mod
-                                            }
-                                        },
-                                    shape = RoundedCornerShape(16.dp),
-                                    colors = CardDefaults.elevatedCardColors(
-                                        containerColor = MaterialTheme.colorScheme.surface
-                                    ),
-                                    elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 14.dp, horizontal = 14.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                // Logo Container with Cyber Purple tint
+                                Surface(
+                                    shape = CircleShape,
+                                    color = when {
+                                        isRunning -> CyberPurple.copy(alpha = 0.25f)
+                                        !mod.isDownloaded -> MaterialTheme.colorScheme.surfaceVariant
+                                        else -> CyberPurple.copy(alpha = 0.15f)
+                                    },
+                                    modifier = Modifier.size(48.dp)
                                 ) {
-                                    Column(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .padding(vertical = 14.dp, horizontal = 6.dp),
-                                        horizontalAlignment = Alignment.CenterHorizontally,
-                                        verticalArrangement = Arrangement.Center
+                                    Box(
+                                        modifier = Modifier.fillMaxSize(),
+                                        contentAlignment = Alignment.Center
                                     ) {
-                                        Surface(
-                                            shape = CircleShape,
-                                            color = when {
-                                                isRunning -> MaterialTheme.colorScheme.primaryContainer
-                                                !mod.isDownloaded -> MaterialTheme.colorScheme.surfaceVariant
-                                                else -> MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f)
-                                            },
-                                            modifier = Modifier.size(40.dp)
-                                        ) {
-                                            Box(
-                                                modifier = Modifier.fillMaxSize(),
-                                                contentAlignment = Alignment.Center
-                                            ) {
-                                                // Always render official mod icon (PlayArrow if active)
-                                                Icon(
-                                                    imageVector = if (isRunning) Icons.Filled.PlayArrow else mod.icon,
-                                                    contentDescription = mod.name,
-                                                    tint = MaterialTheme.colorScheme.primary,
-                                                    modifier = Modifier.size(22.dp)
-                                                )
-                                            }
-                                        }
-
-                                        Spacer(modifier = Modifier.height(8.dp))
-
-                                        Text(
-                                            text = mod.name,
-                                            style = MaterialTheme.typography.bodySmall,
-                                            fontWeight = FontWeight.SemiBold,
-                                            color = MaterialTheme.colorScheme.onSurface,
-                                            textAlign = TextAlign.Center,
-                                            maxLines = 1,
-                                            overflow = TextOverflow.Ellipsis
-                                        )
-
-                                        Spacer(modifier = Modifier.height(4.dp))
-
-                                        Surface(
-                                            shape = RoundedCornerShape(6.dp),
-                                            color = when {
-                                                isRunning -> MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)
-                                                !mod.isDownloaded -> MaterialTheme.colorScheme.surfaceVariant
-                                                else -> MaterialTheme.colorScheme.secondary.copy(alpha = 0.15f)
-                                            }
-                                        ) {
-                                            Text(
-                                                text = when {
-                                                    isRunning -> "ACTIVE"
-                                                    !mod.isDownloaded -> "AVAILABLE"
-                                                    else -> "READY"
-                                                },
-                                                fontSize = 9.sp,
-                                                fontWeight = FontWeight.Bold,
-                                                color = when {
-                                                    isRunning -> MaterialTheme.colorScheme.primary
-                                                    !mod.isDownloaded -> MaterialTheme.colorScheme.onSurfaceVariant
-                                                    else -> MaterialTheme.colorScheme.secondary
-                                                },
-                                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                        if (isRunning) {
+                                            Icon(
+                                                imageVector = Icons.Filled.PlayArrow,
+                                                contentDescription = "Running",
+                                                tint = CyberPurple,
+                                                modifier = Modifier.size(26.dp)
+                                            )
+                                        } else {
+                                            Image(
+                                                painter = painterResource(id = R.drawable.logo_n),
+                                                contentDescription = mod.name,
+                                                contentScale = ContentScale.Fit,
+                                                modifier = Modifier
+                                                    .size(32.dp)
+                                                    .clip(CircleShape)
                                             )
                                         }
                                     }
                                 }
-                            }
 
-                            repeat(3 - rowMods.size) {
-                                Spacer(modifier = Modifier.weight(1f))
+                                Spacer(modifier = Modifier.width(14.dp))
+
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(
+                                        text = mod.name,
+                                        style = MaterialTheme.typography.titleMedium,
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.onSurface,
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis
+                                    )
+
+                                    Spacer(modifier = Modifier.height(2.dp))
+
+                                    Text(
+                                        text = if (isRunning) "Ring 0 Engine Active • Connected to Driver" else "OB55 (1.132.1) • Ring 0 Floating Engine",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis
+                                    )
+                                }
+
+                                Spacer(modifier = Modifier.width(8.dp))
+
+                                // Status badge
+                                Surface(
+                                    shape = RoundedCornerShape(8.dp),
+                                    color = when {
+                                        isRunning -> CyberPurple.copy(alpha = 0.18f)
+                                        !mod.isDownloaded -> MaterialTheme.colorScheme.surfaceVariant
+                                        else -> CyberPurple.copy(alpha = 0.12f)
+                                    }
+                                ) {
+                                    Text(
+                                        text = when {
+                                            isRunning -> "ACTIVE"
+                                            !mod.isDownloaded -> "AVAILABLE"
+                                            else -> "READY"
+                                        },
+                                        fontSize = 11.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = when {
+                                            isRunning -> CyberPurple
+                                            !mod.isDownloaded -> MaterialTheme.colorScheme.onSurfaceVariant
+                                            else -> CyberPurple
+                                        },
+                                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
+                                    )
+                                }
                             }
                         }
                     }
                 }
             }
         }
-    }
-}
-
-private fun resolveKernelIcon(fileName: String): ImageVector {
-    val lower = fileName.lowercase()
-    return when {
-        lower.contains("driver") || lower.contains("node") -> Icons.Filled.Tune
-        lower.contains("sec") || lower.contains("bypass") -> Icons.Filled.Security
-        else -> Icons.Filled.Memory
     }
 }
 
