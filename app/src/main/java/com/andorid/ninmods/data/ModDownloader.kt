@@ -110,44 +110,19 @@ object ModDownloader {
                 if (connectionSuccess) break
             }
 
-            var isFromAssetFallback = false
             if (!connectionSuccess || conn == null) {
-                // Check if bundled inside app assets as immediate fallback
-                val assetCandidates = listOf(
-                    cleanPath,
-                    cleanFileBasename,
-                    "kernel/$cleanFileBasename",
-                    "external/$cleanFileBasename",
-                    "kernel/$fileName",
-                    "external/$fileName",
-                    fileName
-                ).distinct()
-
-                var foundStream: InputStream? = null
-                for (assetCandidate in assetCandidates) {
-                    try {
-                        foundStream = context.assets.open(assetCandidate)
-                        if (foundStream != null) break
-                    } catch (_: Exception) {}
+                val friendlyError = when (lastHttpCode) {
+                    404 -> "Mod package '$cleanFileBasename' is undergoing server synchronization. Please try again shortly."
+                    500, 502, 503 -> "Server maintenance in progress. Please try again later."
+                    0 -> "Unable to reach server. Please check your internet connection."
+                    else -> "Server connection error (HTTP $lastHttpCode). Please try again shortly."
                 }
-
-                if (foundStream != null) {
-                    inputStream = foundStream
-                    isFromAssetFallback = true
-                } else {
-                    val friendlyError = when (lastHttpCode) {
-                        404 -> "Mod package '$cleanFileBasename' is undergoing server synchronization. Please try again shortly."
-                        500, 502, 503 -> "Server maintenance in progress. Please try again later."
-                        0 -> "Unable to reach server. Please check your internet connection."
-                        else -> "Server connection error (HTTP $lastHttpCode). Please try again shortly."
-                    }
-                    return@withContext Result.failure(Exception(friendlyError))
-                }
+                return@withContext Result.failure(Exception(friendlyError))
             } else {
                 inputStream = conn.inputStream
             }
 
-            val contentLength = if (!isFromAssetFallback && conn != null) conn.contentLength.toLong() else 0L
+            val contentLength = if (conn != null) conn.contentLength.toLong() else 0L
             val inStream = inputStream ?: return@withContext Result.failure(Exception("Failed to open mod download stream."))
 
             val tempFile = File(targetDir, "tmp_${System.currentTimeMillis()}_$fileName")

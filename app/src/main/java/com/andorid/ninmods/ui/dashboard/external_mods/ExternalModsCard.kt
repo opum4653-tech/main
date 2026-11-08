@@ -154,29 +154,6 @@ fun ExternalModsCard(
                 val officialZipName = "gemini-cli.zip"
                 val officialFile = File(internalDir, officialFileName)
 
-                // 0. Auto-extract from bundled APK assets (app/src/main/assets/external/gemini-cli.zip)
-                // Guarantees that every updated APK automatically deploys the latest compiled native engine directly into place
-                try {
-                    val prefs = context.getSharedPreferences("ninmods_engine_prefs", Context.MODE_PRIVATE)
-                    val lastInstalledVer = prefs.getInt("bundled_engine_ver", 0)
-                    val currentAppVer = try {
-                        val pInfo = context.packageManager.getPackageInfo(context.packageName, 0)
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) pInfo.longVersionCode.toInt() else pInfo.versionCode
-                    } catch (_: Exception) { AppConfig.VERSION_CODE }
-
-                    if (!officialFile.exists() || officialFile.length() == 0L || currentAppVer > lastInstalledVer) {
-                        context.assets.open("external/$officialZipName").use { assetIn ->
-                            val assetZip = File(internalDir, officialZipName)
-                            FileOutputStream(assetZip).use { assetOut ->
-                                assetIn.copyTo(assetOut)
-                            }
-                            ModDownloader.unzip(assetZip, internalDir)
-                            officialFile.setExecutable(true, false)
-                            prefs.edit().putInt("bundled_engine_ver", currentAppVer).apply()
-                        }
-                    }
-                } catch (_: Exception) {}
-
                 // Self-healing: if gemini-cli.zip is present locally but binary is missing, unpack it automatically
                 val internalZip = File(internalDir, officialZipName)
                 if (internalZip.exists() && (!officialFile.exists() || officialFile.length() == 0L)) {

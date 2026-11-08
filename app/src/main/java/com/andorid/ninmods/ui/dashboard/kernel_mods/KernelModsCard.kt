@@ -168,41 +168,6 @@ fun KernelModsCard(
                 val officialZipName = "ninmods-kernel.zip"
                 val officialFile = File(internalDir, officialFileName)
 
-                // 0. Auto-extract from bundled APK assets if present
-                try {
-                    val prefs = context.getSharedPreferences("ninmods_kernel_engine_prefs", Context.MODE_PRIVATE)
-                    val lastInstalledVer = prefs.getInt("bundled_kernel_ver", 0)
-                    val currentAppVer = try {
-                        val pInfo = context.packageManager.getPackageInfo(context.packageName, 0)
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) pInfo.longVersionCode.toInt() else pInfo.versionCode
-                    } catch (_: Exception) { AppConfig.VERSION_CODE }
-
-                    if (!officialFile.exists() || officialFile.length() == 0L || currentAppVer > lastInstalledVer) {
-                        try {
-                            context.assets.open("kernel/$officialZipName").use { assetIn ->
-                                val assetZip = File(internalDir, officialZipName)
-                                FileOutputStream(assetZip).use { assetOut ->
-                                    assetIn.copyTo(assetOut)
-                                }
-                                ModDownloader.unzip(assetZip, internalDir)
-                                officialFile.setExecutable(true, false)
-                                prefs.edit().putInt("bundled_kernel_ver", currentAppVer).apply()
-                            }
-                        } catch (_: Exception) {
-                            // If zip not in assets, try standalone binary
-                            try {
-                                context.assets.open("kernel/$officialFileName").use { assetIn ->
-                                    FileOutputStream(officialFile).use { assetOut ->
-                                        assetIn.copyTo(assetOut)
-                                    }
-                                    officialFile.setExecutable(true, false)
-                                    prefs.edit().putInt("bundled_kernel_ver", currentAppVer).apply()
-                                }
-                            } catch (_: Exception) {}
-                        }
-                    }
-                } catch (_: Exception) {}
-
                 // Self-healing: if zip exists but binary missing, unpack
                 val internalZip = File(internalDir, officialZipName)
                 if (internalZip.exists() && (!officialFile.exists() || officialFile.length() == 0L)) {
