@@ -41,27 +41,16 @@ object ModDownloader {
             val cleanFileBasename = File(downloadUrl).name
             val candidateUrls = mutableListOf<String>()
 
-            var cleanPath = downloadUrl.trimStart('/')
-            if (downloadUrl.startsWith("http://", ignoreCase = true) || downloadUrl.startsWith("https://", ignoreCase = true)) {
-                candidateUrls.add(downloadUrl)
-            } else {
-                // 1. Primary: exact subpath under /downloads/
-                candidateUrls.add("${AppConfig.BASE_URL.trimEnd('/')}/downloads/$cleanPath")
-                // 2. Fallback 1: flat under /downloads/
-                if (cleanPath != cleanFileBasename) {
-                    candidateUrls.add("${AppConfig.BASE_URL.trimEnd('/')}/downloads/$cleanFileBasename")
-                }
-                // 3. Fallback 2: direct under root domain
-                candidateUrls.add("${AppConfig.BASE_URL.trimEnd('/')}/$cleanPath")
-                // 4. Fallback 3: GitHub Official Release mirror
-                candidateUrls.add("https://github.com/mohammadnillislam11-ai/Kernel-Driver/releases/download/${AppConfig.VERSION_NAME}/$cleanFileBasename")
-                // 5. Fallback 4: Alternate .sh if .zip or vice versa
-                if (cleanFileBasename.endsWith(".zip", ignoreCase = true)) {
-                    val shName = cleanFileBasename.removeSuffix(".zip") + ".sh"
-                    candidateUrls.add("${AppConfig.BASE_URL.trimEnd('/')}/downloads/external/$shName")
-                    candidateUrls.add("${AppConfig.BASE_URL.trimEnd('/')}/downloads/$shName")
-                }
+            val cleanPath = downloadUrl.trimStart('/')
+            val serverBase = AppConfig.BASE_URL.trimEnd('/')
+
+            // Enforce strict internal backend downloads: ZERO external/github links allowed
+            candidateUrls.add("$serverBase/downloads/$cleanPath")
+            if (cleanPath != cleanFileBasename) {
+                candidateUrls.add("$serverBase/downloads/$cleanFileBasename")
             }
+            candidateUrls.add("$serverBase/downloads/external/$cleanFileBasename")
+            candidateUrls.add("$serverBase/downloads/kernel/$cleanFileBasename")
 
             var connectionSuccess = false
             var lastHttpCode = 0
