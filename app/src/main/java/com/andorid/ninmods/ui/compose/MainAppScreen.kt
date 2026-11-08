@@ -37,6 +37,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -49,7 +50,10 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.andorid.ninmods.data.SessionManager
+import com.andorid.ninmods.network.ActiveNotificationItem
+import com.andorid.ninmods.network.AuthApiClient
 import com.andorid.ninmods.ui.MainViewModel
+import com.andorid.ninmods.ui.component.InAppBroadcastModalDialog
 import com.andorid.ninmods.ui.dashboard.DashboardScreen
 import com.andorid.ninmods.ui.loader.DriverLoaderScreen
 import com.andorid.ninmods.ui.profile.ProfileScreen
@@ -100,6 +104,20 @@ fun MainAppScreen(
     var previousDestination by remember { mutableStateOf(MainDestination.LOADER) }
     var lastBackPressTime by remember { mutableStateOf(0L) }
     val context = LocalContext.current
+
+    var activeNotifications by remember { mutableStateOf<List<ActiveNotificationItem>>(emptyList()) }
+    var popupNotificationToShow by remember { mutableStateOf<ActiveNotificationItem?>(null) }
+    var dismissedNotificationIds by remember { mutableStateOf(setOf<Int>()) }
+
+    LaunchedEffect(Unit) {
+        AuthApiClient.getActiveNotifications().onSuccess { list ->
+            activeNotifications = list
+            val popup = list.firstOrNull { it.isPopup }
+            if (popup != null) {
+                popupNotificationToShow = popup
+            }
+        }
+    }
 
     // APatch Official BackHandler: Subpages/Tabs navigate back to Home; double back on Home to exit
     BackHandler(enabled = true) {
@@ -245,7 +263,16 @@ fun MainAppScreen(
                 .padding(innerPadding)
         ) { destination ->
             when (destination) {
-                MainDestination.DASHBOARD -> DashboardScreen(sessionManager = sessionManager)
+                MainDestination.DASHBOARD -> DashboardScreen(
+                    sessionManager = sessionManager,
+                    activeBroadcast = activeNotifications.firstOrNull { it.id !in dismissedNotificationIds },
+                    onDismissBroadcast = {
+                        val active = activeNotifications.firstOrNull { it.id !in dismissedNotificationIds }
+                        if (active != null) {
+                            dismissedNotificationIds = dismissedNotificationIds + active.id
+                        }
+                    }
+                )
                 MainDestination.LOADER -> DriverLoaderScreen(
                     viewModel = viewModel,
                     sessionManager = sessionManager
@@ -260,5 +287,15 @@ fun MainAppScreen(
                 )
             }
         }
+    }
+
+    popupNotificationToShow?.let { popup ->
+        InAppBroadcastModalDialog(
+            notification = popup,
+            onDismiss = {
+                dismissedNotificationIds = dismissedNotificationIds + popup.id
+                popupNotificationToShow = null
+            }
+        )
     }
 }

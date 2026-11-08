@@ -26,6 +26,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
+import androidx.compose.material.icons.filled.BugReport
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Folder
@@ -69,6 +70,7 @@ import com.andorid.ninmods.data.ShellExecutor
 import com.andorid.ninmods.network.AuthApiClient
 import com.andorid.ninmods.ui.component.SwitchItem
 import com.andorid.ninmods.ui.dialogs.AppSelectionBottomSheet
+import com.andorid.ninmods.ui.dialogs.ReportBugBottomSheet
 import com.andorid.ninmods.ui.dialogs.SheetItem
 import com.andorid.ninmods.util.RootDetector
 import kotlinx.coroutines.Dispatchers
@@ -95,6 +97,7 @@ fun SettingsScreen(
     var globalNamespace by remember { mutableStateOf(sessionManager.globalNamespace) }
     var legacySu by remember { mutableStateOf(sessionManager.legacySu) }
     var showRebootSheet by remember { mutableStateOf(false) }
+    var showReportBugSheet by remember { mutableStateOf(false) }
 
     var isCheckingUpdate by remember { mutableStateOf(false) }
     var updateStatusText by remember { mutableStateOf("Tap to check latest release") }
@@ -650,6 +653,53 @@ fun SettingsScreen(
             }
         }
 
+        // DIAGNOSTICS & BUG REPORT
+        Text(
+            text = "DIAGNOSTICS & BUG REPORT",
+            style = MaterialTheme.typography.labelMedium,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.padding(start = 4.dp)
+        )
+
+        ElevatedCard(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(20.dp),
+            colors = CardDefaults.elevatedCardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceVariant
+            ),
+            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { showReportBugSheet = true }
+                    .padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.BugReport,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(24.dp)
+                )
+                Spacer(modifier = Modifier.size(16.dp))
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = "Report an Issue / Bug",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Text(
+                        text = "Submit crash telemetry & system logs to developer",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+        }
+
         // SOFTWARE UPDATES
         Text(
             text = "SOFTWARE UPDATES",
@@ -786,5 +836,12 @@ fun SettingsScreen(
                 }
             )
         }
+    }
+
+    if (showReportBugSheet) {
+        ReportBugBottomSheet(
+            sessionManager = sessionManager,
+            onDismiss = { showReportBugSheet = false }
+        )
     }
 }

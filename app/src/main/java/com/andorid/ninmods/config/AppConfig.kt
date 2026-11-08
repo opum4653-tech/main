@@ -45,6 +45,8 @@ object AppConfig {
     val APP_ACTIVATE_URL: String get() = "$API_BASE_URL/app/activate"
     val APP_HEARTBEAT_URL: String get() = "$API_BASE_URL/app/heartbeat"
     val APP_VERSION_URL: String get() = "$API_BASE_URL/app/version"
+    val BUG_REPORT_URL: String get() = "$API_BASE_URL/app/bug-report"
+    val NOTIFICATIONS_ACTIVE_URL: String get() = "$API_BASE_URL/notifications/active"
 
     // Connection Timeouts
     const val TIMEOUT_MILLIS: Int = 15000

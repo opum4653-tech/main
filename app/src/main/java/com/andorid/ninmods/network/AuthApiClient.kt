@@ -50,6 +50,16 @@ data class AppConfigData(
     val telegramSupport: String
 )
 
+data class ActiveNotificationItem(
+    val id: Int,
+    val title: String,
+    val message: String,
+    val imageUrl: String? = null,
+    val type: String = "info",
+    val isPopup: Boolean = false,
+    val createdAt: String = ""
+)
+
 data class LoginResponse(
     val success: Boolean,
     val message: String,
@@ -565,6 +575,91 @@ object AuthApiClient {
     fun sanitizeNetworkException(e: Exception): String {
         val msg = e.message ?: ""
         return sanitizeErrorMessage(msg, 0)
+    }
+
+    /**
+     * GET /api/v2/notifications/active
+     */
+    suspend fun getActiveNotifications(): Result<List<ActiveNotificationItem>> = withContext(Dispatchers.IO) {
+        try {
+            val response = sendGetRequest(AppConfig.NOTIFICATIONS_ACTIVE_URL)
+            if (response.code in 200..299) {
+                val json = JSONObject(response.body)
+                val arr = json.optJSONArray("notifications")
+                val list = mutableListOf<ActiveNotificationItem>()
+                if (arr != null) {
+                    for (i in 0 until arr.length()) {
+                        val item = arr.getJSONObject(i)
+                        list.add(
+                            ActiveNotificationItem(
+                                id = item.optInt("id", 0),
+                                title = item.optString("title", ""),
+                                message = item.optString("message", ""),
+                                imageUrl = item.optString("image_url").takeIf { it.isNotBlank() && it != "null" },
+                                type = item.optString("type", "info"),
+                                isPopup = item.optInt("is_popup", 0) == 1 || item.optBoolean("is_popup", false),
+                                createdAt = item.optString("created_at", "")
+                            )
+                        )
+                    }
+                }
+                Result.success(list)
+            } else {
+                Result.failure(Exception("Failed to fetch notifications: HTTP ${response.code}"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    /**
+     * POST /api/v2/app/bug-report
+     */
+    suspend fun submitBugReport(
+        title: String,
+        description: String,
+        deviceModel: String,
+        androidVersion: String,
+        appVersion: String,
+        kernelVersion: String,
+        isRoot: Boolean,
+        licenseKey: String? = null,
+        hwid: String? = null,
+        logcatTrace: String? = null,
+        userId: Int? = null
+    ): Result<BasicResponse> = withContext(Dispatchers.IO) {
+        try {
+            val payload = JSONObject().apply {
+                put("title", title.trim())
+                put("description", description.trim())
+                put("device_model", deviceModel)
+                put("android_version", androidVersion)
+                put("app_version", appVersion)
+                put("kernel_version", kernelVersion)
+                put("is_root", if (isRoot) 1 else 0)
+                if (!licenseKey.isNullOrBlank()) put("license_key", licenseKey)
+                if (!hwid.isNullOrBlank()) put("hwid", hwid)
+                if (!logcatTrace.isNullOrBlank()) put("logcat_trace", logcatTrace)
+                if (userId != null && userId > 0) put("user_id", userId)
+            }
+
+            val (code, body) = sendPostRequest(AppConfig.BUG_REPORT_URL, payload.toString())
+            if (code in 200..299) {
+                val json = JSONObject(body)
+                Result.success(
+                    BasicResponse(
+                        success = json.optBoolean("success", true),
+                        message = json.optString("message", "Bug report received successfully.")
+                    )
+                )
+            } else {
+                val json = runCatching { JSONObject(body) }.getOrNull()
+                val errMsg = json?.optString("error") ?: "Server returned error ($code)"
+                Result.failure(Exception(errMsg))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
     }
 
     private fun sendPostRequest(

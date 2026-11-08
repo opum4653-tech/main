@@ -130,6 +130,10 @@ class SessionManager(context: Context) {
         get() = prefs.getBoolean(KEY_REMEMBER, true)
         set(value) = prefs.edit().putBoolean(KEY_REMEMBER, value).apply()
 
+    var userId: Int
+        get() = prefs.getInt("user_id", 0)
+        set(value) = prefs.edit().putInt("user_id", value).apply()
+
     fun changePassword(newPassword: String): Boolean {
         userPassword = newPassword
         return true

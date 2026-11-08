@@ -12,13 +12,17 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.andorid.ninmods.data.SessionManager
+import com.andorid.ninmods.network.ActiveNotificationItem
 import com.andorid.ninmods.ui.clock.LicenseClockCard
+import com.andorid.ninmods.ui.component.BroadcastNotificationCard
 import com.andorid.ninmods.ui.dashboard.external_mods.ExternalModsCard
 import com.andorid.ninmods.ui.dashboard.kernel_mods.KernelModsCard
 
 @Composable
 fun DashboardScreen(
     sessionManager: SessionManager,
+    activeBroadcast: ActiveNotificationItem? = null,
+    onDismissBroadcast: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -29,6 +33,14 @@ fun DashboardScreen(
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         Spacer(modifier = Modifier.height(4.dp))
+
+        // Active Broadcast / Announcement Banner (Push Popups & Alerts from Admin Panel)
+        if (activeBroadcast != null) {
+            BroadcastNotificationCard(
+                notification = activeBroadcast,
+                onDismiss = onDismissBroadcast
+            )
+        }
 
         // 1. Digital License Expiry Countdown Clock (Real-Time, hidden if no active plan)
         LicenseClockCard(sessionManager = sessionManager)
