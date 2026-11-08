@@ -27,8 +27,8 @@ jobs:
       - name: Install Gradle 8.2
         run: |
           mkdir -p /tmp/gradle_dist
-          echo "Downloading Gradle 8.2 distribution via curl..."
-          curl -L -s --retry 5 --retry-delay 2 "https://github.com/gradle/gradle-distributions/releases/download/v8.2.0/gradle-8.2-bin.zip" -o /tmp/gradle_dist/gradle-8.2-bin.zip
+          echo "Downloading Gradle 8.2 distribution from mirror..."
+          curl -L --retry 5 --retry-delay 2 "https://mirrors.cloud.tencent.com/gradle/gradle-8.2-bin.zip" -o /tmp/gradle_dist/gradle-8.2-bin.zip
           unzip -q /tmp/gradle_dist/gradle-8.2-bin.zip -d /tmp/gradle_dist/
           echo "Gradle 8.2 unpacked successfully:"
           /tmp/gradle_dist/gradle-8.2/bin/gradle -v
