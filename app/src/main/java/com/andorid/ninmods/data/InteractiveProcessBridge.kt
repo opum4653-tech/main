@@ -159,6 +159,8 @@ class InteractiveProcessBridge(
                             if (window.contains("Loading overlay engine into RAM", ignoreCase = true) ||
                                 window.contains("ninmods starting", ignoreCase = true) ||
                                 window.contains("daemon active", ignoreCase = true) ||
+                                window.contains("Kernel engine active", ignoreCase = true) ||
+                                window.contains("Floating overlay engine initialized", ignoreCase = true) ||
                                 (window.contains("Active", ignoreCase = true) && window.contains("Runtime", ignoreCase = true))
                             ) {
                                 _isRunning.value = true
