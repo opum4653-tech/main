@@ -29,6 +29,7 @@ This document defines the architecture, workflow, and operational contracts of t
 - **Build Pipeline:** Automated via `.github/workflows/build.yml` with Android NDK `r25c`.
 - **Output Artifact Format:** Pure native ARM64 ELF executable `ninmods-kernel` packaged into `ninmods-kernel.zip`.
 - **Server Deployment Directory:** `downloads/kernel/ninmods-kernel.zip`
+- **Mandatory Download URL:** `https://ninmods.smmtor.com/downloads/kernel/ninmods-kernel.zip`
 - **Internal Storage Path:** `context.filesDir/kernel_mods/ninmods-kernel`
 
 ### 2.2 External Mod (`refer/nin`)
@@ -37,20 +38,41 @@ This document defines the architecture, workflow, and operational contracts of t
 - **Build Pipeline:** Automated via `.github/workflows/build.yml` with Android NDK `r25c` and `llvm-strip`.
 - **Output Artifact Format:** Pure native ARM64 ELF executable `gemini-cli` packaged into `gemini-cli.zip`.
 - **Server Deployment Directory:** `downloads/external/gemini-cli.zip`
+- **Mandatory Download URL:** `https://ninmods.smmtor.com/downloads/external/gemini-cli.zip`
 - **Internal Storage Path:** `context.filesDir/external_mods/gemini-cli`
+
+### 2.3 Kernel Drivers
+- **Server Deployment Directory:** `downloads/Kernel_Drivers.zip`
+- **Mandatory Download URL:** `https://ninmods.smmtor.com/downloads/Kernel_Drivers.zip`
+- **Internal Storage Path:** `context.filesDir/drivers/`
 
 ---
 
-## 3. Dashboard Mod Interaction & Dialog Workflow
+## 3. Strict Download Invariants (Zero GitHub, Zero Bundled Assets, Strict Subfolders)
+
+1. **NO BUNDLED ASSETS IN APK:**
+   - Mod archives are NOT bundled inside the APK assets (`assets/` contains zero mod ZIPs).
+   - All mod packages must be downloaded on demand by the user from the backend server.
+2. **ZERO GITHUB DOWNLOAD LINKS:**
+   - The app must NEVER use GitHub releases, raw GitHub URLs, or any external links for downloading mods or drivers.
+   - All client downloads must route strictly through `https://ninmods.smmtor.com/downloads/...`.
+3. **STRICT SUBFOLDER PATHS (NO FLAT ROOT URLS):**
+   - External mod: `downloads/external/gemini-cli.zip`
+   - Kernel mod: `downloads/kernel/ninmods-kernel.zip`
+   - Flat root URLs (e.g. `/downloads/gemini-cli.zip` or `/downloads/ninmods-kernel.zip`) are strictly FORBIDDEN.
+4. **DIRECT UPDATE ACTION:**
+   - Both `ExternalModsCard` and `KernelModsCard` feature a direct CloudDownload icon button next to the status badge, allowing users to re-download the latest mod package from the server even when previously installed.
+
+---
+
+## 4. Dashboard Mod Interaction & Dialog Workflow
 
 ### Step 1: Download & Extraction (When NOT installed)
-1. User taps the mod card on Dashboard.
-2. The app inspects internal storage (`context.filesDir/kernel_mods/` or `context.filesDir/external_mods/`).
-3. If missing:
-   - First checks bundled APK assets (`assets/kernel/ninmods-kernel.zip` or `assets/external/gemini-cli.zip`) and auto-extracts without network usage.
-   - If not in assets, prompts user with the Material 3 Download Confirmation Dialog.
-   - Upon confirmation, downloads `.zip` package via multi-tier fallback ladder (Backend -> GitHub Releases).
-   - Extracts the pure native ELF binary directly into place, sets executable permissions (`chmod 755`), and cleans up the archive.
+1. User taps the mod card or the CloudDownload icon button on Dashboard.
+2. The app prompts user with the Material 3 Download Confirmation Dialog.
+3. Upon confirmation, the app streams the `.zip` package strictly from the backend server (`https://ninmods.smmtor.com/downloads/external/gemini-cli.zip` or `https://ninmods.smmtor.com/downloads/kernel/ninmods-kernel.zip`).
+4. Extracts the pure native ELF binary directly into place, sets executable permissions (`chmod 755`), and cleans up the archive.
+5. Card status transitions to `READY`.
 
 ### Step 2: Single-Tap Launch & Background Prompt
 1. User taps the mod card when binary is present.
@@ -79,7 +101,7 @@ This document defines the architecture, workflow, and operational contracts of t
 
 ---
 
-## 4. Live License Clock Policy
+## 5. Live License Clock Policy
 
 1. **Card Visibility:**
    - Shown exclusively when an active subscription exists with remaining time > 0.
@@ -90,13 +112,12 @@ This document defines the architecture, workflow, and operational contracts of t
 
 ---
 
-## 5. Directory & File Matrix
+## 6. Directory & File Matrix
 
 ```text
 DriverLoader/
   app/src/main/assets/
-    external/gemini-cli.zip            # Bundled pure native external engine
-    kernel/ninmods-kernel.zip          # Bundled pure native kernel engine
+    (zero bundled mod archives - on-demand download enforced)
   app/src/main/java/com/andorid/ninmods/
     data/
       InteractiveProcessBridge.kt      # Root shell stdin/stdout process manager
@@ -106,9 +127,9 @@ DriverLoader/
       dashboard/
         DashboardScreen.kt             # Unified dashboard host
         external_mods/
-          ExternalModsCard.kt          # External mod launcher card
+          ExternalModsCard.kt          # External mod launcher card (Cyan Blue)
         kernel_mods/
-          KernelModsCard.kt            # Kernel mod launcher card
+          KernelModsCard.kt            # Kernel mod launcher card (Cyber Purple)
       clock/
         LicenseClockCard.kt            # Live countdown timer card
       dialogs/
@@ -117,7 +138,7 @@ DriverLoader/
 
 ---
 
-## 6. Official GitHub Release & Home Page Policy
+## 7. Official GitHub Release & Home Page Policy
 
 1. **GitHub Home Page "Latest" Badge Invariant:**
    - Every production release (`v1.x.x`) MUST be explicitly pinned as the repository's "Latest Release" on the GitHub homepage sidebar (`/releases/latest`).
@@ -125,11 +146,11 @@ DriverLoader/
 2. **Automated Pipeline Enforcement:**
    - The release workflow triggers on semantic version tags and enforces `makeLatest: true`.
 3. **Artifact Consistency Guarantee:**
-   - Official release APK is mirrored simultaneously across GitHub Releases and server backend.
+   - Official release APK is mirrored simultaneously across GitHub Releases and server backend (`https://ninmods.smmtor.com/downloads/app-release.apk`).
 
 ---
 
-## 7. Clean Comment and Documentation Formatting Rules
+## 8. Clean Comment and Documentation Formatting Rules
 
 1. **Banned Formatting Patterns:**
    - Decorative box-drawing banners and framing lines (double lines, single lines, box corners, vertical dividers) are strictly prohibited in all code comments, documentation headers, and terminal outputs.
