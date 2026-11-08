@@ -44,13 +44,10 @@ object ModDownloader {
             val cleanPath = downloadUrl.trimStart('/')
             val serverBase = AppConfig.BASE_URL.trimEnd('/')
 
-            // Enforce strict internal backend downloads: ZERO external/github links allowed
+            // Enforce strict backend download endpoint strictly matching module subfolder
+            // e.g. external/gemini-cli.zip -> https://ninmods.smmtor.com/downloads/external/gemini-cli.zip
+            //      kernel/ninmods-kernel.zip -> https://ninmods.smmtor.com/downloads/kernel/ninmods-kernel.zip
             candidateUrls.add("$serverBase/downloads/$cleanPath")
-            if (cleanPath != cleanFileBasename) {
-                candidateUrls.add("$serverBase/downloads/$cleanFileBasename")
-            }
-            candidateUrls.add("$serverBase/downloads/external/$cleanFileBasename")
-            candidateUrls.add("$serverBase/downloads/kernel/$cleanFileBasename")
 
             var connectionSuccess = false
             var lastHttpCode = 0

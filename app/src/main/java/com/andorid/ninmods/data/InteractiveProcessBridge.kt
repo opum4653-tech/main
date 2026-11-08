@@ -171,7 +171,7 @@ class InteractiveProcessBridge(
                 val exitCode = proc.waitFor()
                 val wasRunning = _isRunning.value
                 val wasReady = _isReadyToStart.value
-                val isNormalTeardown = userRequestedStop || (wasRunning && exitCode in listOf(0, 137, 143))
+                val isNormalTeardown = userRequestedStop || exitCode in listOf(0, 137, 143)
                 _isProcessAlive.value = false
                 _isRunning.value = false
                 _licensePromptTriggered.value = false

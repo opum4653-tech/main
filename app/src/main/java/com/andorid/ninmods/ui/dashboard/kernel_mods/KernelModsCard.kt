@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CloudDownload
 import androidx.compose.material.icons.filled.Memory
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Refresh
@@ -574,6 +575,25 @@ fun KernelModsCard(
                                 }
 
                                 Spacer(modifier = Modifier.width(8.dp))
+
+                                // Update / Re-download icon button if already downloaded
+                                if (mod.isDownloaded && !isRunning) {
+                                    IconButton(
+                                        onClick = {
+                                            selectedModForAction = mod
+                                            unifiedDialogState = UnifiedModDialogState.ConfirmDownload(mod.name)
+                                        },
+                                        modifier = Modifier.size(32.dp)
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Filled.CloudDownload,
+                                            contentDescription = "Update Mod",
+                                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                            modifier = Modifier.size(18.dp)
+                                        )
+                                    }
+                                    Spacer(modifier = Modifier.width(4.dp))
+                                }
 
                                 // Status badge
                                 Surface(
