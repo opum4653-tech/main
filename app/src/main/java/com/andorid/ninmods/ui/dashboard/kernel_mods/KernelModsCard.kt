@@ -87,6 +87,8 @@ fun KernelModsCard(
 
     val processBridge = remember { InteractiveProcessBridge(scope) }
     val isProcessRunning by processBridge.isRunning.collectAsState()
+    val isLicensePromptTriggered by processBridge.licensePromptTriggered.collectAsState()
+    val isReadyToStart by processBridge.isReadyToStart.collectAsState()
 
     var mods by remember { mutableStateOf<List<KernelModItem>>(emptyList()) }
     var activeModId by remember { mutableStateOf<String?>(null) }
@@ -95,10 +97,24 @@ fun KernelModsCard(
     var unifiedDialogState by remember { mutableStateOf<UnifiedModDialogState?>(null) }
     var selectedModForAction by remember { mutableStateOf<KernelModItem?>(null) }
 
-    // Intercept output logs from running binary to catch missing driver or failure
+    // Intercept output logs from running binary to stream into dialog and catch missing driver or failure
     LaunchedEffect(Unit) {
         processBridge.outputLines.collect { chunk ->
             val lines = chunk.split("\n").map { it.trimEnd() }.filter { it.isNotBlank() }
+            val current = unifiedDialogState
+            if (current is UnifiedModDialogState.LicenseAuth) {
+                val updatedLogs = (current.terminalLogs + lines).takeLast(40)
+                val failureMsg = lines.firstOrNull {
+                    it.contains("Authentication failed", ignoreCase = true) ||
+                    it.contains("Invalid or expired", ignoreCase = true) ||
+                    it.contains("[-] ", ignoreCase = true)
+                }
+                unifiedDialogState = current.copy(
+                    terminalLogs = updatedLogs,
+                    errorMessage = failureMsg ?: current.errorMessage,
+                    isSubmitting = if (failureMsg != null) false else current.isSubmitting
+                )
+            }
             val fatalDriverMsg = lines.firstOrNull {
                 it.contains("Driver not loaded", ignoreCase = true) ||
                 it.contains("driver not found", ignoreCase = true) ||
@@ -110,6 +126,35 @@ fun KernelModsCard(
                 )
                 processBridge.stop()
                 activeModId = null
+            }
+        }
+    }
+
+    // Automatically trigger license pop-up dialog when stdin prompt is detected in running binary
+    LaunchedEffect(isLicensePromptTriggered) {
+        if (isLicensePromptTriggered) {
+            val initialKey = sessionManager?.activeLicenseKey ?: ""
+            val current = unifiedDialogState
+            if (current !is UnifiedModDialogState.LicenseAuth) {
+                unifiedDialogState = UnifiedModDialogState.LicenseAuth(
+                    initialKey = initialKey,
+                    isSubmitting = false,
+                    errorMessage = null,
+                    isVerified = false
+                )
+            }
+        }
+    }
+
+    LaunchedEffect(isReadyToStart) {
+        if (isReadyToStart) {
+            val current = unifiedDialogState
+            if (current is UnifiedModDialogState.LicenseAuth) {
+                unifiedDialogState = current.copy(
+                    isSubmitting = false,
+                    isVerified = true,
+                    terminalLogs = (current.terminalLogs + listOf("[+] License validated! Engine authorized and ready.")).takeLast(40)
+                )
             }
         }
     }
@@ -244,7 +289,17 @@ fun KernelModsCard(
                 executableFile = mod.file,
                 deviceHwid = deviceHwid,
                 licenseKey = initialKey,
-                onLicensePrompt = {},
+                onLicensePrompt = {
+                    val current = unifiedDialogState
+                    if (current !is UnifiedModDialogState.LicenseAuth) {
+                        unifiedDialogState = UnifiedModDialogState.LicenseAuth(
+                            initialKey = initialKey,
+                            isSubmitting = false,
+                            errorMessage = null,
+                            isVerified = false
+                        )
+                    }
+                },
                 onError = { errMsg ->
                     unifiedDialogState = UnifiedModDialogState.RootRequired(
                         "Kernel Engine Error: $errMsg\n\nPlease ensure Superuser is granted and a compatible kernel driver is loaded."
@@ -303,9 +358,88 @@ fun KernelModsCard(
                 downloadJob = null
                 unifiedDialogState = null
             },
-            onSubmitKey = {},
+            onSubmitKey = { submittedKey ->
+                if (state is UnifiedModDialogState.LicenseAuth) {
+                    unifiedDialogState = state.copy(
+                        isSubmitting = true,
+                        errorMessage = null,
+                        terminalLogs = (state.terminalLogs + listOf(
+                            "[*] Verifying license key with authorization server...",
+                            "[*] Synchronizing secure handshake..."
+                        )).takeLast(40)
+                    )
+                    scope.launch {
+                        val deviceHwid = com.andorid.ninmods.util.DeviceIdentifier.getHwid(context)
+
+                        // 1. Concurrently synchronize activation with server API
+                        val activationResult = com.andorid.ninmods.network.AuthApiClient.activateLicense(
+                            licenseKey = submittedKey,
+                            hwid = deviceHwid
+                        )
+
+                        if (activationResult.isSuccess) {
+                            val licInfo = activationResult.getOrNull()
+                            sessionManager?.let { sm ->
+                                sm.activeLicenseKey = submittedKey
+                                sm.serverRemainingSeconds = licInfo?.remainingSeconds ?: 86400L
+                            }
+
+                            // 2. Feed to stdin pipe if alive, or cleanly restart process with pre-authenticated key
+                            val sent = processBridge.sendInput(submittedKey)
+                            if (!sent || !processBridge.isProcessAlive.value) {
+                                selectedModForAction?.let { mod ->
+                                    processBridge.stop()
+                                    processBridge.start(
+                                        executableFile = mod.file,
+                                        deviceHwid = deviceHwid,
+                                        licenseKey = submittedKey,
+                                        onLicensePrompt = {},
+                                        onError = { errMsg ->
+                                            val current = unifiedDialogState
+                                            if (current is UnifiedModDialogState.LicenseAuth) {
+                                                unifiedDialogState = current.copy(
+                                                    isSubmitting = false,
+                                                    errorMessage = errMsg,
+                                                    terminalLogs = (current.terminalLogs + listOf("[-] $errMsg")).takeLast(40)
+                                                )
+                                            }
+                                        }
+                                    )
+                                }
+                            }
+
+                            val current = unifiedDialogState
+                            if (current is UnifiedModDialogState.LicenseAuth) {
+                                unifiedDialogState = current.copy(
+                                    isSubmitting = false,
+                                    isVerified = true,
+                                    terminalLogs = (current.terminalLogs + listOf(
+                                        "[+] Cloud License Authorized!",
+                                        "[+] Remaining: ${licInfo?.remainingSeconds?.let { it / 3600 } ?: 24} hours",
+                                        "[+] Ready to load into memory."
+                                    )).takeLast(40)
+                                )
+                            }
+                        } else {
+                            val serverErr = activationResult.exceptionOrNull()?.message ?: "Server verification rejected license key."
+                            val current = unifiedDialogState
+                            if (current is UnifiedModDialogState.LicenseAuth) {
+                                unifiedDialogState = current.copy(
+                                    isSubmitting = false,
+                                    errorMessage = serverErr,
+                                    terminalLogs = (current.terminalLogs + listOf("[-] $serverErr")).takeLast(40)
+                                )
+                            }
+                        }
+                    }
+                }
+            },
             onStartMod = {
-                unifiedDialogState = null
+                scope.launch {
+                    processBridge.sendInput("START")
+                    unifiedDialogState = null
+                    Toast.makeText(context, "Loading kernel floating engine into RAM...", Toast.LENGTH_SHORT).show()
+                }
             },
             onConfirmStop = {
                 unifiedDialogState = null
