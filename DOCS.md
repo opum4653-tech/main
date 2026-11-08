@@ -6,50 +6,55 @@ This document defines the architecture, workflow, and operational contracts of t
 
 ## 1. Mod Architecture & Scope
 
-- **Active Mod Type:** Strictly **External Mod**.
-- **Kernel Mods:** Currently **NONE**.
+- **Supported Mod Engines:**
+  1. **NINMODS Kernel Mod** (`ninmods-kernel`): Native kernel-level overlay engine interacting with kernel drivers.
+  2. **NINMODS External Mod** (`gemini-cli`): Standalone native memory overlay engine.
+- **Execution Architecture:**
+  - Both mod engines compile directly into pure native ARM64 ELF binaries.
+  - Zero intermediate shell wrappers (`.sh` files eliminated).
+  - Executed directly via superuser bridge (`su -c`) with standard process lifecycle management.
 - **Dashboard Representation:**
-  - The Dashboard features **NO Kernel Mods Card** or dummy kernel items.
-  - The Dashboard contains exclusively:
+  - The Dashboard features:
     1. **Digital License Expiry Countdown Clock** (`LicenseClockCard`).
-    2. **External Mod Card** (`ExternalModsCard`).
+    2. **Kernel Mod Card** (`KernelModsCard`) styled in Cyber Purple (`#AD47FA`).
+    3. **External Mod Card** (`ExternalModsCard`) styled in Cyan Blue (`#00F2FE`).
 
 ---
 
-## 2. External Mod Specifications
+## 2. Mod Engines & Packaging Specifications
 
-- **Source Location:** `C:\Users\Sajala\Documents\mods\refer\nin`
-- **Build Pipeline:** Automated via `.github/workflows/build.yml` on GitHub Actions using Android NDK `r25c`.
-- **Output Artifact Format:** A standalone self-extracting shell script named **`gemini-cli.sh`**.
-  - Wraps the ARM64 `gemini-cli` binary inside an executable shell script with Base64 encoding.
-  - When executed, decodes the binary directly into RAM (`/dev/shm` or `/dev` or `/data/local/tmp`).
-  - Spawns the process into memory and immediately unlinks the temporary disk file (fileless execution).
-- **Server Deployment Directory:**
-  - File path on server: `downloads/external/gemini-cli.sh`
-  - Download URL: `https://ninmods.smmtor.com/downloads/external/gemini-cli.sh`
+### 2.1 Kernel Mod (`refer/Kernel/Kernel`)
+- **Source Location:** `refer/Kernel/Kernel`
+- **Repository:** `https://github.com/mohammadnillislam11-ai/kernel-mods.git`
+- **Build Pipeline:** Automated via `.github/workflows/build.yml` with Android NDK `r25c`.
+- **Output Artifact Format:** Pure native ARM64 ELF executable `ninmods-kernel` packaged into `ninmods-kernel.zip`.
+- **Server Deployment Directory:** `downloads/kernel/ninmods-kernel.zip`
+- **Internal Storage Path:** `context.filesDir/kernel_mods/ninmods-kernel`
+
+### 2.2 External Mod (`refer/nin`)
+- **Source Location:** `refer/nin`
+- **Repository:** `https://github.com/mohammadnillislam11-ai/nin_sh.git`
+- **Build Pipeline:** Automated via `.github/workflows/build.yml` with Android NDK `r25c` and `llvm-strip`.
+- **Output Artifact Format:** Pure native ARM64 ELF executable `gemini-cli` packaged into `gemini-cli.zip`.
+- **Server Deployment Directory:** `downloads/external/gemini-cli.zip`
+- **Internal Storage Path:** `context.filesDir/external_mods/gemini-cli`
 
 ---
 
 ## 3. Dashboard Mod Interaction & Dialog Workflow
 
-### Step 1: Download Confirmation (When NOT installed)
-1. User taps the mod card featuring the official software logo.
-2. The app inspects local storage: `context.filesDir/external_mods/gemini-cli.sh`.
-3. If the file does not exist:
-   - An **Official Material 3 Download Confirmation Dialog** (`ApatchConfirmDownloadDialog`) appears.
-   - Text asks the user if they wish to download the external mod package.
-   - Contains **"Cancel"** and **"Download"** buttons.
-4. If user taps **"Cancel"**, the dialog dismisses and no network activity occurs.
-5. If user taps **"Download"**:
-   - The animated download dialog (`ApatchDownloadDialog`) appears with a real-time progress bar.
-   - The app streams `downloads/external/gemini-cli.zip` (~1.7 MB compressed package) from the backend server to local storage.
-   - Automatically unzips and extracts `gemini-cli.sh`, cleanly purging the temporary `.zip` archive.
-   - Grants executable permissions: `chmod 755 gemini-cli.sh`.
-   - Card status changes to `READY`.
+### Step 1: Download & Extraction (When NOT installed)
+1. User taps the mod card on Dashboard.
+2. The app inspects internal storage (`context.filesDir/kernel_mods/` or `context.filesDir/external_mods/`).
+3. If missing:
+   - First checks bundled APK assets (`assets/kernel/ninmods-kernel.zip` or `assets/external/gemini-cli.zip`) and auto-extracts without network usage.
+   - If not in assets, prompts user with the Material 3 Download Confirmation Dialog.
+   - Upon confirmation, downloads `.zip` package via multi-tier fallback ladder (Backend -> GitHub Releases).
+   - Extracts the pure native ELF binary directly into place, sets executable permissions (`chmod 755`), and cleans up the archive.
 
 ### Step 2: Single-Tap Launch & Background Prompt
-1. User taps the mod card when `gemini-cli.sh` exists locally.
-2. The app immediately initiates background execution in memory using root shell (`InteractiveProcessBridge`) without redundant intermediate confirmation screens.
+1. User taps the mod card when binary is present.
+2. The app initiates execution via root shell (`InteractiveProcessBridge`).
 3. The native binary starts in memory and outputs the stdin authentication prompt:
    ```
    [?] Enter API Access Key:
@@ -57,38 +62,31 @@ This document defines the architecture, workflow, and operational contracts of t
 4. `InteractiveProcessBridge` detects this stdout sequence and triggers `onLicensePrompt()`.
 
 ### Step 3: Two-Stage Verification & RAM Loading Gate (Verify -> Start)
-1. The app automatically surfaces the **Material 3 License Key Pop-up Dialog** (`ApatchLicenseKeyDialog`) — the single interactive dialog:
-   - Input field: Pre-filled with `sessionManager.activeLicenseKey` or account credential.
-   - Action buttons: **"Cancel"** and **"Verify"**.
-2. If user taps **"Cancel"**, the background process is terminated cleanly.
-3. When user taps **"Verify"**:
-   - The button shows an in-button spinner (`CircularProgressIndicator`) and label `"Verifying..."`.
-   - The app verifies with backend (`/api/v2/app/activate`) and pipes the key to the running process stdin (`processBridge.sendInput(key)`).
-   - The native binary receives the key, verifies online via official embedded `libcurl` + OpenSSL, and signals:
+1. The app displays the Material 3 License Key Dialog pre-filled with the active key.
+2. When user taps "Verify":
+   - Key is validated with backend (`/api/v2/app/activate`) and passed to binary stdin.
+   - Binary verifies online via embedded `libcurl` + OpenSSL:
      ```
      [+] API Key validated successfully. Core engine authorized.
      [?] Ready to load into memory. Awaiting START signal...
      ```
-   - `InteractiveProcessBridge` catches the readiness signal and marks `isReadyToStart = true`.
-   - In the dialog, a green verification indicator appears: `"License verified! Ready to load into RAM."`.
-   - The button dynamically transforms from "Verify" into **"Start"** (featuring `Icons.Filled.PlayArrow` and green container).
-4. When user taps **"Start"**:
-   - The app signals the binary stdin with `"START\n"` (`processBridge.sendInput("START")`).
-   - The native binary allocates resources, unblocks, and loads the overlay engine into RAM.
-   - The native surface engine (`ANativeWindowCreator` & ImGui) initializes and displays the **Official Floating Logo** directly over the screen!
-   - The License Dialog dismisses automatically and the card status updates to `ACTIVE`.
-5. If user taps the card while `ACTIVE`, an official confirmation dialog offers to **"Stop Mod"** and unload from memory.
+   - "Verify" button transforms dynamically into green "Start" button (`Icons.Filled.PlayArrow`).
+3. When user taps "Start":
+   - App sends `"START\n"` to binary stdin.
+   - Engine initializes native overlay (`ANativeWindowCreator` + ImGui) and renders floating menu.
+   - Card status updates to `ACTIVE`.
+4. If user taps an `ACTIVE` mod card, a confirmation dialog offers to "Stop Mod" and terminate cleanly.
 
 ---
 
 ## 4. Live License Clock Policy
 
 1. **Card Visibility:**
-   - The digital license countdown clock card (`LicenseClockCard`) is strictly shown **ONLY** when a paid subscription/license plan exists and has remaining seconds > 0.
-   - If no plan is active or the timer expires, the entire card is omitted from the UI.
+   - Shown exclusively when an active subscription exists with remaining time > 0.
+   - Automatically hidden if no active license exists or time has expired.
 2. **Real-Time Digital Countdown:**
-   - The clock updates live every 1 second in `HH : MM : SS` digital format without requiring manual page refresh.
-   - Backed by monotonic Android system uptime (`SystemClock.elapsedRealtime()`) synchronized with the backend heartbeat endpoint (`/api/v2/app/heartbeat`).
+   - Ticks live every 1 second in `HH : MM : SS` digital format without page refresh.
+   - Backed by monotonic Android system uptime synchronized with backend heartbeat (`/api/v2/app/heartbeat`).
 
 ---
 
@@ -96,31 +94,25 @@ This document defines the architecture, workflow, and operational contracts of t
 
 ```text
 DriverLoader/
-├── app/src/main/java/com/andorid/ninmods/
-│   ├── data/
-│   │   ├── InteractiveProcessBridge.kt     # Interactive stdin/stdout root shell bridge
-│   │   ├── ModDownloader.kt                # HTTP streaming file downloader
-│   │   └── SessionManager.kt               # Monotonic license duration & credentials
-│   ├── ui/
-│   │   ├── dashboard/
-│   │   │   ├── DashboardScreen.kt          # Renders LicenseClockCard & ExternalModsCard
-│   │   │   └── external_mods/
-│   │   │       └── ExternalModsCard.kt     # Single official external mod item
-│   │   ├── clock/
-│   │   │   └── LicenseClockCard.kt         # Live ticking digital countdown clock
-│   │   └── dialogs/
-│   │       └── ModActionDialogs.kt         # Material 3 confirm, animated download & license dialogs
-│
-app_backend/
-├── downloads/
-│   ├── external/gemini-cli.sh              # Target download for external mod
-│   └── kernel/                             # Reserved for future kernel mods
-│
-refer/nin/
-├── .github/workflows/build.yml             # Builds & packages gemini-cli.sh
-├── package_sh.sh                           # Self-extracting runner packaging script
-├── src/main.cpp                            # Entry point & stdin prompt gate
-└── src/protect/license.cpp                 # Online HTTP license verification
+  app/src/main/assets/
+    external/gemini-cli.zip            # Bundled pure native external engine
+    kernel/ninmods-kernel.zip          # Bundled pure native kernel engine
+  app/src/main/java/com/andorid/ninmods/
+    data/
+      InteractiveProcessBridge.kt      # Root shell stdin/stdout process manager
+      ModDownloader.kt                 # HTTP streaming downloader & unzipper
+      SessionManager.kt                # License duration and auth state
+    ui/
+      dashboard/
+        DashboardScreen.kt             # Unified dashboard host
+        external_mods/
+          ExternalModsCard.kt          # External mod launcher card
+        kernel_mods/
+          KernelModsCard.kt            # Kernel mod launcher card
+      clock/
+        LicenseClockCard.kt            # Live countdown timer card
+      dialogs/
+        ModActionDialogs.kt            # M3 confirmation, download, & license dialogs
 ```
 
 ---
@@ -128,14 +120,20 @@ refer/nin/
 ## 6. Official GitHub Release & Home Page Policy
 
 1. **GitHub Home Page "Latest" Badge Invariant:**
-   - Every production release (`v1.x.x`) MUST be explicitly pinned as the repository's **"Latest Release"** on the GitHub homepage sidebar (`/releases/latest`).
-   - Old versions (such as `v1.1.4`) must NEVER remain or revert to the "Latest" release on the repository front page.
-2. **Automated Pipeline Enforcement (`.github/workflows/build.yml`):**
-   - The release job only triggers on semantic version tags (`tags: [ 'v*' ]`) or resolves the exact `versionName` from `app/build.gradle.kts`.
-   - The publishing step strictly enforces `makeLatest: true` so GitHub's releases index immediately displays the newest build with the green "Latest" badge.
+   - Every production release (`v1.x.x`) MUST be explicitly pinned as the repository's "Latest Release" on the GitHub homepage sidebar (`/releases/latest`).
+   - Old versions must never remain as the latest release.
+2. **Automated Pipeline Enforcement:**
+   - The release workflow triggers on semantic version tags and enforces `makeLatest: true`.
 3. **Artifact Consistency Guarantee:**
-   - Every official release artifact (`app-release.apk`) must be mirrored simultaneously across:
-     1. GitHub Releases download URL: `https://github.com/mohammadnillislam11-ai/Kernel-Driver/releases/download/<TAG>/app-release.apk`
-     2. Server Backend Mirror: `app_backend/downloads/app-release.apk`
-     3. Bundled Asset Fallback: `DriverLoader/app/src/main/assets/external/gemini-cli.zip`
+   - Official release APK is mirrored simultaneously across GitHub Releases and server backend.
 
+---
+
+## 7. Clean Comment and Documentation Formatting Rules
+
+1. **Banned Formatting Patterns:**
+   - Decorative box-drawing banners and framing lines (double lines, single lines, box corners, vertical dividers) are strictly prohibited in all code comments, documentation headers, and terminal outputs.
+   - Non-English language text (Bengali, Hindi, or conversational text) is strictly forbidden in production source code, comments, logs, and technical documentation.
+2. **Standard Comment Style:**
+   - Single-line comments must use minimal standard tokens: `// Section Name` or `/* Section Name */`.
+   - Documentation headers must use standard Markdown headings (`#`, `##`, `###`) without decorative frames.

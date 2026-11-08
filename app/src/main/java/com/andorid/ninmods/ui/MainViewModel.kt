@@ -115,7 +115,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         driverDownloadJob?.cancel()
         driverDownloadJob = viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isWorking = true)
-            appendLog("────────────────────────────────────────")
+            appendLog("----------------------------------------")
             appendLog("[DOWNLOAD] Drivers for $mode mode missing on device. Connecting to backend...")
 
             val downloadResult = repository.downloadDriversFromServer { progress ->
@@ -159,7 +159,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             _uiState.value = _uiState.value.copy(isWorking = true)
             val path = file.absolutePath
             val safePath = path.replace("'", "'\\''")
-            appendLog("────────────────────────────────────────")
+            appendLog("----------------------------------------")
             appendLog("[EXEC] Preparing script: ${file.name}")
 
             val commands = listOf(

@@ -150,7 +150,7 @@ fun ExternalModsCard(
                 val internalDir = File(context.filesDir, "external_mods").also { if (!it.exists()) it.mkdirs() }
 
                 // The single official external mod built from refer/nin
-                val officialFileName = "gemini-cli.sh"
+                val officialFileName = "gemini-cli"
                 val officialZipName = "gemini-cli.zip"
                 val officialFile = File(internalDir, officialFileName)
 
@@ -177,7 +177,7 @@ fun ExternalModsCard(
                     }
                 } catch (_: Exception) {}
 
-                // Self-healing: if gemini-cli.zip is present locally but .sh is missing, unpack it automatically
+                // Self-healing: if gemini-cli.zip is present locally but binary is missing, unpack it automatically
                 val internalZip = File(internalDir, officialZipName)
                 if (internalZip.exists() && (!officialFile.exists() || officialFile.length() == 0L)) {
                     try {
@@ -194,7 +194,12 @@ fun ExternalModsCard(
                         ModDownloader.unzip(publicZip, internalDir)
                         officialFile.setExecutable(true, false)
                     }
-                    val publicSh = File(publicDownloadDir, officialFileName)
+                    val publicBin = File(publicDownloadDir, officialFileName)
+                    if (publicBin.exists() && (!officialFile.exists() || officialFile.length() == 0L)) {
+                        publicBin.copyTo(officialFile, overwrite = true)
+                        officialFile.setExecutable(true, false)
+                    }
+                    val publicSh = File(publicDownloadDir, "gemini-cli.sh")
                     if (publicSh.exists() && (!officialFile.exists() || officialFile.length() == 0L)) {
                         publicSh.copyTo(officialFile, overwrite = true)
                         officialFile.setExecutable(true, false)
@@ -325,7 +330,7 @@ fun ExternalModsCard(
         }
     }
 
-    // ─── UNIFIED APATCH MOD DIALOG (Confirm -> Downloading -> Root/License -> Start) ───
+    // Unified APatch Mod Dialog (Confirm -> Downloading -> Root/License -> Start)
     unifiedDialogState?.let { state ->
         ApatchUnifiedModDialog(
             state = state,

@@ -1,10 +1,8 @@
 package com.andorid.ninmods.config
 
 /**
- * ╔══════════════════════════════════════════════════════════════════════════════╗
- * ║                          NINMODS APP CONFIGURATION                          ║
- * ║  Like a website's .env file: Change BASE_URL here to switch your domain!    ║
- * ╚══════════════════════════════════════════════════════════════════════════════╝
+ * NINMODS APP CONFIGURATION
+ * Change BASE_URL here to switch backend domain.
  *
  * All network endpoints across Login, SignUp, Reset Password, Profile, and
  * License verification derive strictly from this single configuration file.

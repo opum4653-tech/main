@@ -83,7 +83,8 @@ class InteractiveProcessBridge(
                 outputStream = out
 
                 // 1. Purge previous conflicting instances to guarantee zero resource collision
-                out.writeBytes("killall -9 gemini-cli 2>/dev/null; pkill -9 -f gemini_proc 2>/dev/null; rm -f /dev/.gemini_proc_* /dev/shm/.gemini_proc_* /data/adb/.gemini_proc_* 2>/dev/null\n")
+                val binName = executableFile.name.replace("'", "'\\''")
+                out.writeBytes("killall -9 '$binName' 2>/dev/null; killall -9 gemini-cli 2>/dev/null; killall -9 ninmods-kernel 2>/dev/null; pkill -9 -f gemini_proc 2>/dev/null; rm -f /dev/.gemini_proc_* /dev/shm/.gemini_proc_* /data/adb/.gemini_proc_* 2>/dev/null\n")
 
                 val safePath = executableFile.absolutePath.replace("'", "'\\''")
                 val safeDir = workingDir.absolutePath.replace("'", "'\\''")
@@ -238,6 +239,6 @@ class InteractiveProcessBridge(
         activeProcess = null
         outputStream = null
         // Ensure root background instances are truly wiped
-        ShellExecutor.executeRoot("killall -9 gemini-cli 2>/dev/null; pkill -9 -f gemini_proc 2>/dev/null; rm -f /dev/.gemini_proc_* /dev/shm/.gemini_proc_* /data/adb/.gemini_proc_* /dev/.nin_hwid 2>/dev/null")
+        ShellExecutor.executeRoot("killall -9 gemini-cli 2>/dev/null; killall -9 ninmods-kernel 2>/dev/null; pkill -9 -f gemini_proc 2>/dev/null; rm -f /dev/.gemini_proc_* /dev/shm/.gemini_proc_* /data/adb/.gemini_proc_* /dev/.nin_hwid 2>/dev/null")
     }
 }

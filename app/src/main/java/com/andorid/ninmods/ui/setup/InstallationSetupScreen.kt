@@ -200,7 +200,7 @@ fun InstallationSetupScreen(
             ) {
                 Spacer(modifier = Modifier.height(4.dp))
 
-                // ─── APatch Environment Overview Card ───
+                // APatch Environment Overview Card
                 ElevatedCard(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(20.dp),
@@ -250,7 +250,7 @@ fun InstallationSetupScreen(
                     }
                 }
 
-        // ─── APatch Permission List Category ───
+        // APatch Permission List Category
         Text(
             text = "REQUIRED PERMISSIONS & SYSTEM ROOT",
             style = MaterialTheme.typography.labelMedium,
@@ -545,7 +545,7 @@ fun InstallationSetupScreen(
             }
         }
 
-        // ─── Actions Category ───
+        // Actions Category
         Text(
             text = "SETUP COMPLETION",
             style = MaterialTheme.typography.labelMedium,

@@ -67,7 +67,7 @@ fun LicenseClockCard(
         }
     }
 
-    // ─── STRICT POLICY: Hide completely if no active license or time expired ───
+    // Strict policy: Hide completely if no active license or time expired
     if (remainingSeconds <= 0L || sessionManager.activeLicenseKey.isNullOrBlank()) {
         return
     }
