@@ -27,6 +27,7 @@ class InteractiveProcessBridge(
     private var activeProcess: Process? = null
     private var outputStream: DataOutputStream? = null
     private var readerJob: Job? = null
+    private var userRequestedStop = false
 
     private val _isProcessAlive = MutableStateFlow(false)
     val isProcessAlive: StateFlow<Boolean> = _isProcessAlive.asStateFlow()
@@ -61,6 +62,7 @@ class InteractiveProcessBridge(
 
         scope.launch(Dispatchers.IO) {
             try {
+                userRequestedStop = false
                 _executionStatus.value = "Starting execution..."
                 _licensePromptTriggered.value = false
                 _isReadyToStart.value = false
@@ -169,13 +171,14 @@ class InteractiveProcessBridge(
                 val exitCode = proc.waitFor()
                 val wasRunning = _isRunning.value
                 val wasReady = _isReadyToStart.value
+                val isNormalTeardown = userRequestedStop || (wasRunning && exitCode in listOf(0, 137, 143))
                 _isProcessAlive.value = false
                 _isRunning.value = false
                 _licensePromptTriggered.value = false
                 _isReadyToStart.value = false
-                _executionStatus.value = if (exitCode == 0) "Completed" else "Exited (Code $exitCode)"
+                _executionStatus.value = if (exitCode == 0 || isNormalTeardown) "Stopped" else "Exited (Code $exitCode)"
 
-                if (exitCode != 0) {
+                if (exitCode != 0 && !isNormalTeardown) {
                     launch(Dispatchers.Main) {
                         val cleanedLogs = lastLogOutput.trim()
                         val msg = if (cleanedLogs.isNotBlank()) {
@@ -220,6 +223,7 @@ class InteractiveProcessBridge(
      * Stop and terminate background process.
      */
     fun stop() {
+        userRequestedStop = true
         cleanup()
     }
 
