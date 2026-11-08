@@ -46,7 +46,13 @@ jobs:
         run: |
           set -o pipefail
           echo "org.gradle.jvmargs=-Xmx2048m" >> gradle.properties
-          ./gradlew assembleRelease --stacktrace --no-daemon 2>&1 | tee build.log
+          export GRADLE_OPTS="-Dorg.gradle.internal.http.socketTimeout=120000 -Dorg.gradle.internal.http.connectionTimeout=120000"
+          if command -v gradle >/dev/null 2>&1; then
+            echo "Using pre-installed Gradle from PATH..."
+            gradle assembleRelease --stacktrace --no-daemon 2>&1 | tee build.log
+          else
+            ./gradlew assembleRelease --stacktrace --no-daemon 2>&1 | tee build.log
+          fi
 
       - name: Check Build Status
         run: |
