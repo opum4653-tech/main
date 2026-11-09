@@ -18,8 +18,8 @@ object AppConfig {
      */
     const val BASE_URL: String = "https://ninmods.smmtor.com"
 
-    const val VERSION_NAME: String = "v1.5.3"
-    const val VERSION_CODE: Int = 153
+    const val VERSION_NAME: String = "v1.5.4"
+    const val VERSION_CODE: Int = 154
 
     /**
      * API Version route prefix matching app_backend routes
@@ -48,6 +48,12 @@ object AppConfig {
     val BUG_REPORT_URL: String get() = "$API_BASE_URL/app/bug-report"
     val NOTIFICATIONS_ACTIVE_URL: String get() = "$API_BASE_URL/notifications/active"
     val SUPPORT_TICKETS_URL: String get() = "$API_BASE_URL/support/tickets"
+    val PAYMENTS_METHODS_URL: String get() = "$API_BASE_URL/payments/methods"
+    val PAYMENTS_DEPOSIT_URL: String get() = "$API_BASE_URL/payments/deposit"
+    val PAYMENTS_TRANSACTIONS_URL: String get() = "$API_BASE_URL/payments/transactions"
+    val PLANS_URL: String get() = "$API_BASE_URL/plans"
+    val PLANS_PURCHASE_URL: String get() = "$API_BASE_URL/plans/purchase"
+    val KEYS_URL: String get() = "$API_BASE_URL/keys"
 
     // Connection Timeouts
     const val TIMEOUT_MILLIS: Int = 15000

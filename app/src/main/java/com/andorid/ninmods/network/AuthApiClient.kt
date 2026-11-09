@@ -70,6 +70,57 @@ data class UserTicketMessageItem(
     val createdAt: String? = null
 )
 
+data class PaymentMethodItem(
+    val id: Int,
+    val methodCode: String,
+    val name: String,
+    val type: String,
+    val currency: String,
+    val rate: Double,
+    val accountDetails: String,
+    val instructions: String,
+    val minDeposit: Double,
+    val maxDeposit: Double
+)
+
+data class TransactionItem(
+    val id: Int,
+    val type: String,
+    val amount: Double,
+    val currency: String,
+    val paymentMethod: String?,
+    val trxId: String?,
+    val status: String,
+    val adminNotes: String?,
+    val createdAt: String?
+)
+
+data class SubscriptionPlanItem(
+    val id: Int,
+    val planCode: String,
+    val durationType: String,
+    val title: String,
+    val description: String,
+    val durationHours: Int,
+    val maxDevices: Int,
+    val price: Double
+)
+
+data class UserLicenseItem(
+    val id: Int,
+    val licenseKey: String,
+    val gameType: String,
+    val durationType: String,
+    val durationHours: Int,
+    val status: String,
+    val hwid: String?,
+    val deviceModel: String?,
+    val remainingSeconds: Long,
+    val resetsCount: Int,
+    val maxResets: Int,
+    val expiresAt: String?
+)
+
 data class ActiveNotificationItem(
     val id: Int,
     val title: String,
@@ -802,6 +853,251 @@ object AuthApiClient {
             val (code, body) = sendPostRequest("${AppConfig.SUPPORT_TICKETS_URL}/$ticketId/reply", payload.toString(), headers)
             if (code in 200..299) {
                 Result.success(true)
+            } else {
+                val json = runCatching { JSONObject(body) }.getOrNull()
+                val err = json?.optString("error") ?: "Server returned HTTP $code"
+                Result.failure(Exception(err))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    /**
+     * GET /api/v2/payments/methods (Fetch available deposit gateways)
+     */
+    suspend fun getPaymentMethods(apiKey: String): Result<List<PaymentMethodItem>> = withContext(Dispatchers.IO) {
+        try {
+            val headers = mapOf("Authorization" to "Bearer ${apiKey.trim()}", "api-key" to apiKey.trim())
+            val response = sendGetRequest(AppConfig.PAYMENTS_METHODS_URL, headers)
+            if (response.code in 200..299) {
+                val json = JSONObject(response.body)
+                val target = json.optJSONObject("data") ?: json
+                val arr = target.optJSONArray("methods") ?: json.optJSONArray("methods")
+                val list = mutableListOf<PaymentMethodItem>()
+                if (arr != null) {
+                    for (i in 0 until arr.length()) {
+                        val m = arr.getJSONObject(i)
+                        list.add(
+                            PaymentMethodItem(
+                                id = m.optInt("id", 0),
+                                methodCode = m.optString("method_code", ""),
+                                name = m.optString("name", ""),
+                                type = m.optString("type", "manual"),
+                                currency = m.optString("currency", "USD"),
+                                rate = m.optDouble("rate", 1.0),
+                                accountDetails = m.optString("account_details", ""),
+                                instructions = m.optString("instructions", ""),
+                                minDeposit = m.optDouble("min_deposit", 1.0),
+                                maxDeposit = m.optDouble("max_deposit", 1000.0)
+                            )
+                        )
+                    }
+                }
+                Result.success(list)
+            } else {
+                Result.failure(Exception("Failed to load payment methods (HTTP ${response.code})"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    /**
+     * POST /api/v2/payments/deposit (Submit manual deposit with TrxID)
+     */
+    suspend fun submitDeposit(
+        apiKey: String,
+        methodCode: String,
+        amount: Double,
+        trxId: String,
+        notes: String = ""
+    ): Result<String> = withContext(Dispatchers.IO) {
+        try {
+            val payload = JSONObject().apply {
+                put("payment_method", methodCode.trim())
+                put("amount", amount)
+                put("trx_id", trxId.trim())
+                if (notes.isNotBlank()) put("notes", notes.trim())
+            }
+            val headers = mapOf("Authorization" to "Bearer ${apiKey.trim()}", "api-key" to apiKey.trim())
+            val (code, body) = sendPostRequest(AppConfig.PAYMENTS_DEPOSIT_URL, payload.toString(), headers)
+            if (code in 200..299) {
+                val json = JSONObject(body)
+                val target = json.optJSONObject("data") ?: json
+                val msg = target.optString("message", json.optString("message", "Deposit request submitted successfully!"))
+                Result.success(msg)
+            } else {
+                val json = runCatching { JSONObject(body) }.getOrNull()
+                val err = json?.optString("error") ?: "Server returned HTTP $code"
+                Result.failure(Exception(err))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    /**
+     * GET /api/v2/payments/transactions (User deposit history and ledger)
+     */
+    suspend fun getMyTransactions(apiKey: String): Result<List<TransactionItem>> = withContext(Dispatchers.IO) {
+        try {
+            val headers = mapOf("Authorization" to "Bearer ${apiKey.trim()}", "api-key" to apiKey.trim())
+            val response = sendGetRequest(AppConfig.PAYMENTS_TRANSACTIONS_URL, headers)
+            if (response.code in 200..299) {
+                val json = JSONObject(response.body)
+                val target = json.optJSONObject("data") ?: json
+                val arr = target.optJSONArray("transactions") ?: json.optJSONArray("transactions")
+                val list = mutableListOf<TransactionItem>()
+                if (arr != null) {
+                    for (i in 0 until arr.length()) {
+                        val t = arr.getJSONObject(i)
+                        list.add(
+                            TransactionItem(
+                                id = t.optInt("id", 0),
+                                type = t.optString("type", "deposit"),
+                                amount = t.optDouble("amount", 0.0),
+                                currency = t.optString("currency", "USD"),
+                                paymentMethod = t.optString("payment_method").takeIf { it.isNotBlank() && it != "null" },
+                                trxId = t.optString("trx_id").takeIf { it.isNotBlank() && it != "null" },
+                                status = t.optString("status", "pending"),
+                                adminNotes = t.optString("admin_notes").takeIf { it.isNotBlank() && it != "null" },
+                                createdAt = t.optString("created_at").takeIf { it.isNotBlank() && it != "null" }
+                            )
+                        )
+                    }
+                }
+                Result.success(list)
+            } else {
+                Result.failure(Exception("Failed to load transactions (HTTP ${response.code})"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    /**
+     * GET /api/v2/plans (Fetch subscription packages for in-app purchase)
+     */
+    suspend fun getAvailablePlans(apiKey: String): Result<List<SubscriptionPlanItem>> = withContext(Dispatchers.IO) {
+        try {
+            val headers = mapOf("Authorization" to "Bearer ${apiKey.trim()}", "api-key" to apiKey.trim())
+            val response = sendGetRequest(AppConfig.PLANS_URL, headers)
+            if (response.code in 200..299) {
+                val json = JSONObject(response.body)
+                val target = json.optJSONObject("data") ?: json
+                val arr = target.optJSONArray("plans") ?: json.optJSONArray("plans")
+                val list = mutableListOf<SubscriptionPlanItem>()
+                if (arr != null) {
+                    for (i in 0 until arr.length()) {
+                        val p = arr.getJSONObject(i)
+                        list.add(
+                            SubscriptionPlanItem(
+                                id = p.optInt("id", 0),
+                                planCode = p.optString("plan_code", ""),
+                                durationType = p.optString("duration_type", ""),
+                                title = p.optString("title", ""),
+                                description = p.optString("description", ""),
+                                durationHours = p.optInt("duration_hours", 24),
+                                maxDevices = p.optInt("max_devices", 1),
+                                price = p.optDouble("price", p.optDouble("retail_price", 0.0))
+                            )
+                        )
+                    }
+                }
+                Result.success(list)
+            } else {
+                Result.failure(Exception("Failed to load plans (HTTP ${response.code})"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    /**
+     * POST /api/v2/plans/purchase (Buy VIP key directly from wallet balance)
+     */
+    suspend fun purchasePlan(apiKey: String, planId: Int, gameType: String = "all"): Result<String> = withContext(Dispatchers.IO) {
+        try {
+            val payload = JSONObject().apply {
+                put("plan_id", planId)
+                put("game_type", gameType)
+                put("quantity", 1)
+            }
+            val headers = mapOf("Authorization" to "Bearer ${apiKey.trim()}", "api-key" to apiKey.trim())
+            val (code, body) = sendPostRequest(AppConfig.PLANS_PURCHASE_URL, payload.toString(), headers)
+            if (code in 200..299) {
+                val json = JSONObject(body)
+                val target = json.optJSONObject("data") ?: json
+                val msg = target.optString("message", json.optString("message", "Plan purchased successfully!"))
+                Result.success(msg)
+            } else {
+                val json = runCatching { JSONObject(body) }.getOrNull()
+                val err = json?.optString("error") ?: "Server returned HTTP $code"
+                Result.failure(Exception(err))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    /**
+     * GET /api/v2/keys (User's owned license keys)
+     */
+    suspend fun getMyLicenseKeys(apiKey: String): Result<List<UserLicenseItem>> = withContext(Dispatchers.IO) {
+        try {
+            val headers = mapOf("Authorization" to "Bearer ${apiKey.trim()}", "api-key" to apiKey.trim())
+            val response = sendGetRequest(AppConfig.KEYS_URL, headers)
+            if (response.code in 200..299) {
+                val json = JSONObject(response.body)
+                val target = json.optJSONObject("data") ?: json
+                val arr = target.optJSONArray("keys") ?: json.optJSONArray("keys")
+                val list = mutableListOf<UserLicenseItem>()
+                if (arr != null) {
+                    for (i in 0 until arr.length()) {
+                        val k = arr.getJSONObject(i)
+                        list.add(
+                            UserLicenseItem(
+                                id = k.optInt("id", 0),
+                                licenseKey = k.optString("license_key", ""),
+                                gameType = k.optString("game_type", "all"),
+                                durationType = k.optString("duration_type", ""),
+                                durationHours = k.optInt("duration_hours", 24),
+                                status = k.optString("status", "unused"),
+                                hwid = k.optString("hwid").takeIf { it.isNotBlank() && it != "null" },
+                                deviceModel = k.optString("device_model").takeIf { it.isNotBlank() && it != "null" },
+                                remainingSeconds = k.optLong("remaining_seconds", 0L),
+                                resetsCount = k.optInt("resets_count", 0),
+                                maxResets = k.optInt("max_resets", 5),
+                                expiresAt = k.optString("expires_at").takeIf { it.isNotBlank() && it != "null" }
+                            )
+                        )
+                    }
+                }
+                Result.success(list)
+            } else {
+                Result.failure(Exception("Failed to load license keys (HTTP ${response.code})"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    /**
+     * POST /api/v2/keys/:id/reset-hwid (Reset device binding for user key)
+     */
+    suspend fun resetMyKeyHwid(apiKey: String, keyId: Int, reason: String = "User device switch"): Result<String> = withContext(Dispatchers.IO) {
+        try {
+            val payload = JSONObject().apply {
+                put("reason", reason.trim())
+            }
+            val headers = mapOf("Authorization" to "Bearer ${apiKey.trim()}", "api-key" to apiKey.trim())
+            val (code, body) = sendPostRequest("${AppConfig.KEYS_URL}/$keyId/reset-hwid", payload.toString(), headers)
+            if (code in 200..299) {
+                val json = JSONObject(body)
+                val target = json.optJSONObject("data") ?: json
+                val msg = target.optString("message", json.optString("message", "Device HWID reset successfully!"))
+                Result.success(msg)
             } else {
                 val json = runCatching { JSONObject(body) }.getOrNull()
                 val err = json?.optString("error") ?: "Server returned HTTP $code"

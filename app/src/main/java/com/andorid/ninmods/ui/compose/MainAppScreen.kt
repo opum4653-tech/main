@@ -78,6 +78,7 @@ fun MainAppScreen(
 
     var activeNotifications by remember { mutableStateOf<List<ActiveNotificationItem>>(emptyList()) }
     var popupNotificationToShow by remember { mutableStateOf<ActiveNotificationItem?>(null) }
+    var showDrawerDepositSheet by remember { mutableStateOf(false) }
 
     // Live sync user balance from profile API on startup
     LaunchedEffect(Unit) {
@@ -212,6 +213,29 @@ fun MainAppScreen(
                                         )
                                     )
                                 }
+                            }
+
+                            Spacer(modifier = Modifier.height(10.dp))
+
+                            FilledTonalButton(
+                                onClick = {
+                                    showDrawerDepositSheet = true
+                                    scope.launch { drawerState.close() }
+                                },
+                                modifier = Modifier.fillMaxWidth(0.85f),
+                                shape = RoundedCornerShape(10.dp),
+                                contentPadding = PaddingValues(vertical = 4.dp, horizontal = 12.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Filled.AccountBalanceWallet,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(16.dp)
+                                )
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text(
+                                    text = "Add Funds",
+                                    style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold)
+                                )
                             }
                         }
                     }
@@ -466,6 +490,25 @@ fun MainAppScreen(
                 ) {
                     Text("Got It", fontWeight = FontWeight.Bold)
                 }
+            }
+        )
+    }
+
+    if (showDrawerDepositSheet) {
+        val token = sessionManager.authToken ?: ""
+        com.andorid.ninmods.ui.dialogs.UserDepositBottomSheet(
+            authToken = token,
+            onDismiss = { showDrawerDepositSheet = false },
+            onDepositSuccess = {
+                showDrawerDepositSheet = false
+                scope.launch {
+                    AuthApiClient.getProfileWithEtag(token).onSuccess { (profileData, _, _) ->
+                        if (profileData != null) {
+                            sessionManager.userBalance = profileData.balance
+                        }
+                    }
+                }
+                Toast.makeText(context, "Deposit submitted successfully!", Toast.LENGTH_LONG).show()
             }
         )
     }

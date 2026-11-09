@@ -95,20 +95,21 @@ jobs:
           name: "NINMODS Official Release ${{ steps.release_tag.outputs.tag }}"
           body: |
             ## NINMODS Official Release
-            - **APatch Official UI & System Standard**:
-              - 1:1 APatch Official `SwitchItem` component with `toggleable` and `interactionSource` (zero custom code).
-              - Modern rounded navigation bar with `28.dp` top corners.
-              - Reusable `AppSelectionBottomSheet` in `ui/dialogs/` used across Driver Loader and Settings reboot menu.
-              - Complete removal of artificial placeholders/emails; only authentic session identity is shown.
-            - **100% Real APatch System Integration**:
-              - Live POSIX kernel detection (`Os.uname().release`).
-              - Real root shell executor (`su` fallback to `/data/adb/ap/bin/su`, `/system/bin/su`, `/data/adb/magisk/su`).
-              - Character device node detector inspecting active kernel driver nodes (`/dev/BYNb`, `/dev/mem_tool`, `/dev/nh`, `/dev/wanbai`).
-            - **Interactive Status Cards & Digital Clock**:
-              - Live license countdown clock (`HH:MM:SS`).
-              - SuperUser and Driver status cards.
-            - **Production Signed Release**:
-              - Dedicated keystore `ninmods-release.jks` with R8 optimization.
+            - **Full-Cycle In-App Financial Architecture**:
+              - **Real User Wallet Balance**: Live synchronization with backend server across dashboard, navigation drawer, and profile.
+              - **Direct In-App Deposit Flow**: UserDepositBottomSheet supports active payment gateways, auto-copies transfer details, and submits TrxID.
+              - **Self-Service VIP License Purchasing**: PurchaseKeyBottomSheet enables instant plan purchasing directly using wallet balance.
+            - **License Inventory & Device Management**:
+              - User Profile directly displays all owned license keys with validity period and status pills.
+              - 1-tap Reset HWID button to instantly unbind devices without admin intervention.
+              - Complete Transaction Ledger displaying real-time deposit and purchase logs.
+            - **Navigation & UX Modernization**:
+              - Default launch & login view set directly to Dashboard.
+              - Back navigation seamlessly retains users in the application.
+              - Drawer includes direct Add Funds deposit trigger and user balance pill.
+            - **APatch System Standard & Production Signing**:
+              - Real POSIX kernel detection, root shell executor, and active character device node scanning.
+              - Signed release APK built with dedicated keystore.
           artifacts: "app/build/outputs/apk/release/*.apk"
           allowUpdates: true
           replacesArtifacts: true

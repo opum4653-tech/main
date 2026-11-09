@@ -8,6 +8,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -22,16 +23,22 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
+import androidx.compose.material.icons.filled.AccountBalanceWallet
 import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ContentCopy
+import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Key
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.LockReset
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.RestartAlt
 import androidx.compose.material.icons.filled.Shield
+import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material.icons.filled.Verified
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.material.icons.filled.VpnKey
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -39,9 +46,12 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedCard
+import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -65,8 +75,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.andorid.ninmods.data.SessionManager
 import com.andorid.ninmods.network.AuthApiClient
+import com.andorid.ninmods.network.TransactionItem
+import com.andorid.ninmods.network.UserLicenseItem
 import com.andorid.ninmods.network.UserProfileData
 import com.andorid.ninmods.ui.clock.LicenseClockCard
+import com.andorid.ninmods.ui.dialogs.PurchaseKeyBottomSheet
+import com.andorid.ninmods.ui.dialogs.UserDepositBottomSheet
 import kotlinx.coroutines.launch
 import java.util.Locale
 
@@ -93,6 +107,36 @@ fun ProfileScreen(
     var passwordError by remember { mutableStateOf<String?>(null) }
     var isUpdatingPassword by remember { mutableStateOf(false) }
 
+    var showDepositSheet by remember { mutableStateOf(false) }
+    var showPurchaseSheet by remember { mutableStateOf(false) }
+    var userKeys by remember { mutableStateOf<List<UserLicenseItem>>(emptyList()) }
+    var isLoadingKeys by remember { mutableStateOf(false) }
+    var userTransactions by remember { mutableStateOf<List<TransactionItem>>(emptyList()) }
+    var isLoadingTransactions by remember { mutableStateOf(false) }
+    var resettingKeyId by remember { mutableStateOf<Int?>(null) }
+
+    fun loadMyKeys() {
+        val token = sessionManager.authToken ?: return
+        scope.launch {
+            isLoadingKeys = true
+            AuthApiClient.getMyLicenseKeys(token).onSuccess { list ->
+                userKeys = list
+            }
+            isLoadingKeys = false
+        }
+    }
+
+    fun loadMyTransactions() {
+        val token = sessionManager.authToken ?: return
+        scope.launch {
+            isLoadingTransactions = true
+            AuthApiClient.getMyTransactions(token).onSuccess { list ->
+                userTransactions = list
+            }
+            isLoadingTransactions = false
+        }
+    }
+
     fun refreshProfile(forceRefresh: Boolean = false) {
         scope.launch {
             if (profileData == null) {
@@ -112,6 +156,7 @@ fun ProfileScreen(
                     sessionManager.userName = data.username
                     sessionManager.userEmail = data.email
                     sessionManager.userRole = data.role
+                    sessionManager.userBalance = data.balance
                     if (data.activeLicense != null) {
                         sessionManager.serverRemainingSeconds = data.activeLicense.remainingSeconds
                         sessionManager.activeLicenseKey = data.activeLicense.licenseKey
@@ -133,6 +178,8 @@ fun ProfileScreen(
         // High-Performance In-Memory Stale-While-Revalidate:
         // If data was fetched within the last 60s, uses memory cache with zero server hit.
         refreshProfile(forceRefresh = false)
+        loadMyKeys()
+        loadMyTransactions()
     }
 
     Column(
@@ -346,6 +393,402 @@ fun ProfileScreen(
                                 tint = MaterialTheme.colorScheme.primary,
                                 modifier = Modifier.size(20.dp)
                             )
+                        }
+                    }
+                }
+            }
+        }
+
+        // 1. Wallet Balance & Financial Actions Card
+        val userBal = profileData?.balance ?: sessionManager.userBalance
+        val balanceFormatted = String.format(Locale.US, "%.2f", userBal)
+
+        ElevatedCard(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(20.dp),
+            colors = CardDefaults.elevatedCardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceVariant
+            ),
+            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(20.dp),
+                verticalArrangement = Arrangement.spacedBy(14.dp)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Surface(
+                            shape = CircleShape,
+                            color = MaterialTheme.colorScheme.primaryContainer,
+                            modifier = Modifier.size(40.dp)
+                        ) {
+                            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                                Icon(
+                                    imageVector = Icons.Filled.AccountBalanceWallet,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                                    modifier = Modifier.size(22.dp)
+                                )
+                            }
+                        }
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Column {
+                            Text(
+                                text = "WALLET BALANCE",
+                                style = MaterialTheme.typography.labelMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                            Text(
+                                text = "$$balanceFormatted USD",
+                                style = MaterialTheme.typography.headlineSmall,
+                                fontWeight = FontWeight.ExtraBold,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                        }
+                    }
+
+                    IconButton(onClick = { refreshProfile(forceRefresh = true) }) {
+                        Icon(
+                            imageVector = Icons.Filled.Refresh,
+                            contentDescription = "Refresh Balance",
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+                }
+
+                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    Button(
+                        onClick = { showDepositSheet = true },
+                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Icon(Icons.Filled.Add, contentDescription = null, modifier = Modifier.size(16.dp))
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text("Deposit", fontWeight = FontWeight.Bold)
+                    }
+
+                    OutlinedButton(
+                        onClick = { showPurchaseSheet = true },
+                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Icon(Icons.Filled.ShoppingCart, contentDescription = null, modifier = Modifier.size(16.dp))
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text("Buy Key", fontWeight = FontWeight.Bold)
+                    }
+                }
+            }
+        }
+
+        // 2. My License Inventory Card
+        ElevatedCard(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(20.dp),
+            colors = CardDefaults.elevatedCardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceVariant
+            ),
+            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(18.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = Icons.Filled.VpnKey,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(20.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = "MY LICENSE KEYS (${userKeys.size})",
+                            style = MaterialTheme.typography.labelLarge,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
+
+                    IconButton(onClick = { loadMyKeys() }, modifier = Modifier.size(28.dp)) {
+                        Icon(
+                            imageVector = Icons.Filled.Refresh,
+                            contentDescription = "Refresh Keys",
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
+                }
+
+                if (isLoadingKeys && userKeys.isEmpty()) {
+                    Box(modifier = Modifier.fillMaxWidth().padding(12.dp), contentAlignment = Alignment.Center) {
+                        CircularProgressIndicator(modifier = Modifier.size(24.dp), strokeWidth = 2.dp)
+                    }
+                } else if (userKeys.isEmpty()) {
+                    Text(
+                        text = "No purchased keys yet. Tap 'Buy Key' above to get a VIP subscription.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(vertical = 4.dp)
+                    )
+                } else {
+                    userKeys.forEach { key ->
+                        Surface(
+                            shape = RoundedCornerShape(14.dp),
+                            color = MaterialTheme.colorScheme.surface,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.SpaceBetween
+                                ) {
+                                    Text(
+                                        text = key.licenseKey,
+                                        style = MaterialTheme.typography.titleMedium.copy(
+                                            fontFamily = FontFamily.Monospace,
+                                            fontWeight = FontWeight.Bold
+                                        ),
+                                        color = MaterialTheme.colorScheme.onSurface,
+                                        modifier = Modifier.weight(1f)
+                                    )
+                                    IconButton(
+                                        onClick = {
+                                            val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                                            val clip = ClipData.newPlainText("License Key", key.licenseKey)
+                                            clipboard.setPrimaryClip(clip)
+                                            Toast.makeText(context, "License key copied!", Toast.LENGTH_SHORT).show()
+                                        },
+                                        modifier = Modifier.size(32.dp)
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Filled.ContentCopy,
+                                            contentDescription = "Copy Key",
+                                            tint = MaterialTheme.colorScheme.primary,
+                                            modifier = Modifier.size(16.dp)
+                                        )
+                                    }
+                                }
+
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(
+                                        text = "${key.gameType.uppercase(Locale.US)} • ${key.durationType.uppercase(Locale.US)} (${key.durationHours}h)",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+
+                                    val isExpired = key.status.equals("expired", ignoreCase = true)
+                                    val isActive = key.status.equals("active", ignoreCase = true)
+                                    Surface(
+                                        shape = RoundedCornerShape(8.dp),
+                                        color = when {
+                                            isActive -> Color(0xFF81C784).copy(alpha = 0.2f)
+                                            isExpired -> MaterialTheme.colorScheme.error.copy(alpha = 0.2f)
+                                            else -> MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
+                                        }
+                                    ) {
+                                        Text(
+                                            text = key.status.uppercase(Locale.US),
+                                            style = MaterialTheme.typography.labelSmall,
+                                            fontWeight = FontWeight.Bold,
+                                            color = when {
+                                                isActive -> Color(0xFF81C784)
+                                                isExpired -> MaterialTheme.colorScheme.error
+                                                else -> MaterialTheme.colorScheme.primary
+                                            },
+                                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                                        )
+                                    }
+                                }
+
+                                if (!key.hwid.isNullOrBlank()) {
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.SpaceBetween
+                                    ) {
+                                        Column(modifier = Modifier.weight(1f)) {
+                                            Text(
+                                                text = "Bound: ${key.deviceModel ?: "Device"}",
+                                                style = MaterialTheme.typography.bodySmall,
+                                                fontWeight = FontWeight.SemiBold,
+                                                color = MaterialTheme.colorScheme.onSurface
+                                            )
+                                            Text(
+                                                text = "HWID: ${key.hwid}",
+                                                style = MaterialTheme.typography.labelSmall.copy(fontFamily = FontFamily.Monospace),
+                                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                                            )
+                                        }
+
+                                        val isResetting = resettingKeyId == key.id
+                                        OutlinedButton(
+                                            onClick = {
+                                                val token = sessionManager.authToken ?: return@OutlinedButton
+                                                resettingKeyId = key.id
+                                                scope.launch {
+                                                    val res = AuthApiClient.resetMyKeyHwid(token, key.id)
+                                                    resettingKeyId = null
+                                                    res.onSuccess { msg ->
+                                                        Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+                                                        loadMyKeys()
+                                                    }.onFailure { err ->
+                                                        Toast.makeText(context, err.message ?: "Reset failed", Toast.LENGTH_SHORT).show()
+                                                    }
+                                                }
+                                            },
+                                            enabled = !isResetting,
+                                            shape = RoundedCornerShape(8.dp),
+                                            contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp),
+                                            modifier = Modifier.height(32.dp)
+                                        ) {
+                                            if (isResetting) {
+                                                CircularProgressIndicator(modifier = Modifier.size(12.dp), strokeWidth = 1.5.dp)
+                                            } else {
+                                                Icon(Icons.Filled.RestartAlt, contentDescription = null, modifier = Modifier.size(14.dp))
+                                                Spacer(modifier = Modifier.width(4.dp))
+                                                Text("Reset HWID", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // 3. Recent Transactions Card
+        ElevatedCard(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(20.dp),
+            colors = CardDefaults.elevatedCardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceVariant
+            ),
+            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(18.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = Icons.Filled.History,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(20.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = "RECENT TRANSACTIONS (${userTransactions.size})",
+                            style = MaterialTheme.typography.labelLarge,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
+
+                    IconButton(onClick = { loadMyTransactions() }, modifier = Modifier.size(28.dp)) {
+                        Icon(
+                            imageVector = Icons.Filled.Refresh,
+                            contentDescription = "Refresh Transactions",
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
+                }
+
+                if (isLoadingTransactions && userTransactions.isEmpty()) {
+                    Box(modifier = Modifier.fillMaxWidth().padding(12.dp), contentAlignment = Alignment.Center) {
+                        CircularProgressIndicator(modifier = Modifier.size(24.dp), strokeWidth = 2.dp)
+                    }
+                } else if (userTransactions.isEmpty()) {
+                    Text(
+                        text = "No financial deposits or purchases recorded yet.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(vertical = 4.dp)
+                    )
+                } else {
+                    userTransactions.take(5).forEach { tx ->
+                        Surface(
+                            shape = RoundedCornerShape(12.dp),
+                            color = MaterialTheme.colorScheme.surface,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(12.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Column {
+                                    Text(
+                                        text = "${tx.type.uppercase(Locale.US)} • $${String.format(Locale.US, "%.2f", tx.amount)} ${tx.currency}",
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.onSurface
+                                    )
+                                    Text(
+                                        text = if (!tx.trxId.isNullOrBlank()) "TrxID: ${tx.trxId}" else (tx.adminNotes ?: tx.paymentMethod ?: "Transaction"),
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
+
+                                Surface(
+                                    shape = RoundedCornerShape(8.dp),
+                                    color = when (tx.status.lowercase(Locale.US)) {
+                                        "completed", "approved" -> Color(0xFF81C784).copy(alpha = 0.2f)
+                                        "pending" -> Color(0xFFFFB74D).copy(alpha = 0.2f)
+                                        else -> MaterialTheme.colorScheme.error.copy(alpha = 0.2f)
+                                    }
+                                ) {
+                                    Text(
+                                        text = tx.status.uppercase(Locale.US),
+                                        style = MaterialTheme.typography.labelSmall,
+                                        fontWeight = FontWeight.Bold,
+                                        color = when (tx.status.lowercase(Locale.US)) {
+                                            "completed", "approved" -> Color(0xFF81C784)
+                                            "pending" -> Color(0xFFFFB74D)
+                                            else -> MaterialTheme.colorScheme.error
+                                        },
+                                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                                    )
+                                }
+                            }
                         }
                     }
                 }
@@ -597,6 +1040,43 @@ fun ProfileScreen(
                 ) {
                     Text("Cancel")
                 }
+            }
+        )
+    }
+
+    // Direct User Deposit Bottom Sheet
+    if (showDepositSheet) {
+        val token = sessionManager.authToken ?: ""
+        UserDepositBottomSheet(
+            authToken = token,
+            onDismiss = { showDepositSheet = false },
+            onDepositSuccess = {
+                showDepositSheet = false
+                refreshProfile(forceRefresh = true)
+                loadMyTransactions()
+                Toast.makeText(context, "Deposit submitted successfully!", Toast.LENGTH_LONG).show()
+            }
+        )
+    }
+
+    // Direct User Plan Purchase Bottom Sheet
+    if (showPurchaseSheet) {
+        val token = sessionManager.authToken ?: ""
+        val bal = profileData?.balance ?: sessionManager.userBalance
+        PurchaseKeyBottomSheet(
+            authToken = token,
+            currentBalance = bal,
+            onDismiss = { showPurchaseSheet = false },
+            onOpenDeposit = {
+                showPurchaseSheet = false
+                showDepositSheet = true
+            },
+            onPurchaseSuccess = {
+                showPurchaseSheet = false
+                refreshProfile(forceRefresh = true)
+                loadMyKeys()
+                loadMyTransactions()
+                Toast.makeText(context, "VIP Key purchased successfully!", Toast.LENGTH_LONG).show()
             }
         )
     }
