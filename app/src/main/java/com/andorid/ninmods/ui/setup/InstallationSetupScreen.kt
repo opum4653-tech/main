@@ -562,7 +562,7 @@ fun InstallationSetupScreen(
             ),
             elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
         ) {
-            Column(
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(16.dp)
@@ -571,7 +571,7 @@ fun InstallationSetupScreen(
                     onClick = onCompleteSetup,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(48.dp),
+                        .height(50.dp),
                     shape = RoundedCornerShape(14.dp),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = MaterialTheme.colorScheme.primary,
@@ -580,22 +580,8 @@ fun InstallationSetupScreen(
                 ) {
                     Text(
                         text = "Complete Setup & Continue",
-                        style = MaterialTheme.typography.titleSmall,
+                        style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                TextButton(
-                    onClick = onSkipSetup,
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(14.dp)
-                ) {
-                    Text(
-                        text = "Skip / Ignore Permissions for Now",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }
