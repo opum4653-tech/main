@@ -50,6 +50,26 @@ data class AppConfigData(
     val telegramSupport: String
 )
 
+data class UserTicketItem(
+    val id: Int,
+    val subject: String,
+    val department: String = "General Support",
+    val status: String = "open",
+    val priority: String = "medium",
+    val lastReplyAt: String? = null,
+    val createdAt: String? = null
+)
+
+data class UserTicketMessageItem(
+    val id: Int,
+    val userId: Int? = null,
+    val adminId: Int? = null,
+    val message: String,
+    val senderName: String = "Support Team",
+    val senderType: String = "user",
+    val createdAt: String? = null
+)
+
 data class ActiveNotificationItem(
     val id: Int,
     val title: String,
@@ -656,6 +676,132 @@ object AuthApiClient {
                 val json = runCatching { JSONObject(body) }.getOrNull()
                 val errMsg = json?.optString("error") ?: "Server returned error ($code)"
                 Result.failure(Exception(errMsg))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    /**
+     * GET /api/v2/support/tickets (Fetch my support tickets)
+     */
+    suspend fun fetchMyTickets(apiKey: String): Result<List<UserTicketItem>> = withContext(Dispatchers.IO) {
+        try {
+            val headers = mapOf("Authorization" to "Bearer ${apiKey.trim()}", "api-key" to apiKey.trim())
+            val response = sendGetRequest(AppConfig.SUPPORT_TICKETS_URL, headers)
+            if (response.code in 200..299) {
+                val json = JSONObject(response.body)
+                val arr = json.optJSONArray("tickets")
+                val list = mutableListOf<UserTicketItem>()
+                if (arr != null) {
+                    for (i in 0 until arr.length()) {
+                        val item = arr.getJSONObject(i)
+                        list.add(
+                            UserTicketItem(
+                                id = item.optInt("id", 0),
+                                subject = item.optString("subject", ""),
+                                department = item.optString("department", "General Support"),
+                                status = item.optString("status", "open"),
+                                priority = item.optString("priority", "medium"),
+                                lastReplyAt = item.optString("last_reply_at").takeIf { it.isNotBlank() && it != "null" },
+                                createdAt = item.optString("created_at").takeIf { it.isNotBlank() && it != "null" }
+                            )
+                        )
+                    }
+                }
+                Result.success(list)
+            } else {
+                Result.failure(Exception("Failed to load tickets: HTTP ${response.code}"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    /**
+     * POST /api/v2/support/tickets (Submit a new support ticket)
+     */
+    suspend fun createMyTicket(
+        apiKey: String,
+        subject: String,
+        message: String,
+        priority: String = "medium"
+    ): Result<Int> = withContext(Dispatchers.IO) {
+        try {
+            val payload = JSONObject().apply {
+                put("subject", subject.trim())
+                put("message", message.trim())
+                put("priority", priority.trim())
+                put("department", "General Support")
+            }
+            val headers = mapOf("Authorization" to "Bearer ${apiKey.trim()}", "api-key" to apiKey.trim())
+            val (code, body) = sendPostRequest(AppConfig.SUPPORT_TICKETS_URL, payload.toString(), headers)
+            if (code in 200..299) {
+                val json = JSONObject(body)
+                val ticketId = json.optInt("ticket_id", 0)
+                Result.success(ticketId)
+            } else {
+                val json = runCatching { JSONObject(body) }.getOrNull()
+                val err = json?.optString("error") ?: "Server returned HTTP $code"
+                Result.failure(Exception(err))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    /**
+     * GET /api/v2/support/tickets/:id (Fetch conversation thread)
+     */
+    suspend fun fetchTicketMessages(apiKey: String, ticketId: Int): Result<List<UserTicketMessageItem>> = withContext(Dispatchers.IO) {
+        try {
+            val headers = mapOf("Authorization" to "Bearer ${apiKey.trim()}", "api-key" to apiKey.trim())
+            val response = sendGetRequest("${AppConfig.SUPPORT_TICKETS_URL}/$ticketId", headers)
+            if (response.code in 200..299) {
+                val json = JSONObject(response.body)
+                val arr = json.optJSONArray("messages")
+                val list = mutableListOf<UserTicketMessageItem>()
+                if (arr != null) {
+                    for (i in 0 until arr.length()) {
+                        val item = arr.getJSONObject(i)
+                        list.add(
+                            UserTicketMessageItem(
+                                id = item.optInt("id", 0),
+                                userId = if (item.isNull("user_id")) null else item.optInt("user_id"),
+                                adminId = if (item.isNull("admin_id")) null else item.optInt("admin_id"),
+                                message = item.optString("message", ""),
+                                senderName = item.optString("sender_name", "Support Team"),
+                                senderType = item.optString("sender_type", "user"),
+                                createdAt = item.optString("created_at").takeIf { it.isNotBlank() && it != "null" }
+                            )
+                        )
+                    }
+                }
+                Result.success(list)
+            } else {
+                Result.failure(Exception("Failed to load messages: HTTP ${response.code}"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    /**
+     * POST /api/v2/support/tickets/:id/reply (Reply to conversation thread)
+     */
+    suspend fun replyTicketMessage(apiKey: String, ticketId: Int, message: String): Result<Boolean> = withContext(Dispatchers.IO) {
+        try {
+            val payload = JSONObject().apply {
+                put("message", message.trim())
+            }
+            val headers = mapOf("Authorization" to "Bearer ${apiKey.trim()}", "api-key" to apiKey.trim())
+            val (code, body) = sendPostRequest("${AppConfig.SUPPORT_TICKETS_URL}/$ticketId/reply", payload.toString(), headers)
+            if (code in 200..299) {
+                Result.success(true)
+            } else {
+                val json = runCatching { JSONObject(body) }.getOrNull()
+                val err = json?.optString("error") ?: "Server returned HTTP $code"
+                Result.failure(Exception(err))
             }
         } catch (e: Exception) {
             Result.failure(e)

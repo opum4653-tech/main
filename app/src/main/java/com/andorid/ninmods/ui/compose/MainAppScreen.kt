@@ -7,90 +7,59 @@ import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.animation.scaleOut
-import androidx.compose.animation.slideInHorizontally
-import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.AccountCircle
-import androidx.compose.material.icons.filled.Build
-import androidx.compose.material.icons.filled.Dashboard
-import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.outlined.AccountCircle
-import androidx.compose.material.icons.outlined.Build
-import androidx.compose.material.icons.outlined.Dashboard
-import androidx.compose.material.icons.outlined.Settings
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material.icons.automirrored.filled.Chat
+import androidx.compose.material.icons.automirrored.filled.ExitToApp
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import coil.compose.AsyncImage
+import com.andorid.ninmods.R
 import com.andorid.ninmods.data.SessionManager
 import com.andorid.ninmods.network.ActiveNotificationItem
 import com.andorid.ninmods.network.AuthApiClient
+import com.andorid.ninmods.network.UserTicketItem
 import com.andorid.ninmods.ui.MainViewModel
-import com.andorid.ninmods.ui.component.InAppBroadcastModalDialog
 import com.andorid.ninmods.ui.dashboard.DashboardScreen
 import com.andorid.ninmods.ui.loader.DriverLoaderScreen
 import com.andorid.ninmods.ui.profile.ProfileScreen
 import com.andorid.ninmods.ui.settings.SettingsScreen
-
-import androidx.annotation.DrawableRes
-import androidx.annotation.StringRes
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
-import androidx.compose.foundation.layout.size
-import com.andorid.ninmods.R
+import com.andorid.ninmods.ui.support.UserSupportScreen
+import com.andorid.ninmods.ui.support.UserTicketChatScreen
+import kotlinx.coroutines.launch
 
 enum class MainDestination(
-    @StringRes val labelRes: Int,
-    @DrawableRes val selectedDrawable: Int,
-    @DrawableRes val unselectedDrawable: Int
+    val title: String,
+    val icon: ImageVector
 ) {
-    DASHBOARD(
-        labelRes = R.string.home,
-        selectedDrawable = R.drawable.ic_nav_home_fill,
-        unselectedDrawable = R.drawable.ic_nav_home
-    ),
-    LOADER(
-        labelRes = R.string.nav_drivers,
-        selectedDrawable = R.drawable.ic_nav_wrench,
-        unselectedDrawable = R.drawable.ic_nav_wrench
-    ),
-    SETTINGS(
-        labelRes = R.string.settings,
-        selectedDrawable = R.drawable.ic_nav_gear,
-        unselectedDrawable = R.drawable.ic_nav_gear
-    ),
-    PROFILE(
-        labelRes = R.string.about,
-        selectedDrawable = R.drawable.ic_user_profile,
-        unselectedDrawable = R.drawable.ic_user_profile
-    )
+    DASHBOARD("Dashboard", Icons.Filled.Dashboard),
+    LOADER("Driver Loader", Icons.Filled.Build),
+    SUPPORT("Support & Messages", Icons.Filled.SupportAgent),
+    TICKET_CHAT("Live Conversation", Icons.AutoMirrored.Filled.Chat),
+    SETTINGS("Settings", Icons.Filled.Settings),
+    PROFILE("My Profile", Icons.Filled.AccountCircle)
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -101,15 +70,27 @@ fun MainAppScreen(
     onSignOut: () -> Unit
 ) {
     var currentDestination by remember { mutableStateOf(MainDestination.LOADER) }
-    var previousDestination by remember { mutableStateOf(MainDestination.LOADER) }
+    var selectedTicket by remember { mutableStateOf<UserTicketItem?>(null) }
     var lastBackPressTime by remember { mutableStateOf(0L) }
     val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
 
     var activeNotifications by remember { mutableStateOf<List<ActiveNotificationItem>>(emptyList()) }
     var popupNotificationToShow by remember { mutableStateOf<ActiveNotificationItem?>(null) }
-    var dismissedNotificationIds by remember { mutableStateOf(setOf<Int>()) }
 
+    // Live sync user balance from profile API on startup
     LaunchedEffect(Unit) {
+        val token = sessionManager.authToken ?: ""
+        if (token.isNotBlank()) {
+            AuthApiClient.getProfileWithEtag(token).onSuccess { (profileData, _, _) ->
+                if (profileData != null) {
+                    sessionManager.userBalance = profileData.balance
+                    sessionManager.userName = profileData.username
+                    sessionManager.userRole = profileData.role
+                }
+            }
+        }
         AuthApiClient.getActiveNotifications().onSuccess { list ->
             activeNotifications = list
             val popup = list.firstOrNull { it.isPopup }
@@ -119,11 +100,15 @@ fun MainAppScreen(
         }
     }
 
-    // APatch Official BackHandler: Subpages/Tabs navigate back to Home; double back on Home to exit
+    val isSubScreen = currentDestination == MainDestination.TICKET_CHAT
+
     BackHandler(enabled = true) {
         when {
-            currentDestination == MainDestination.PROFILE -> {
-                currentDestination = previousDestination
+            drawerState.isOpen -> {
+                scope.launch { drawerState.close() }
+            }
+            currentDestination == MainDestination.TICKET_CHAT -> {
+                currentDestination = MainDestination.SUPPORT
             }
             currentDestination != MainDestination.LOADER -> {
                 currentDestination = MainDestination.LOADER
@@ -140,162 +125,418 @@ fun MainAppScreen(
         }
     }
 
-    val bottomBarDestinations = listOf(
-        MainDestination.DASHBOARD,
-        MainDestination.LOADER,
-        MainDestination.SETTINGS
-    )
-
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = stringResource(id = currentDestination.labelRes),
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold
-                    )
-                },
-                navigationIcon = {
-                    if (currentDestination == MainDestination.PROFILE) {
-                        IconButton(onClick = { currentDestination = previousDestination }) {
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                contentDescription = "Back"
-                            )
-                        }
-                    }
-                },
-                actions = {
-                    if (currentDestination != MainDestination.PROFILE) {
-                        IconButton(onClick = {
-                            previousDestination = currentDestination
-                            currentDestination = MainDestination.PROFILE
-                        }) {
-                            Icon(
-                                painter = painterResource(id = R.drawable.ic_user_profile),
-                                contentDescription = "Profile",
-                                modifier = Modifier.size(24.dp),
-                                tint = MaterialTheme.colorScheme.primary
-                            )
-                        }
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.background
-                )
-            )
-        },
-        bottomBar = {
-            if (currentDestination in bottomBarDestinations) {
-                Surface(
+    ModalNavigationDrawer(
+        drawerState = drawerState,
+        gesturesEnabled = !isSubScreen,
+        drawerContent = {
+            ModalDrawerSheet(
+                drawerContainerColor = MaterialTheme.colorScheme.surface,
+                drawerTonalElevation = 0.dp,
+                modifier = Modifier.width(300.dp)
+            ) {
+                Column(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp)),
-                    shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
-                    color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.65f),
-                    tonalElevation = 8.dp
+                        .fillMaxSize()
+                        .padding(horizontal = 16.dp, vertical = 20.dp)
                 ) {
-                    NavigationBar(
-                        modifier = Modifier.clip(RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp)),
-                        tonalElevation = 0.dp,
-                        containerColor = Color.Transparent
+                    // Official Brand Header
+                    Text(
+                        text = "NinMods",
+                        style = MaterialTheme.typography.headlineMedium.copy(
+                            fontWeight = FontWeight.ExtraBold,
+                            color = MaterialTheme.colorScheme.primary
+                        ),
+                        modifier = Modifier.padding(start = 4.dp, bottom = 14.dp)
+                    )
+
+                    // Native Profile Card with Real User Balance
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(22.dp))
+                            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
+                            .border(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.35f), RoundedCornerShape(22.dp))
                     ) {
-                        bottomBarDestinations.forEach { dest ->
-                            val isSelected = currentDestination == dest
-                            NavigationBarItem(
-                                selected = isSelected,
-                                onClick = { currentDestination = dest },
-                                icon = {
-                                    Icon(
-                                        painter = painterResource(id = if (isSelected) dest.selectedDrawable else dest.unselectedDrawable),
-                                        contentDescription = stringResource(id = dest.labelRes),
-                                        modifier = Modifier.size(24.dp)
-                                    )
-                                },
-                                label = {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp, vertical = 20.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            // Circular Avatar
+                            Box(
+                                modifier = Modifier
+                                    .size(76.dp)
+                                    .background(MaterialTheme.colorScheme.primaryContainer, shape = CircleShape),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Image(
+                                    painter = painterResource(id = R.drawable.logo_n),
+                                    contentDescription = "User Avatar",
+                                    modifier = Modifier.size(46.dp)
+                                )
+                            }
+
+                            Spacer(modifier = Modifier.height(10.dp))
+
+                            Text(
+                                text = sessionManager.userName ?: "NinMods User",
+                                style = MaterialTheme.typography.titleMedium.copy(
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                ),
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
+
+                            Spacer(modifier = Modifier.height(10.dp))
+
+                            // Real User Balance Pill
+                            val balanceStr = String.format(java.util.Locale.US, "%.2f", sessionManager.userBalance)
+                            Surface(
+                                shape = RoundedCornerShape(12.dp),
+                                color = MaterialTheme.colorScheme.primaryContainer,
+                                modifier = Modifier.fillMaxWidth(0.85f)
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(vertical = 8.dp),
+                                    contentAlignment = Alignment.Center
+                                ) {
                                     Text(
-                                        text = stringResource(id = dest.labelRes),
-                                        maxLines = 1,
-                                        softWrap = false
+                                        text = "$$balanceStr USD",
+                                        style = MaterialTheme.typography.titleMedium.copy(
+                                            fontWeight = FontWeight.ExtraBold,
+                                            color = MaterialTheme.colorScheme.onPrimaryContainer
+                                        )
                                     )
-                                },
-                                alwaysShowLabel = false
+                                }
+                            }
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    // Primary Action Button (Driver Loader)
+                    Surface(
+                        onClick = {
+                            currentDestination = MainDestination.LOADER
+                            scope.launch { drawerState.close() }
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(12.dp),
+                        color = if (currentDestination == MainDestination.LOADER) {
+                            MaterialTheme.colorScheme.primary
+                        } else {
+                            MaterialTheme.colorScheme.primary.copy(alpha = 0.85f)
+                        }
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp, vertical = 13.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.Build,
+                                contentDescription = "Driver Loader",
+                                tint = MaterialTheme.colorScheme.onPrimary,
+                                modifier = Modifier.size(20.dp)
+                            )
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Text(
+                                text = "Driver Loader",
+                                style = MaterialTheme.typography.titleSmall.copy(
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onPrimary
+                                )
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(14.dp))
+
+                    // Authentic Navigation Items
+                    Column(
+                        modifier = Modifier
+                            .weight(1f)
+                            .verticalScroll(rememberScrollState()),
+                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        LoaderDrawerItem(
+                            title = "Dashboard",
+                            icon = Icons.Filled.Dashboard,
+                            isSelected = currentDestination == MainDestination.DASHBOARD,
+                            onClick = {
+                                currentDestination = MainDestination.DASHBOARD
+                                scope.launch { drawerState.close() }
+                            }
+                        )
+
+                        LoaderDrawerItem(
+                            title = "Support & Messages",
+                            icon = Icons.Filled.SupportAgent,
+                            isSelected = currentDestination == MainDestination.SUPPORT,
+                            onClick = {
+                                currentDestination = MainDestination.SUPPORT
+                                scope.launch { drawerState.close() }
+                            }
+                        )
+
+                        LoaderDrawerItem(
+                            title = "Kernel Settings",
+                            icon = Icons.Filled.Settings,
+                            isSelected = currentDestination == MainDestination.SETTINGS,
+                            onClick = {
+                                currentDestination = MainDestination.SETTINGS
+                                scope.launch { drawerState.close() }
+                            }
+                        )
+
+                        LoaderDrawerItem(
+                            title = "My Profile",
+                            icon = Icons.Filled.AccountCircle,
+                            isSelected = currentDestination == MainDestination.PROFILE,
+                            onClick = {
+                                currentDestination = MainDestination.PROFILE
+                                scope.launch { drawerState.close() }
+                            }
+                        )
+                    }
+
+                    // Bottom Sign Out Action
+                    Surface(
+                        onClick = {
+                            scope.launch { drawerState.close() }
+                            onSignOut()
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(12.dp),
+                        color = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.2f)
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 14.dp, vertical = 11.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.ExitToApp,
+                                contentDescription = "Sign Out",
+                                tint = MaterialTheme.colorScheme.error,
+                                modifier = Modifier.size(20.dp)
+                            )
+                            Spacer(modifier = Modifier.width(14.dp))
+                            Text(
+                                text = "Sign Out",
+                                style = MaterialTheme.typography.bodyMedium.copy(
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.error
+                                )
                             )
                         }
                     }
                 }
             }
         }
-    ) { innerPadding ->
-        // APatch Official Screen Transitions (tween 340ms, horizontal slide + fade for detail screens, fade for bottom tabs)
-        AnimatedContent(
-            targetState = currentDestination,
-            transitionSpec = {
-                if (targetState == MainDestination.PROFILE) {
-                    // Navigate to detail page: slide in from right + fade in; previous slides out slightly to left + fades out
-                    (slideInHorizontally(
-                        initialOffsetX = { it },
-                        animationSpec = tween(340)
-                    ) + fadeIn(animationSpec = tween(340))) togetherWith
-                    (slideOutHorizontally(
-                        targetOffsetX = { -it / 4 },
-                        animationSpec = tween(340)
-                    ) + fadeOut(animationSpec = tween(340)))
-                } else if (initialState == MainDestination.PROFILE) {
-                    // Returning from detail page: previous slides in from left; detail scales down + fades out
-                    (slideInHorizontally(
-                        initialOffsetX = { -it / 4 },
-                        animationSpec = tween(340)
-                    ) + fadeIn(animationSpec = tween(340))) togetherWith
-                    (scaleOut(
-                        targetScale = 0.9f,
-                        animationSpec = tween(340)
-                    ) + fadeOut(animationSpec = tween(340)))
-                } else {
-                    // Switching between bottom navigation tabs (Dashboard, Loader, Settings): APatch 340ms fade
-                    fadeIn(animationSpec = tween(340)) togetherWith fadeOut(animationSpec = tween(340))
-                }
-            },
-            label = "APatchDestinationTransition",
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-        ) { destination ->
-            when (destination) {
-                MainDestination.DASHBOARD -> DashboardScreen(
-                    sessionManager = sessionManager,
-                    activeBroadcast = activeNotifications.firstOrNull { it.id !in dismissedNotificationIds },
-                    onDismissBroadcast = {
-                        val active = activeNotifications.firstOrNull { it.id !in dismissedNotificationIds }
-                        if (active != null) {
-                            dismissedNotificationIds = dismissedNotificationIds + active.id
+    ) {
+        Scaffold(
+            topBar = {
+                TopAppBar(
+                    title = {
+                        val displayTitle = when (currentDestination) {
+                            MainDestination.TICKET_CHAT -> selectedTicket?.let { "Ticket #${it.id}" } ?: "Support Chat"
+                            else -> currentDestination.title
+                        }
+                        Text(
+                            text = displayTitle,
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    },
+                    navigationIcon = {
+                        if (isSubScreen) {
+                            IconButton(onClick = { currentDestination = MainDestination.SUPPORT }) {
+                                Icon(
+                                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                    contentDescription = "Back",
+                                    tint = MaterialTheme.colorScheme.onSurface
+                                )
+                            }
+                        } else {
+                            IconButton(onClick = { scope.launch { drawerState.open() } }) {
+                                Icon(
+                                    imageVector = Icons.Filled.Menu,
+                                    contentDescription = "Open Drawer Menu",
+                                    tint = MaterialTheme.colorScheme.onSurface
+                                )
+                            }
+                        }
+                    },
+                    actions = {
+                        if (!isSubScreen) {
+                            IconButton(onClick = { currentDestination = MainDestination.PROFILE }) {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.ic_user_profile),
+                                    contentDescription = "Profile",
+                                    modifier = Modifier.size(24.dp),
+                                    tint = if (currentDestination == MainDestination.PROFILE) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.background
+                    )
+                )
+            }
+        ) { innerPadding ->
+            AnimatedContent(
+                targetState = currentDestination,
+                transitionSpec = {
+                    fadeIn(animationSpec = tween(280)) togetherWith fadeOut(animationSpec = tween(280))
+                },
+                label = "MainAppScreenDestinationTransition",
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding)
+            ) { destination ->
+                when (destination) {
+                    MainDestination.DASHBOARD -> DashboardScreen(sessionManager = sessionManager)
+                    MainDestination.LOADER -> DriverLoaderScreen(
+                        viewModel = viewModel,
+                        sessionManager = sessionManager
+                    )
+                    MainDestination.SUPPORT -> UserSupportScreen(
+                        sessionManager = sessionManager,
+                        onSelectTicket = { ticket ->
+                            selectedTicket = ticket
+                            currentDestination = MainDestination.TICKET_CHAT
+                        }
+                    )
+                    MainDestination.TICKET_CHAT -> {
+                        val t = selectedTicket
+                        if (t != null) {
+                            UserTicketChatScreen(
+                                ticket = t,
+                                sessionManager = sessionManager,
+                                onNavigateBack = { currentDestination = MainDestination.SUPPORT }
+                            )
+                        } else {
+                            LaunchedEffect(Unit) { currentDestination = MainDestination.SUPPORT }
                         }
                     }
-                )
-                MainDestination.LOADER -> DriverLoaderScreen(
-                    viewModel = viewModel,
-                    sessionManager = sessionManager
-                )
-                MainDestination.SETTINGS -> SettingsScreen(
-                    sessionManager = sessionManager,
-                    onSignOut = onSignOut
-                )
-                MainDestination.PROFILE -> ProfileScreen(
-                    sessionManager = sessionManager,
-                    onSignOut = onSignOut
-                )
+                    MainDestination.SETTINGS -> SettingsScreen(
+                        sessionManager = sessionManager,
+                        onSignOut = onSignOut
+                    )
+                    MainDestination.PROFILE -> ProfileScreen(
+                        sessionManager = sessionManager,
+                        onSignOut = onSignOut
+                    )
+                }
             }
         }
     }
 
-    popupNotificationToShow?.let { popup ->
-        InAppBroadcastModalDialog(
-            notification = popup,
-            onDismiss = {
-                dismissedNotificationIds = dismissedNotificationIds + popup.id
-                popupNotificationToShow = null
+    // Material 3 In-App Broadcast / Popup Alert Dialog
+    popupNotificationToShow?.let { notif ->
+        AlertDialog(
+            onDismissRequest = { popupNotificationToShow = null },
+            shape = RoundedCornerShape(22.dp),
+            containerColor = MaterialTheme.colorScheme.surfaceVariant,
+            title = {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = Icons.Filled.Notifications,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(24.dp)
+                    )
+                    Spacer(modifier = Modifier.width(10.dp))
+                    Text(
+                        text = notif.title,
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                }
+            },
+            text = {
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    if (!notif.imageUrl.isNullOrBlank()) {
+                        AsyncImage(
+                            model = notif.imageUrl,
+                            contentDescription = "Alert Image",
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(160.dp)
+                                .clip(RoundedCornerShape(14.dp)),
+                            contentScale = ContentScale.Crop
+                        )
+                    }
+                    Text(
+                        text = notif.message,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = { popupNotificationToShow = null },
+                    shape = RoundedCornerShape(12.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.primary
+                    )
+                ) {
+                    Text("Got It", fontWeight = FontWeight.Bold)
+                }
             }
         )
+    }
+}
+
+@Composable
+private fun LoaderDrawerItem(
+    title: String,
+    icon: ImageVector,
+    isSelected: Boolean,
+    onClick: () -> Unit
+) {
+    Surface(
+        onClick = onClick,
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp),
+        color = if (isSelected) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.7f) else Color.Transparent
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 14.dp, vertical = 11.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = title,
+                tint = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.size(20.dp)
+            )
+            Spacer(modifier = Modifier.width(14.dp))
+            Text(
+                text = title,
+                style = MaterialTheme.typography.bodyMedium.copy(
+                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                    color = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface
+                )
+            )
+        }
     }
 }
