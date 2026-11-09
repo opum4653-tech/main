@@ -9,6 +9,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Chat
+import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -374,9 +375,9 @@ private fun CreateTicketBottomSheet(
                 enabled = !isSubmitting
             )
 
-            if (!errorMessage.isNullOrBlank()) {
+            errorMessage?.let { msg ->
                 Text(
-                    text = errorMessage!!,
+                    text = msg,
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.error
                 )
@@ -417,7 +418,7 @@ private fun CreateTicketBottomSheet(
                         color = MaterialTheme.colorScheme.onPrimary
                     )
                 } else {
-                    Icon(imageVector = Icons.Filled.Send, contentDescription = null, modifier = Modifier.size(18.dp))
+                    Icon(imageVector = Icons.AutoMirrored.Filled.Send, contentDescription = null, modifier = Modifier.size(18.dp))
                     Spacer(modifier = Modifier.width(8.dp))
                     Text("Send Message", fontWeight = FontWeight.Bold)
                 }
