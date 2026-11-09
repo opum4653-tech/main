@@ -23,6 +23,8 @@ import com.andorid.ninmods.data.SessionManager
 import com.andorid.ninmods.network.AuthApiClient
 import com.andorid.ninmods.network.UserTicketItem
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -42,14 +44,16 @@ fun UserSupportScreen(
 
     val filterOptions = listOf("ALL", "OPEN", "ANSWERED", "CLOSED")
 
-    fun loadTickets() {
+    fun loadTickets(silent: Boolean = false) {
         val token = sessionManager.authToken ?: ""
         if (token.isBlank()) {
             isLoading = false
             return
         }
         scope.launch {
-            isLoading = true
+            if (!silent && tickets.isEmpty()) {
+                isLoading = true
+            }
             val res = AuthApiClient.fetchMyTickets(token)
             withContext(Dispatchers.Main) {
                 isLoading = false
@@ -61,7 +65,11 @@ fun UserSupportScreen(
     }
 
     LaunchedEffect(Unit) {
-        loadTickets()
+        loadTickets(silent = false)
+        while (isActive) {
+            delay(4000L) // Real-time poll tickets every 4 seconds
+            loadTickets(silent = true)
+        }
     }
 
     val filteredTickets = remember(tickets, searchQuery, selectedFilter) {

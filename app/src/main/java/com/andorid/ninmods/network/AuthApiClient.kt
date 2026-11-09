@@ -605,7 +605,8 @@ object AuthApiClient {
             val response = sendGetRequest(AppConfig.NOTIFICATIONS_ACTIVE_URL)
             if (response.code in 200..299) {
                 val json = JSONObject(response.body)
-                val arr = json.optJSONArray("notifications")
+                val target = json.optJSONObject("data") ?: json
+                val arr = target.optJSONArray("notifications") ?: target.optJSONArray("broadcasts") ?: json.optJSONArray("notifications")
                 val list = mutableListOf<ActiveNotificationItem>()
                 if (arr != null) {
                     for (i in 0 until arr.length()) {
@@ -691,7 +692,8 @@ object AuthApiClient {
             val response = sendGetRequest(AppConfig.SUPPORT_TICKETS_URL, headers)
             if (response.code in 200..299) {
                 val json = JSONObject(response.body)
-                val arr = json.optJSONArray("tickets")
+                val target = json.optJSONObject("data") ?: json
+                val arr = target.optJSONArray("tickets") ?: json.optJSONArray("tickets")
                 val list = mutableListOf<UserTicketItem>()
                 if (arr != null) {
                     for (i in 0 until arr.length()) {
@@ -738,7 +740,8 @@ object AuthApiClient {
             val (code, body) = sendPostRequest(AppConfig.SUPPORT_TICKETS_URL, payload.toString(), headers)
             if (code in 200..299) {
                 val json = JSONObject(body)
-                val ticketId = json.optInt("ticket_id", 0)
+                val target = json.optJSONObject("data") ?: json
+                val ticketId = if (target.has("ticket_id")) target.optInt("ticket_id") else json.optInt("ticket_id", 0)
                 Result.success(ticketId)
             } else {
                 val json = runCatching { JSONObject(body) }.getOrNull()
@@ -759,7 +762,8 @@ object AuthApiClient {
             val response = sendGetRequest("${AppConfig.SUPPORT_TICKETS_URL}/$ticketId", headers)
             if (response.code in 200..299) {
                 val json = JSONObject(response.body)
-                val arr = json.optJSONArray("messages")
+                val target = json.optJSONObject("data") ?: json
+                val arr = target.optJSONArray("messages") ?: json.optJSONArray("messages")
                 val list = mutableListOf<UserTicketMessageItem>()
                 if (arr != null) {
                     for (i in 0 until arr.length()) {

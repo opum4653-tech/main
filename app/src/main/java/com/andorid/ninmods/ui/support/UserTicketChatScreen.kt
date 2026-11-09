@@ -23,6 +23,8 @@ import com.andorid.ninmods.network.AuthApiClient
 import com.andorid.ninmods.network.UserTicketItem
 import com.andorid.ninmods.network.UserTicketMessageItem
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -41,17 +43,18 @@ fun UserTicketChatScreen(
     var isSending by remember { mutableStateOf(false) }
     val listState = rememberLazyListState()
 
-    fun loadMessages() {
+    fun loadMessages(showLoading: Boolean = false) {
         val token = sessionManager.authToken ?: ""
         if (token.isBlank()) return
         scope.launch {
-            isLoading = true
+            if (showLoading && messages.isEmpty()) isLoading = true
             val res = AuthApiClient.fetchTicketMessages(token, ticket.id)
             withContext(Dispatchers.Main) {
                 isLoading = false
                 res.onSuccess { list ->
+                    val hadChange = list.size != messages.size
                     messages = list
-                    if (list.isNotEmpty()) {
+                    if (hadChange && list.isNotEmpty()) {
                         listState.animateScrollToItem(list.size - 1)
                     }
                 }
@@ -60,7 +63,12 @@ fun UserTicketChatScreen(
     }
 
     LaunchedEffect(ticket.id) {
-        loadMessages()
+        var isFirst = true
+        while (isActive) {
+            loadMessages(showLoading = isFirst)
+            isFirst = false
+            delay(3000L) // Real-time poll every 3 seconds
+        }
     }
 
     Column(modifier = modifier.fillMaxSize()) {
