@@ -69,7 +69,7 @@ fun MainAppScreen(
     sessionManager: SessionManager,
     onSignOut: () -> Unit
 ) {
-    var currentDestination by remember { mutableStateOf(MainDestination.LOADER) }
+    var currentDestination by remember { mutableStateOf(MainDestination.DASHBOARD) }
     var selectedTicket by remember { mutableStateOf<UserTicketItem?>(null) }
     var lastBackPressTime by remember { mutableStateOf(0L) }
     val context = LocalContext.current
@@ -110,8 +110,8 @@ fun MainAppScreen(
             currentDestination == MainDestination.TICKET_CHAT -> {
                 currentDestination = MainDestination.SUPPORT
             }
-            currentDestination != MainDestination.LOADER -> {
-                currentDestination = MainDestination.LOADER
+            currentDestination != MainDestination.DASHBOARD -> {
+                currentDestination = MainDestination.DASHBOARD
             }
             else -> {
                 val now = System.currentTimeMillis()
@@ -303,39 +303,6 @@ fun MainAppScreen(
                                 scope.launch { drawerState.close() }
                             }
                         )
-                    }
-
-                    // Bottom Sign Out Action
-                    Surface(
-                        onClick = {
-                            scope.launch { drawerState.close() }
-                            onSignOut()
-                        },
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(12.dp),
-                        color = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.2f)
-                    ) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 14.dp, vertical = 11.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Filled.ExitToApp,
-                                contentDescription = "Sign Out",
-                                tint = MaterialTheme.colorScheme.error,
-                                modifier = Modifier.size(20.dp)
-                            )
-                            Spacer(modifier = Modifier.width(14.dp))
-                            Text(
-                                text = "Sign Out",
-                                style = MaterialTheme.typography.bodyMedium.copy(
-                                    fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.error
-                                )
-                            )
-                        }
                     }
                 }
             }

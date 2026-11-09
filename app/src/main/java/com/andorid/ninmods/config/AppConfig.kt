@@ -18,8 +18,8 @@ object AppConfig {
      */
     const val BASE_URL: String = "https://ninmods.smmtor.com"
 
-    const val VERSION_NAME: String = "v1.5.2"
-    const val VERSION_CODE: Int = 152
+    const val VERSION_NAME: String = "v1.5.3"
+    const val VERSION_CODE: Int = 153
 
     /**
      * API Version route prefix matching app_backend routes
