@@ -88,6 +88,7 @@ import java.util.Locale
 fun ProfileScreen(
     sessionManager: SessionManager,
     onSignOut: () -> Unit,
+    onNavigateToChangePassword: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
@@ -99,20 +100,9 @@ fun ProfileScreen(
     var isLoading by remember { mutableStateOf(cached == null) }
     var fetchError by remember { mutableStateOf<String?>(null) }
 
-    var showChangePasswordDialog by remember { mutableStateOf(false) }
-    var newPassword by remember { mutableStateOf("") }
-    var confirmPassword by remember { mutableStateOf("") }
-    var newPasswordVisible by remember { mutableStateOf(false) }
-    var confirmPasswordVisible by remember { mutableStateOf(false) }
-    var passwordError by remember { mutableStateOf<String?>(null) }
-    var isUpdatingPassword by remember { mutableStateOf(false) }
-
-    var showDepositSheet by remember { mutableStateOf(false) }
     var showPurchaseSheet by remember { mutableStateOf(false) }
     var userKeys by remember { mutableStateOf<List<UserLicenseItem>>(emptyList()) }
     var isLoadingKeys by remember { mutableStateOf(false) }
-    var userTransactions by remember { mutableStateOf<List<TransactionItem>>(emptyList()) }
-    var isLoadingTransactions by remember { mutableStateOf(false) }
     var resettingKeyId by remember { mutableStateOf<Int?>(null) }
 
     fun loadMyKeys() {
@@ -123,17 +113,6 @@ fun ProfileScreen(
                 userKeys = list
             }
             isLoadingKeys = false
-        }
-    }
-
-    fun loadMyTransactions() {
-        val token = sessionManager.authToken ?: return
-        scope.launch {
-            isLoadingTransactions = true
-            AuthApiClient.getMyTransactions(token).onSuccess { list ->
-                userTransactions = list
-            }
-            isLoadingTransactions = false
         }
     }
 
@@ -179,7 +158,6 @@ fun ProfileScreen(
         // If data was fetched within the last 60s, uses memory cache with zero server hit.
         refreshProfile(forceRefresh = false)
         loadMyKeys()
-        loadMyTransactions()
     }
 
     Column(
@@ -466,29 +444,14 @@ fun ProfileScreen(
 
                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f))
 
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                Button(
+                    onClick = { showPurchaseSheet = true },
+                    shape = RoundedCornerShape(12.dp),
+                    modifier = Modifier.fillMaxWidth()
                 ) {
-                    Button(
-                        onClick = { showDepositSheet = true },
-                        shape = RoundedCornerShape(12.dp),
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Icon(Icons.Filled.Add, contentDescription = null, modifier = Modifier.size(16.dp))
-                        Spacer(modifier = Modifier.width(6.dp))
-                        Text("Deposit", fontWeight = FontWeight.Bold)
-                    }
-
-                    OutlinedButton(
-                        onClick = { showPurchaseSheet = true },
-                        shape = RoundedCornerShape(12.dp),
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Icon(Icons.Filled.ShoppingCart, contentDescription = null, modifier = Modifier.size(16.dp))
-                        Spacer(modifier = Modifier.width(6.dp))
-                        Text("Buy Key", fontWeight = FontWeight.Bold)
-                    }
+                    Icon(Icons.Filled.ShoppingCart, contentDescription = null, modifier = Modifier.size(16.dp))
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text("Buy VIP Key", fontWeight = FontWeight.Bold)
                 }
             }
         }
@@ -683,118 +646,6 @@ fun ProfileScreen(
             }
         }
 
-        // 3. Recent Transactions Card
-        ElevatedCard(
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(20.dp),
-            colors = CardDefaults.elevatedCardColors(
-                containerColor = MaterialTheme.colorScheme.surfaceVariant
-            ),
-            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(18.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            imageVector = Icons.Filled.History,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(20.dp)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = "RECENT TRANSACTIONS (${userTransactions.size})",
-                            style = MaterialTheme.typography.labelLarge,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                    }
-
-                    IconButton(onClick = { loadMyTransactions() }, modifier = Modifier.size(28.dp)) {
-                        Icon(
-                            imageVector = Icons.Filled.Refresh,
-                            contentDescription = "Refresh Transactions",
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(18.dp)
-                        )
-                    }
-                }
-
-                if (isLoadingTransactions && userTransactions.isEmpty()) {
-                    Box(modifier = Modifier.fillMaxWidth().padding(12.dp), contentAlignment = Alignment.Center) {
-                        CircularProgressIndicator(modifier = Modifier.size(24.dp), strokeWidth = 2.dp)
-                    }
-                } else if (userTransactions.isEmpty()) {
-                    Text(
-                        text = "No financial deposits or purchases recorded yet.",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.padding(vertical = 4.dp)
-                    )
-                } else {
-                    userTransactions.take(5).forEach { tx ->
-                        Surface(
-                            shape = RoundedCornerShape(12.dp),
-                            color = MaterialTheme.colorScheme.surface,
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(12.dp),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Column {
-                                    Text(
-                                        text = "${tx.type.uppercase(Locale.US)} • $${String.format(Locale.US, "%.2f", tx.amount)} ${tx.currency}",
-                                        style = MaterialTheme.typography.bodyMedium,
-                                        fontWeight = FontWeight.Bold,
-                                        color = MaterialTheme.colorScheme.onSurface
-                                    )
-                                    Text(
-                                        text = if (!tx.trxId.isNullOrBlank()) "TrxID: ${tx.trxId}" else (tx.adminNotes ?: tx.paymentMethod ?: "Transaction"),
-                                        style = MaterialTheme.typography.bodySmall,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                                    )
-                                }
-
-                                Surface(
-                                    shape = RoundedCornerShape(8.dp),
-                                    color = when (tx.status.lowercase(Locale.US)) {
-                                        "completed", "approved" -> Color(0xFF81C784).copy(alpha = 0.2f)
-                                        "pending" -> Color(0xFFFFB74D).copy(alpha = 0.2f)
-                                        else -> MaterialTheme.colorScheme.error.copy(alpha = 0.2f)
-                                    }
-                                ) {
-                                    Text(
-                                        text = tx.status.uppercase(Locale.US),
-                                        style = MaterialTheme.typography.labelSmall,
-                                        fontWeight = FontWeight.Bold,
-                                        color = when (tx.status.lowercase(Locale.US)) {
-                                            "completed", "approved" -> Color(0xFF81C784)
-                                            "pending" -> Color(0xFFFFB74D)
-                                            else -> MaterialTheme.colorScheme.error
-                                        },
-                                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-                                    )
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
         // Account Actions Card
         Text(
             text = "ACCOUNT ACTIONS",
@@ -817,12 +668,7 @@ fun ProfileScreen(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clickable {
-                            passwordError = null
-                            newPassword = ""
-                            confirmPassword = ""
-                            showChangePasswordDialog = true
-                        }
+                        .clickable { onNavigateToChangePassword() }
                         .padding(16.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -876,189 +722,6 @@ fun ProfileScreen(
         Spacer(modifier = Modifier.height(16.dp))
     }
 
-    // Change Password Dialog (APatch Official Standard UI)
-    if (showChangePasswordDialog) {
-        AlertDialog(
-            onDismissRequest = {
-                if (!isUpdatingPassword) showChangePasswordDialog = false
-            },
-            shape = RoundedCornerShape(28.dp),
-            icon = {
-                Surface(
-                    shape = CircleShape,
-                    color = MaterialTheme.colorScheme.primaryContainer,
-                    modifier = Modifier.size(56.dp)
-                ) {
-                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        Icon(
-                            imageVector = Icons.Filled.LockReset,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                            modifier = Modifier.size(28.dp)
-                        )
-                    }
-                }
-            },
-            title = {
-                Text(
-                    text = "Change Password",
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold
-                )
-            },
-            text = {
-                Column(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalArrangement = Arrangement.spacedBy(14.dp)
-                ) {
-                    Text(
-                        text = "Enter a new secure password for your account.",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-
-                    OutlinedTextField(
-                        value = newPassword,
-                        onValueChange = { newPassword = it; passwordError = null },
-                        label = { Text("New Password") },
-                        singleLine = true,
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(16.dp),
-                        visualTransformation = if (newPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-                        trailingIcon = {
-                            IconButton(onClick = { newPasswordVisible = !newPasswordVisible }) {
-                                Icon(
-                                    imageVector = if (newPasswordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff,
-                                    contentDescription = null
-                                )
-                            }
-                        }
-                    )
-
-                    OutlinedTextField(
-                        value = confirmPassword,
-                        onValueChange = { confirmPassword = it; passwordError = null },
-                        label = { Text("Confirm New Password") },
-                        singleLine = true,
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(16.dp),
-                        visualTransformation = if (confirmPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-                        trailingIcon = {
-                            IconButton(onClick = { confirmPasswordVisible = !confirmPasswordVisible }) {
-                                Icon(
-                                    imageVector = if (confirmPasswordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff,
-                                    contentDescription = null
-                                )
-                            }
-                        }
-                    )
-
-                    if (passwordError != null) {
-                        Text(
-                            text = passwordError ?: "",
-                            color = MaterialTheme.colorScheme.error,
-                            style = MaterialTheme.typography.bodySmall
-                        )
-                    }
-                }
-            },
-            confirmButton = {
-                Button(
-                    onClick = {
-                        if (newPassword.isBlank()) {
-                            passwordError = "New password cannot be empty"
-                            return@Button
-                        }
-                        if (newPassword.length < 6) {
-                            passwordError = "Password must be at least 6 characters"
-                            return@Button
-                        }
-                        if (newPassword != confirmPassword) {
-                            passwordError = "Passwords do not match"
-                            return@Button
-                        }
-
-                        isUpdatingPassword = true
-                        passwordError = null
-                        val token = sessionManager.authToken ?: ""
-
-                        scope.launch {
-                            AuthApiClient.updatePassword(token, newPassword)
-                                .onSuccess {
-                                    isUpdatingPassword = false
-                                    showChangePasswordDialog = false
-                                    sessionManager.userPassword = newPassword
-                                    com.andorid.ninmods.data.UserRepository.invalidate()
-                                    Toast.makeText(context, "Password updated successfully!", Toast.LENGTH_LONG).show()
-                                }
-                                .onFailure { e ->
-                                    isUpdatingPassword = false
-                                    passwordError = e.message ?: "Failed to update password."
-                                }
-                        }
-                    },
-                    enabled = !isUpdatingPassword,
-                    shape = RoundedCornerShape(20.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.primary,
-                        contentColor = MaterialTheme.colorScheme.onPrimary,
-                        disabledContainerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.85f),
-                        disabledContentColor = MaterialTheme.colorScheme.onPrimary
-                    )
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Center
-                    ) {
-                        if (isUpdatingPassword) {
-                            CircularProgressIndicator(
-                                modifier = Modifier.size(18.dp),
-                                strokeWidth = 2.dp,
-                                color = MaterialTheme.colorScheme.onPrimary
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(
-                                text = "Updating...",
-                                fontWeight = FontWeight.SemiBold,
-                                color = MaterialTheme.colorScheme.onPrimary
-                            )
-                        } else {
-                            Text(
-                                text = "Update Password",
-                                fontWeight = FontWeight.SemiBold,
-                                color = MaterialTheme.colorScheme.onPrimary
-                            )
-                        }
-                    }
-                }
-            },
-            dismissButton = {
-                TextButton(
-                    onClick = { showChangePasswordDialog = false },
-                    enabled = !isUpdatingPassword,
-                    shape = RoundedCornerShape(20.dp)
-                ) {
-                    Text("Cancel")
-                }
-            }
-        )
-    }
-
-    // Direct User Deposit Bottom Sheet
-    if (showDepositSheet) {
-        val token = sessionManager.authToken ?: ""
-        UserDepositBottomSheet(
-            authToken = token,
-            onDismiss = { showDepositSheet = false },
-            onDepositSuccess = {
-                showDepositSheet = false
-                refreshProfile(forceRefresh = true)
-                loadMyTransactions()
-                Toast.makeText(context, "Deposit submitted successfully!", Toast.LENGTH_LONG).show()
-            }
-        )
-    }
-
     // Direct User Plan Purchase Bottom Sheet
     if (showPurchaseSheet) {
         val token = sessionManager.authToken ?: ""
@@ -1069,13 +732,12 @@ fun ProfileScreen(
             onDismiss = { showPurchaseSheet = false },
             onOpenDeposit = {
                 showPurchaseSheet = false
-                showDepositSheet = true
+                Toast.makeText(context, "Use Add Funds in menu to deposit balance", Toast.LENGTH_SHORT).show()
             },
             onPurchaseSuccess = {
                 showPurchaseSheet = false
                 refreshProfile(forceRefresh = true)
                 loadMyKeys()
-                loadMyTransactions()
                 Toast.makeText(context, "VIP Key purchased successfully!", Toast.LENGTH_LONG).show()
             }
         )

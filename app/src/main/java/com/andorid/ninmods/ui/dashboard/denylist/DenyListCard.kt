@@ -78,7 +78,7 @@ fun DenyListCard(
                     ) {
                         Image(
                             painter = painterResource(id = R.drawable.ic_launcher),
-                            contentDescription = "Magisk DenyList",
+                            contentDescription = "Daily List",
                             modifier = Modifier.fillMaxSize(),
                             contentScale = ContentScale.Crop
                         )
@@ -90,7 +90,7 @@ fun DenyListCard(
                             horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
                             Text(
-                                text = "Magisk DenyList",
+                                text = "Daily List",
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.onSurface
@@ -178,7 +178,7 @@ fun DenyListCard(
                             }
 
                             Text(
-                                text = env.providerName,
+                                text = if (env.providerName.contains("Magisk", ignoreCase = true)) "Daily List Engine" else env.providerName,
                                 style = MaterialTheme.typography.labelMedium,
                                 fontWeight = FontWeight.SemiBold,
                                 color = MaterialTheme.colorScheme.primary

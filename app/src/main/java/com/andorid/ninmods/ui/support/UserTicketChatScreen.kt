@@ -17,6 +17,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.andorid.ninmods.data.SessionManager
 import com.andorid.ninmods.network.AuthApiClient
@@ -72,58 +73,46 @@ fun UserTicketChatScreen(
     }
 
     Column(modifier = modifier.fillMaxSize()) {
-        // Conversation Top Bar
+        // Ticket Information Banner (No inner back button - handled by root TopAppBar)
         Surface(
-            modifier = Modifier.fillMaxWidth(),
-            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f),
-            shape = RoundedCornerShape(bottomStart = 20.dp, bottomEnd = 20.dp)
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 8.dp),
+            shape = RoundedCornerShape(14.dp),
+            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
         ) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 8.dp, vertical = 10.dp),
-                verticalAlignment = Alignment.CenterVertically
+                    .padding(horizontal = 14.dp, vertical = 10.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                IconButton(onClick = onNavigateBack) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = "Back",
-                        tint = MaterialTheme.colorScheme.onSurface
-                    )
-                }
-
-                Spacer(modifier = Modifier.width(4.dp))
-
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = ticket.subject,
-                        style = MaterialTheme.typography.titleMedium,
+                        style = MaterialTheme.typography.titleSmall,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurface,
-                        maxLines = 1
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
                     )
                     Text(
-                        text = "Ticket #${ticket.id} • ${ticket.department}",
+                        text = "Department: ${ticket.department}",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
 
-                val statusColor = when (ticket.status.lowercase()) {
-                    "open" -> Color(0xFF4CAF50)
-                    "answered" -> Color(0xFF2196F3)
-                    else -> Color(0xFF9E9E9E)
-                }
                 Surface(
                     shape = RoundedCornerShape(8.dp),
-                    color = statusColor.copy(alpha = 0.15f),
-                    modifier = Modifier.padding(end = 8.dp)
+                    color = MaterialTheme.colorScheme.primaryContainer
                 ) {
                     Text(
                         text = ticket.status.uppercase(),
                         style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
-                        color = statusColor,
-                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
                     )
                 }
             }

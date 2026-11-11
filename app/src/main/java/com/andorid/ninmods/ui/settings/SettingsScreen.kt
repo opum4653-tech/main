@@ -43,6 +43,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedCard
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -57,7 +58,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.text.font.FontWeight
@@ -70,17 +70,21 @@ import com.andorid.ninmods.data.ShellExecutor
 import com.andorid.ninmods.network.AuthApiClient
 import com.andorid.ninmods.ui.component.SwitchItem
 import com.andorid.ninmods.ui.dialogs.AppSelectionBottomSheet
-import com.andorid.ninmods.ui.dialogs.ReportBugBottomSheet
 import com.andorid.ninmods.ui.dialogs.SheetItem
 import com.andorid.ninmods.util.RootDetector
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
+/**
+ * APatch Unified General Settings Screen.
+ * Strictly organized in serial, logical hierarchy matching APatch design standards.
+ */
 @Composable
 fun SettingsScreen(
     sessionManager: SessionManager,
     onSignOut: () -> Unit,
+    onNavigateToReportBug: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
@@ -97,7 +101,6 @@ fun SettingsScreen(
     var globalNamespace by remember { mutableStateOf(sessionManager.globalNamespace) }
     var legacySu by remember { mutableStateOf(sessionManager.legacySu) }
     var showRebootSheet by remember { mutableStateOf(false) }
-    var showReportBugSheet by remember { mutableStateOf(false) }
 
     var isCheckingUpdate by remember { mutableStateOf(false) }
     var updateStatusText by remember { mutableStateOf("Tap to check latest release") }
@@ -203,7 +206,7 @@ fun SettingsScreen(
     ) {
         Spacer(modifier = Modifier.height(4.dp))
 
-        // PERMISSIONS & SYSTEM ROOT (Genuine real-time detection & grant triggers)
+        // 1. PERMISSIONS & ROOT ENVIRONMENT
         Text(
             text = "PERMISSIONS & ROOT ENVIRONMENT",
             style = MaterialTheme.typography.labelMedium,
@@ -221,7 +224,7 @@ fun SettingsScreen(
             elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
         ) {
             Column {
-                // 1. Root Manager Item (Live Detection)
+                // Root Manager
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -235,7 +238,7 @@ fun SettingsScreen(
                     Icon(
                         imageVector = Icons.Filled.Security,
                         contentDescription = null,
-                        tint = if (isRooted) Color(0xFF81C784) else Color(0xFFFFB4AB),
+                        tint = if (isRooted) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.size(24.dp)
                     )
                     Spacer(modifier = Modifier.size(16.dp))
@@ -249,18 +252,23 @@ fun SettingsScreen(
                         Text(
                             text = "Detected: $rootManagerName",
                             style = MaterialTheme.typography.bodyMedium,
-                            color = if (isRooted) Color(0xFF81C784) else Color(0xFFFFB4AB)
+                            color = if (isRooted) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                     Icon(
                         imageVector = if (isRooted) Icons.Filled.CheckCircle else Icons.Filled.Close,
                         contentDescription = null,
-                        tint = if (isRooted) Color(0xFF81C784) else Color(0xFFFFB4AB),
+                        tint = if (isRooted) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.size(20.dp)
                     )
                 }
 
-                // 2. SuperUser Access (su) Item - Tap to request authorization
+                HorizontalDivider(
+                    modifier = Modifier.padding(horizontal = 16.dp),
+                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.25f)
+                )
+
+                // SuperUser Access (su)
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -280,7 +288,7 @@ fun SettingsScreen(
                     Icon(
                         imageVector = Icons.Filled.VpnKey,
                         contentDescription = null,
-                        tint = if (isSuGranted) Color(0xFF81C784) else Color(0xFFFFB4AB),
+                        tint = if (isSuGranted) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.size(24.dp)
                     )
                     Spacer(modifier = Modifier.size(16.dp))
@@ -294,18 +302,23 @@ fun SettingsScreen(
                         Text(
                             text = if (isSuGranted) "Granted (uid=0)" else "Denied (Tap to Authorize Root Prompt)",
                             style = MaterialTheme.typography.bodyMedium,
-                            color = if (isSuGranted) Color(0xFF81C784) else Color(0xFFFFB4AB)
+                            color = if (isSuGranted) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                     Icon(
                         imageVector = if (isSuGranted) Icons.Filled.CheckCircle else Icons.Filled.Close,
                         contentDescription = null,
-                        tint = if (isSuGranted) Color(0xFF81C784) else Color(0xFFFFB4AB),
+                        tint = if (isSuGranted) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.size(20.dp)
                     )
                 }
 
-                // 3. Storage Permission Item - Tap to grant (Real All Files / Storage)
+                HorizontalDivider(
+                    modifier = Modifier.padding(horizontal = 16.dp),
+                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.25f)
+                )
+
+                // Storage Permission
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -338,7 +351,7 @@ fun SettingsScreen(
                     Icon(
                         imageVector = Icons.Filled.Folder,
                         contentDescription = null,
-                        tint = if (isStorageGranted) Color(0xFF81C784) else Color(0xFFFFB4AB),
+                        tint = if (isStorageGranted) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.size(24.dp)
                     )
                     Spacer(modifier = Modifier.size(16.dp))
@@ -352,18 +365,23 @@ fun SettingsScreen(
                         Text(
                             text = if (isStorageGranted) "Granted" else "Denied (Tap to Grant All Files Access)",
                             style = MaterialTheme.typography.bodyMedium,
-                            color = if (isStorageGranted) Color(0xFF81C784) else Color(0xFFFFB4AB)
+                            color = if (isStorageGranted) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                     Icon(
                         imageVector = if (isStorageGranted) Icons.Filled.CheckCircle else Icons.Filled.Close,
                         contentDescription = null,
-                        tint = if (isStorageGranted) Color(0xFF81C784) else Color(0xFFFFB4AB),
+                        tint = if (isStorageGranted) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.size(20.dp)
                     )
                 }
 
-                // 4. Notification Permission Item - Tap to grant (Real POST_NOTIFICATIONS)
+                HorizontalDivider(
+                    modifier = Modifier.padding(horizontal = 16.dp),
+                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.25f)
+                )
+
+                // Notification Permission
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -384,7 +402,7 @@ fun SettingsScreen(
                     Icon(
                         imageVector = Icons.Filled.Notifications,
                         contentDescription = null,
-                        tint = if (isNotificationGranted) Color(0xFF81C784) else Color(0xFFFFB4AB),
+                        tint = if (isNotificationGranted) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.size(24.dp)
                     )
                     Spacer(modifier = Modifier.size(16.dp))
@@ -398,24 +416,27 @@ fun SettingsScreen(
                         Text(
                             text = if (isNotificationGranted) "Granted" else "Denied (Tap to Grant Notification)",
                             style = MaterialTheme.typography.bodyMedium,
-                            color = if (isNotificationGranted) Color(0xFF81C784) else Color(0xFFFFB4AB)
+                            color = if (isNotificationGranted) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                     Icon(
                         imageVector = if (isNotificationGranted) Icons.Filled.CheckCircle else Icons.Filled.Close,
                         contentDescription = null,
-                        tint = if (isNotificationGranted) Color(0xFF81C784) else Color(0xFFFFB4AB),
+                        tint = if (isNotificationGranted) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.size(20.dp)
                     )
                 }
 
-                // 5. Re-run Initial Setup & Permission Wizard
+                HorizontalDivider(
+                    modifier = Modifier.padding(horizontal = 16.dp),
+                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.25f)
+                )
+
+                // Setup Wizard Trigger
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clickable {
-                            showSetupDialog = true
-                        }
+                        .clickable { showSetupDialog = true }
                         .padding(16.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -443,7 +464,7 @@ fun SettingsScreen(
             }
         }
 
-        // APATCH ENVIRONMENT SWITCHES
+        // 2. KERNEL CONFIGURATION
         Text(
             text = "KERNEL CONFIGURATION",
             style = MaterialTheme.typography.labelMedium,
@@ -472,6 +493,11 @@ fun SettingsScreen(
                     }
                 )
 
+                HorizontalDivider(
+                    modifier = Modifier.padding(horizontal = 16.dp),
+                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.25f)
+                )
+
                 SwitchItem(
                     icon = Icons.Filled.Terminal,
                     title = "Legacy su Compatibility",
@@ -485,7 +511,7 @@ fun SettingsScreen(
             }
         }
 
-        // DEVICE POWER & REBOOT (Using universal AppSelectionBottomSheet)
+        // 3. DEVICE POWER
         Text(
             text = "DEVICE POWER",
             style = MaterialTheme.typography.labelMedium,
@@ -532,9 +558,9 @@ fun SettingsScreen(
             }
         }
 
-        // SESSION
+        // 4. DIAGNOSTICS & BUG REPORT
         Text(
-            text = "SESSION",
+            text = "DIAGNOSTICS & BUG REPORT",
             style = MaterialTheme.typography.labelMedium,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.primary,
@@ -549,60 +575,37 @@ fun SettingsScreen(
             ),
             elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
         ) {
-            Column {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(
-                        imageVector = Icons.Filled.VerifiedUser,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(24.dp)
-                    )
-                    Spacer(modifier = Modifier.size(16.dp))
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            text = "Session: Active",
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.SemiBold,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
-                        Text(
-                            text = sessionManager.userName ?: "NinMods User",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                }
-
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable { onSignOut() }
-                        .padding(16.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ExitToApp,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.error,
-                        modifier = Modifier.size(24.dp)
-                    )
-                    Spacer(modifier = Modifier.size(16.dp))
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { onNavigateToReportBug() }
+                    .padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.BugReport,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(24.dp)
+                )
+                Spacer(modifier = Modifier.size(16.dp))
+                Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = "Sign Out",
+                        text = "Report an Issue / Bug",
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.SemiBold,
-                        color = MaterialTheme.colorScheme.error
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Text(
+                        text = "Submit diagnostic logs & crash reports to engineering",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }
         }
 
-        // COMMUNITY
+        // 5. COMMUNITY
         Text(
             text = "COMMUNITY",
             style = MaterialTheme.typography.labelMedium,
@@ -653,54 +656,7 @@ fun SettingsScreen(
             }
         }
 
-        // DIAGNOSTICS & BUG REPORT
-        Text(
-            text = "DIAGNOSTICS & BUG REPORT",
-            style = MaterialTheme.typography.labelMedium,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.padding(start = 4.dp)
-        )
-
-        ElevatedCard(
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(20.dp),
-            colors = CardDefaults.elevatedCardColors(
-                containerColor = MaterialTheme.colorScheme.surfaceVariant
-            ),
-            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
-        ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable { showReportBugSheet = true }
-                    .padding(16.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(
-                    imageVector = Icons.Filled.BugReport,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(24.dp)
-                )
-                Spacer(modifier = Modifier.size(16.dp))
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = "Report an Issue / Bug",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.SemiBold,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                    Text(
-                        text = "Submit crash telemetry & system logs to developer",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-            }
-        }
-
-        // SOFTWARE UPDATES
+        // 6. SOFTWARE UPDATES
         Text(
             text = "SOFTWARE UPDATES",
             style = MaterialTheme.typography.labelMedium,
@@ -765,6 +721,81 @@ fun SettingsScreen(
                             tint = MaterialTheme.colorScheme.primary
                         )
                     }
+                }
+            }
+        }
+
+        // 7. SESSION & ACCOUNT
+        Text(
+            text = "SESSION & ACCOUNT",
+            style = MaterialTheme.typography.labelMedium,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.padding(start = 4.dp)
+        )
+
+        ElevatedCard(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(20.dp),
+            colors = CardDefaults.elevatedCardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceVariant
+            ),
+            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+        ) {
+            Column {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.VerifiedUser,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(24.dp)
+                    )
+                    Spacer(modifier = Modifier.size(16.dp))
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = "Session: Active",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.SemiBold,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Text(
+                            text = sessionManager.userName ?: "NinMods User",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+
+                HorizontalDivider(
+                    modifier = Modifier.padding(horizontal = 16.dp),
+                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.25f)
+                )
+
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { onSignOut() }
+                        .padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ExitToApp,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.size(24.dp)
+                    )
+                    Spacer(modifier = Modifier.size(16.dp))
+                    Text(
+                        text = "Sign Out",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.error
+                    )
                 }
             }
         }
@@ -836,12 +867,5 @@ fun SettingsScreen(
                 }
             )
         }
-    }
-
-    if (showReportBugSheet) {
-        ReportBugBottomSheet(
-            sessionManager = sessionManager,
-            onDismiss = { showReportBugSheet = false }
-        )
     }
 }

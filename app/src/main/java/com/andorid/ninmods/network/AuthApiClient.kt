@@ -156,7 +156,8 @@ data class SignUpResponse(
 
 data class BasicResponse(
     val success: Boolean,
-    val message: String
+    val message: String,
+    val apiKey: String? = null
 )
 
 /**
@@ -316,7 +317,8 @@ object AuthApiClient {
 
             if (code in 200..299 && (json.optBoolean("success", false) || json.optBoolean("status", false))) {
                 val msg = json.optString("message", "Password updated successfully!")
-                Result.success(BasicResponse(success = true, message = msg))
+                val newKey = json.optString("api_key", "").takeIf { it.isNotBlank() }
+                Result.success(BasicResponse(success = true, message = msg, apiKey = newKey))
             } else {
                 val errorMsg = json.optString("error", json.optString("message", "Failed to update password (HTTP $code)"))
                 Result.failure(Exception(errorMsg))
@@ -351,6 +353,12 @@ object AuthApiClient {
             }
 
             val json = parseJsonResponse(response.body, code)
+
+            // 401 Unauthorized: Session revoked, password changed, or logged in on another device
+            if (code == 401) {
+                val err = json.optString("error", "Session expired or logged in from another device")
+                return@withContext Result.failure(Exception("HTTP 401: $err"))
+            }
             val isSuccess = code in 200..299 && (
                 json.optBoolean("success", false) ||
                 json.optString("status") == "success" ||

@@ -45,13 +45,20 @@ import com.andorid.ninmods.ui.MainViewModel
 import com.andorid.ninmods.ui.dashboard.DashboardScreen
 import com.andorid.ninmods.ui.denylist.DenyListScreen
 import com.andorid.ninmods.ui.deposit.AddFundsScreen
+import com.andorid.ninmods.ui.deposit.SubmitDepositScreen
 import com.andorid.ninmods.ui.loader.DriverLoaderScreen
+import com.andorid.ninmods.ui.profile.ChangePasswordScreen
 import com.andorid.ninmods.ui.profile.ProfileScreen
+import com.andorid.ninmods.ui.settings.ReportBugScreen
 import com.andorid.ninmods.ui.settings.SettingsScreen
 import com.andorid.ninmods.ui.support.CreateTicketScreen
 import com.andorid.ninmods.ui.support.UserSupportScreen
 import com.andorid.ninmods.ui.support.UserTicketChatScreen
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 enum class MainDestination(
     val title: String,
@@ -63,9 +70,12 @@ enum class MainDestination(
     DENYLIST("Daily List", Icons.Filled.Security),
     SETTINGS("General Settings", Icons.Filled.Settings),
     ADD_FUNDS("Add Funds", Icons.Filled.AccountBalanceWallet),
+    SUBMIT_DEPOSIT("Deposit Funds", Icons.Filled.AccountBalanceWallet),
     CREATE_TICKET("Create Ticket", Icons.Filled.Add),
     TICKET_CHAT("Live Conversation", Icons.AutoMirrored.Filled.Chat),
-    PROFILE("My Profile", Icons.Filled.AccountCircle)
+    PROFILE("My Profile", Icons.Filled.AccountCircle),
+    CHANGE_PASSWORD("Change Password", Icons.Filled.LockReset),
+    REPORT_BUG("Report Bug", Icons.Filled.BugReport)
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -86,17 +96,34 @@ fun MainAppScreen(
     var popupNotificationToShow by remember { mutableStateOf<ActiveNotificationItem?>(null) }
     var triggerDenyListRefresh by remember { mutableStateOf(0) }
 
-    // Live sync user balance from profile API on startup
+    // Live sync user balance from profile API on startup and check session validity
     LaunchedEffect(Unit) {
         val token = sessionManager.authToken ?: ""
         if (token.isNotBlank()) {
-            AuthApiClient.getProfileWithEtag(token).onSuccess { (profileData, _, _) ->
-                if (profileData != null) {
-                    sessionManager.userBalance = profileData.balance
-                    sessionManager.userName = profileData.username
-                    sessionManager.userRole = profileData.role
+            AuthApiClient.getProfileWithEtag(token).fold(
+                onSuccess = { (profileData, _, _) ->
+                    if (profileData != null) {
+                        sessionManager.userBalance = profileData.balance
+                        sessionManager.userName = profileData.username
+                        sessionManager.userRole = profileData.role
+                    }
+                },
+                onFailure = { err ->
+                    val isRevoked = err.message?.let { msg ->
+                        msg.contains("401") ||
+                        msg.contains("Session expired", ignoreCase = true) ||
+                        msg.contains("SESSION_REVOKED", ignoreCase = true) ||
+                        msg.contains("Unauthorized", ignoreCase = true) ||
+                        msg.contains("token expired", ignoreCase = true) ||
+                        msg.contains("Invalid API key", ignoreCase = true)
+                    } ?: false
+
+                    if (isRevoked) {
+                        Toast.makeText(context, "Session expired: Password changed or account logged in on another device.", Toast.LENGTH_LONG).show()
+                        onSignOut()
+                    }
                 }
-            }
+            )
         }
         AuthApiClient.getActiveNotifications().onSuccess { list ->
             activeNotifications = list
@@ -107,24 +134,59 @@ fun MainAppScreen(
         }
     }
 
+    // Background session monitor: kick out if account logs in on another device
+    LaunchedEffect(Unit) {
+        while (isActive) {
+            delay(12000L) // Poll every 12 seconds
+            val token = sessionManager.authToken ?: ""
+            if (token.isNotBlank()) {
+                val res = AuthApiClient.getProfileWithEtag(token)
+                res.onFailure { err ->
+                    val isRevoked = err.message?.let { msg ->
+                        msg.contains("401") ||
+                        msg.contains("Session expired", ignoreCase = true) ||
+                        msg.contains("SESSION_REVOKED", ignoreCase = true) ||
+                        msg.contains("Unauthorized", ignoreCase = true) ||
+                        msg.contains("token expired", ignoreCase = true)
+                    } ?: false
+
+                    if (isRevoked) {
+                        withContext(Dispatchers.Main) {
+                            Toast.makeText(context, "Session expired: Logged in from another device or password changed.", Toast.LENGTH_LONG).show()
+                            onSignOut()
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     val isSubScreen = currentDestination == MainDestination.TICKET_CHAT ||
             currentDestination == MainDestination.DENYLIST ||
             currentDestination == MainDestination.CREATE_TICKET ||
-            currentDestination == MainDestination.ADD_FUNDS
+            currentDestination == MainDestination.ADD_FUNDS ||
+            currentDestination == MainDestination.SUBMIT_DEPOSIT ||
+            currentDestination == MainDestination.CHANGE_PASSWORD ||
+            currentDestination == MainDestination.REPORT_BUG ||
+            currentDestination == MainDestination.PROFILE
 
     BackHandler(enabled = true) {
         when {
             drawerState.isOpen -> {
                 scope.launch { drawerState.close() }
             }
-            currentDestination == MainDestination.TICKET_CHAT -> {
-                currentDestination = MainDestination.SUPPORT
-            }
+            currentDestination == MainDestination.TICKET_CHAT ||
             currentDestination == MainDestination.CREATE_TICKET -> {
                 currentDestination = MainDestination.SUPPORT
             }
-            currentDestination == MainDestination.ADD_FUNDS -> {
-                currentDestination = MainDestination.DASHBOARD
+            currentDestination == MainDestination.SUBMIT_DEPOSIT -> {
+                currentDestination = MainDestination.ADD_FUNDS
+            }
+            currentDestination == MainDestination.CHANGE_PASSWORD -> {
+                currentDestination = MainDestination.PROFILE
+            }
+            currentDestination == MainDestination.REPORT_BUG -> {
+                currentDestination = MainDestination.SETTINGS
             }
             currentDestination != MainDestination.DASHBOARD -> {
                 currentDestination = MainDestination.DASHBOARD
@@ -329,31 +391,62 @@ fun MainAppScreen(
                         )
                     },
                     navigationIcon = {
-                        if (currentDestination == MainDestination.TICKET_CHAT ||
-                            currentDestination == MainDestination.CREATE_TICKET) {
-                            IconButton(onClick = { currentDestination = MainDestination.SUPPORT }) {
-                                Icon(
-                                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                    contentDescription = "Back",
-                                    tint = MaterialTheme.colorScheme.onSurface
-                                )
+                        when (currentDestination) {
+                            MainDestination.TICKET_CHAT, MainDestination.CREATE_TICKET -> {
+                                IconButton(onClick = { currentDestination = MainDestination.SUPPORT }) {
+                                    Icon(
+                                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                        contentDescription = "Back",
+                                        tint = MaterialTheme.colorScheme.onSurface
+                                    )
+                                }
                             }
-                        } else if (currentDestination == MainDestination.DENYLIST ||
-                            currentDestination == MainDestination.ADD_FUNDS) {
-                            IconButton(onClick = { currentDestination = MainDestination.DASHBOARD }) {
-                                Icon(
-                                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                    contentDescription = "Back",
-                                    tint = MaterialTheme.colorScheme.onSurface
-                                )
+                            MainDestination.SUBMIT_DEPOSIT -> {
+                                IconButton(onClick = { currentDestination = MainDestination.ADD_FUNDS }) {
+                                    Icon(
+                                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                        contentDescription = "Back",
+                                        tint = MaterialTheme.colorScheme.onSurface
+                                    )
+                                }
                             }
-                        } else {
-                            IconButton(onClick = { scope.launch { drawerState.open() } }) {
-                                Icon(
-                                    imageVector = Icons.Filled.Menu,
-                                    contentDescription = "Open Drawer Menu",
-                                    tint = MaterialTheme.colorScheme.onSurface
-                                )
+                            MainDestination.CHANGE_PASSWORD -> {
+                                IconButton(onClick = { currentDestination = MainDestination.PROFILE }) {
+                                    Icon(
+                                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                        contentDescription = "Back",
+                                        tint = MaterialTheme.colorScheme.onSurface
+                                    )
+                                }
+                            }
+                            MainDestination.REPORT_BUG -> {
+                                IconButton(onClick = { currentDestination = MainDestination.SETTINGS }) {
+                                    Icon(
+                                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                        contentDescription = "Back",
+                                        tint = MaterialTheme.colorScheme.onSurface
+                                    )
+                                }
+                            }
+                            MainDestination.DENYLIST,
+                            MainDestination.ADD_FUNDS,
+                            MainDestination.PROFILE -> {
+                                IconButton(onClick = { currentDestination = MainDestination.DASHBOARD }) {
+                                    Icon(
+                                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                        contentDescription = "Back",
+                                        tint = MaterialTheme.colorScheme.onSurface
+                                    )
+                                }
+                            }
+                            else -> {
+                                IconButton(onClick = { scope.launch { drawerState.open() } }) {
+                                    Icon(
+                                        imageVector = Icons.Filled.Menu,
+                                        contentDescription = "Open Drawer Menu",
+                                        tint = MaterialTheme.colorScheme.onSurface
+                                    )
+                                }
                             }
                         }
                     },
@@ -435,15 +528,29 @@ fun MainAppScreen(
                     }
                     MainDestination.SETTINGS -> SettingsScreen(
                         sessionManager = sessionManager,
-                        onSignOut = onSignOut
+                        onSignOut = onSignOut,
+                        onNavigateToReportBug = { currentDestination = MainDestination.REPORT_BUG }
+                    )
+                    MainDestination.REPORT_BUG -> ReportBugScreen(
+                        sessionManager = sessionManager,
+                        onReportSubmitted = { currentDestination = MainDestination.SETTINGS }
                     )
                     MainDestination.ADD_FUNDS -> AddFundsScreen(
                         sessionManager = sessionManager,
-                        onNavigateBack = { currentDestination = MainDestination.DASHBOARD }
+                        onNavigateToSubmitDeposit = { currentDestination = MainDestination.SUBMIT_DEPOSIT }
+                    )
+                    MainDestination.SUBMIT_DEPOSIT -> SubmitDepositScreen(
+                        sessionManager = sessionManager,
+                        onDepositSubmitted = { currentDestination = MainDestination.ADD_FUNDS }
                     )
                     MainDestination.PROFILE -> ProfileScreen(
                         sessionManager = sessionManager,
-                        onSignOut = onSignOut
+                        onSignOut = onSignOut,
+                        onNavigateToChangePassword = { currentDestination = MainDestination.CHANGE_PASSWORD }
+                    )
+                    MainDestination.CHANGE_PASSWORD -> ChangePasswordScreen(
+                        sessionManager = sessionManager,
+                        onPasswordChanged = { currentDestination = MainDestination.PROFILE }
                     )
                 }
             }

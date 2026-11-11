@@ -84,6 +84,7 @@ enum class AuthScreenState {
 
 @Composable
 fun LoginScreen(
+    initialEmail: String = "",
     onLoginSuccess: (
         email: String,
         name: String,
@@ -138,6 +139,7 @@ fun LoginScreen(
                 when (state) {
                     AuthScreenState.LOGIN -> {
                         LoginContent(
+                            initialEmail = initialEmail,
                             onSuccess = onLoginSuccess,
                             onNavigateToSignUp = { authState = AuthScreenState.SIGNUP },
                             onNavigateToForgotPassword = { authState = AuthScreenState.FORGOT_PASSWORD }
@@ -161,6 +163,7 @@ fun LoginScreen(
 
 @Composable
 private fun LoginContent(
+    initialEmail: String = "",
     onSuccess: (
         email: String,
         name: String,
@@ -174,7 +177,7 @@ private fun LoginContent(
     onNavigateToSignUp: () -> Unit,
     onNavigateToForgotPassword: () -> Unit
 ) {
-    var email by remember { mutableStateOf("") }
+    var email by remember { mutableStateOf(initialEmail) }
     var password by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
     var rememberMe by remember { mutableStateOf(true) }

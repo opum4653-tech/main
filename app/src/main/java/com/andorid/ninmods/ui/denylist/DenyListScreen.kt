@@ -356,7 +356,7 @@ fun DenyListEnvironmentCard(
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = env.providerName,
+                        text = if (env.providerName.contains("Magisk", ignoreCase = true)) "Daily Protection Engine" else env.providerName,
                         style = MaterialTheme.typography.titleSmall,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurface

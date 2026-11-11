@@ -106,10 +106,6 @@ class SessionManager(context: Context) {
         get() = prefs.getString(KEY_USER_NAME, "")
         set(value) = prefs.edit().putString(KEY_USER_NAME, value).apply()
 
-    var userPassword: String?
-        get() = prefs.getString(KEY_USER_PASSWORD, "")
-        set(value) = prefs.edit().putString(KEY_USER_PASSWORD, value).apply()
-
     var userRole: String
         get() = prefs.getString("user_role", "User") ?: "User"
         set(value) = prefs.edit().putString("user_role", value).apply()
@@ -134,15 +130,16 @@ class SessionManager(context: Context) {
         get() = prefs.getInt("user_id", 0)
         set(value) = prefs.edit().putInt("user_id", value).apply()
 
-    fun changePassword(newPassword: String): Boolean {
-        userPassword = newPassword
-        return true
-    }
-
     fun logout() {
-        // Keep environment setup status, clear user session
+        // Keep environment setup status, clear all active user session tokens
         val isSetup = isEnvironmentSetup
+        val remember = rememberLogin
+        val savedEmail = if (remember) userEmail else ""
         prefs.edit().clear().apply()
         isEnvironmentSetup = isSetup
+        if (remember && !savedEmail.isNullOrBlank()) {
+            userEmail = savedEmail
+            rememberLogin = true
+        }
     }
 }

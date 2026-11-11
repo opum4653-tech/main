@@ -81,8 +81,21 @@ object UserRepository {
                     }
                 },
                 onFailure = { err ->
-                    // If network fails but we have cached profile, fallback gracefully (offline resilience)
-                    if (cachedProfile != null) {
+                    val isAuthError = err.message?.let { msg ->
+                        msg.contains("401") ||
+                        msg.contains("Session expired", ignoreCase = true) ||
+                        msg.contains("SESSION_REVOKED", ignoreCase = true) ||
+                        msg.contains("Unauthorized", ignoreCase = true) ||
+                        msg.contains("token expired", ignoreCase = true) ||
+                        msg.contains("Invalid API key", ignoreCase = true)
+                    } ?: false
+
+                    if (isAuthError) {
+                        // Immediately wipe stale cache so unauthorized device cannot stay logged in
+                        clear()
+                        Result.failure(err)
+                    } else if (cachedProfile != null) {
+                        // Only fallback to cached profile on pure network connection timeout (offline tolerance)
                         Result.success(cachedProfile!!)
                     } else {
                         Result.failure(err)
