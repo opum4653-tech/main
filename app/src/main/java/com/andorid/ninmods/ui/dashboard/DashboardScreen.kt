@@ -15,6 +15,7 @@ import com.andorid.ninmods.data.SessionManager
 import com.andorid.ninmods.network.ActiveNotificationItem
 import com.andorid.ninmods.ui.clock.LicenseClockCard
 import com.andorid.ninmods.ui.component.BroadcastNotificationCard
+import com.andorid.ninmods.ui.dashboard.denylist.DenyListCard
 import com.andorid.ninmods.ui.dashboard.external_mods.ExternalModsCard
 import com.andorid.ninmods.ui.dashboard.kernel_mods.KernelModsCard
 import com.andorid.ninmods.ui.dashboard.window_manager_mods.WindowManagerModsCard
@@ -24,6 +25,7 @@ fun DashboardScreen(
     sessionManager: SessionManager,
     activeBroadcast: ActiveNotificationItem? = null,
     onDismissBroadcast: () -> Unit = {},
+    onNavigateToDenyList: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -46,13 +48,16 @@ fun DashboardScreen(
         // 1. Digital License Expiry Countdown Clock (Real-Time, hidden if no active plan)
         LicenseClockCard(sessionManager = sessionManager)
 
-        // 2. KERNEL MODS Card (Ring 0 Kernel Driver Floating Engine)
+        // 2. MAGISK DENYLIST / ROOT CLOAK CARD
+        DenyListCard(onOpenManager = onNavigateToDenyList)
+
+        // 3. KERNEL MODS Card (Ring 0 Kernel Driver Floating Engine)
         KernelModsCard(sessionManager = sessionManager)
 
-        // 3. EXTERNAL MODS Card (Single official external mod from refer/nin)
+        // 4. EXTERNAL MODS Card (Single official external mod from refer/nin)
         ExternalModsCard(sessionManager = sessionManager)
 
-        // 4. WINDOW MANAGER MODS Card (Pure Native WindowManager Floating Overlay)
+        // 5. WINDOW MANAGER MODS Card (Pure Native WindowManager Floating Overlay)
         WindowManagerModsCard(sessionManager = sessionManager)
 
         Spacer(modifier = Modifier.height(20.dp))

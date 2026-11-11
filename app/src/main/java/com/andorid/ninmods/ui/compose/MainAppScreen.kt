@@ -43,6 +43,7 @@ import com.andorid.ninmods.network.AuthApiClient
 import com.andorid.ninmods.network.UserTicketItem
 import com.andorid.ninmods.ui.MainViewModel
 import com.andorid.ninmods.ui.dashboard.DashboardScreen
+import com.andorid.ninmods.ui.denylist.DenyListScreen
 import com.andorid.ninmods.ui.loader.DriverLoaderScreen
 import com.andorid.ninmods.ui.profile.ProfileScreen
 import com.andorid.ninmods.ui.settings.SettingsScreen
@@ -56,6 +57,7 @@ enum class MainDestination(
 ) {
     DASHBOARD("Dashboard", Icons.Filled.Dashboard),
     LOADER("Driver Loader", Icons.Filled.Build),
+    DENYLIST("Magisk DenyList", Icons.Filled.Security),
     SUPPORT("Support & Messages", Icons.Filled.SupportAgent),
     TICKET_CHAT("Live Conversation", Icons.AutoMirrored.Filled.Chat),
     SETTINGS("Settings", Icons.Filled.Settings),
@@ -101,7 +103,7 @@ fun MainAppScreen(
         }
     }
 
-    val isSubScreen = currentDestination == MainDestination.TICKET_CHAT
+    val isSubScreen = currentDestination == MainDestination.TICKET_CHAT || currentDestination == MainDestination.DENYLIST
 
     BackHandler(enabled = true) {
         when {
@@ -299,6 +301,16 @@ fun MainAppScreen(
                         )
 
                         LoaderDrawerItem(
+                            title = "Magisk DenyList",
+                            icon = Icons.Filled.Security,
+                            isSelected = currentDestination == MainDestination.DENYLIST,
+                            onClick = {
+                                currentDestination = MainDestination.DENYLIST
+                                scope.launch { drawerState.close() }
+                            }
+                        )
+
+                        LoaderDrawerItem(
                             title = "Support & Messages",
                             icon = Icons.Filled.SupportAgent,
                             isSelected = currentDestination == MainDestination.SUPPORT,
@@ -350,8 +362,16 @@ fun MainAppScreen(
                         )
                     },
                     navigationIcon = {
-                        if (isSubScreen) {
+                        if (currentDestination == MainDestination.TICKET_CHAT) {
                             IconButton(onClick = { currentDestination = MainDestination.SUPPORT }) {
+                                Icon(
+                                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                    contentDescription = "Back",
+                                    tint = MaterialTheme.colorScheme.onSurface
+                                )
+                            }
+                        } else if (currentDestination == MainDestination.DENYLIST) {
+                            IconButton(onClick = { currentDestination = MainDestination.DASHBOARD }) {
                                 Icon(
                                     imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                                     contentDescription = "Back",
@@ -397,10 +417,16 @@ fun MainAppScreen(
                     .padding(innerPadding)
             ) { destination ->
                 when (destination) {
-                    MainDestination.DASHBOARD -> DashboardScreen(sessionManager = sessionManager)
+                    MainDestination.DASHBOARD -> DashboardScreen(
+                        sessionManager = sessionManager,
+                        onNavigateToDenyList = { currentDestination = MainDestination.DENYLIST }
+                    )
                     MainDestination.LOADER -> DriverLoaderScreen(
                         viewModel = viewModel,
                         sessionManager = sessionManager
+                    )
+                    MainDestination.DENYLIST -> DenyListScreen(
+                        onBack = { currentDestination = MainDestination.DASHBOARD }
                     )
                     MainDestination.SUPPORT -> UserSupportScreen(
                         sessionManager = sessionManager,
