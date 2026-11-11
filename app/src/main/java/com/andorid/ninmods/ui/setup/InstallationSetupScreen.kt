@@ -294,7 +294,7 @@ fun InstallationSetupScreen(
                     Icon(
                         imageVector = Icons.Filled.Security,
                         contentDescription = null,
-                        tint = if (isRootGranted) Color(0xFF81C784) else Color(0xFFFFB4AB),
+                        tint = if (isRootGranted) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.size(24.dp)
                     )
                     Spacer(modifier = Modifier.width(16.dp))
@@ -308,14 +308,14 @@ fun InstallationSetupScreen(
                         Text(
                             text = if (isRootGranted) "Granted ($rootManagerName)" else "Required for RAM allocation ($rootManagerName)",
                             style = MaterialTheme.typography.bodySmall,
-                            color = if (isRootGranted) Color(0xFF81C784) else MaterialTheme.colorScheme.onSurfaceVariant
+                            color = if (isRootGranted) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                     if (isRootGranted) {
                         Icon(
                             imageVector = Icons.Filled.CheckCircle,
                             contentDescription = "Granted",
-                            tint = Color(0xFF81C784),
+                            tint = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.size(20.dp)
                         )
                     } else {
@@ -363,7 +363,7 @@ fun InstallationSetupScreen(
                     Icon(
                         imageVector = Icons.Filled.Layers,
                         contentDescription = null,
-                        tint = if (isOverlayGranted) Color(0xFF81C784) else Color(0xFFFFB4AB),
+                        tint = if (isOverlayGranted) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.size(24.dp)
                     )
                     Spacer(modifier = Modifier.width(16.dp))
@@ -377,14 +377,14 @@ fun InstallationSetupScreen(
                         Text(
                             text = if (isOverlayGranted) "Active & Allowed" else "Required for floating menu overlay",
                             style = MaterialTheme.typography.bodySmall,
-                            color = if (isOverlayGranted) Color(0xFF81C784) else MaterialTheme.colorScheme.onSurfaceVariant
+                            color = if (isOverlayGranted) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                     if (isOverlayGranted) {
                         Icon(
                             imageVector = Icons.Filled.CheckCircle,
                             contentDescription = "Granted",
-                            tint = Color(0xFF81C784),
+                            tint = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.size(20.dp)
                         )
                     } else {
@@ -435,7 +435,7 @@ fun InstallationSetupScreen(
                     Icon(
                         imageVector = Icons.Filled.Folder,
                         contentDescription = null,
-                        tint = if (isStorageGranted) Color(0xFF81C784) else Color(0xFFFFB4AB),
+                        tint = if (isStorageGranted) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.size(24.dp)
                     )
                     Spacer(modifier = Modifier.width(16.dp))
@@ -449,14 +449,14 @@ fun InstallationSetupScreen(
                         Text(
                             text = if (isStorageGranted) "Full Access Granted" else "Download, extract (.zip) & load engine",
                             style = MaterialTheme.typography.bodySmall,
-                            color = if (isStorageGranted) Color(0xFF81C784) else MaterialTheme.colorScheme.onSurfaceVariant
+                            color = if (isStorageGranted) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                     if (isStorageGranted) {
                         Icon(
                             imageVector = Icons.Filled.CheckCircle,
                             contentDescription = "Granted",
-                            tint = Color(0xFF81C784),
+                            tint = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.size(20.dp)
                         )
                     } else {
@@ -506,7 +506,7 @@ fun InstallationSetupScreen(
                     Icon(
                         imageVector = Icons.Filled.Notifications,
                         contentDescription = null,
-                        tint = if (isNotificationGranted) Color(0xFF81C784) else Color(0xFFFFB4AB),
+                        tint = if (isNotificationGranted) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.size(24.dp)
                     )
                     Spacer(modifier = Modifier.width(16.dp))
@@ -520,14 +520,14 @@ fun InstallationSetupScreen(
                         Text(
                             text = if (isNotificationGranted) "Enabled" else "Background daemon alerts & download tracking",
                             style = MaterialTheme.typography.bodySmall,
-                            color = if (isNotificationGranted) Color(0xFF81C784) else MaterialTheme.colorScheme.onSurfaceVariant
+                            color = if (isNotificationGranted) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                     if (isNotificationGranted) {
                         Icon(
                             imageVector = Icons.Filled.CheckCircle,
                             contentDescription = "Granted",
-                            tint = Color(0xFF81C784),
+                            tint = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.size(20.dp)
                         )
                     } else {

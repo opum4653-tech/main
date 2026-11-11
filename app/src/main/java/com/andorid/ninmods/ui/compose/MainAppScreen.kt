@@ -84,6 +84,7 @@ fun MainAppScreen(
 
     var activeNotifications by remember { mutableStateOf<List<ActiveNotificationItem>>(emptyList()) }
     var popupNotificationToShow by remember { mutableStateOf<ActiveNotificationItem?>(null) }
+    var triggerDenyListRefresh by remember { mutableStateOf(0) }
 
     // Live sync user balance from profile API on startup
     LaunchedEffect(Unit) {
@@ -357,7 +358,15 @@ fun MainAppScreen(
                         }
                     },
                     actions = {
-                        if (!isSubScreen) {
+                        if (currentDestination == MainDestination.DENYLIST) {
+                            IconButton(onClick = { triggerDenyListRefresh++ }) {
+                                Icon(
+                                    imageVector = Icons.Filled.Refresh,
+                                    contentDescription = "Refresh",
+                                    tint = MaterialTheme.colorScheme.onSurface
+                                )
+                            }
+                        } else if (!isSubScreen) {
                             IconButton(onClick = { currentDestination = MainDestination.PROFILE }) {
                                 Icon(
                                     painter = painterResource(id = R.drawable.ic_user_profile),
@@ -394,6 +403,7 @@ fun MainAppScreen(
                         sessionManager = sessionManager
                     )
                     MainDestination.DENYLIST -> DenyListScreen(
+                        refreshTrigger = triggerDenyListRefresh,
                         onBack = { currentDestination = MainDestination.DASHBOARD }
                     )
                     MainDestination.SUPPORT -> UserSupportScreen(
