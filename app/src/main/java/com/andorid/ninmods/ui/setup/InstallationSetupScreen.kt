@@ -196,9 +196,10 @@ fun InstallationSetupScreen(
                     .padding(innerPadding)
                     .padding(horizontal = 16.dp)
                     .verticalScroll(rememberScrollState()),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Spacer(modifier = Modifier.height(4.dp))
+                Spacer(modifier = Modifier.height(12.dp))
 
                 // APatch Environment Overview Card
                 ElevatedCard(
@@ -250,14 +251,18 @@ fun InstallationSetupScreen(
                     }
                 }
 
-        // APatch Permission List Category
-        Text(
-            text = "REQUIRED PERMISSIONS & SYSTEM ROOT",
-            style = MaterialTheme.typography.labelMedium,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.padding(start = 4.dp)
-        )
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // APatch Permission List Category
+                Text(
+                    text = "REQUIRED PERMISSIONS & SYSTEM ROOT",
+                    style = MaterialTheme.typography.labelMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.padding(start = 4.dp)
+                )
+
+                Spacer(modifier = Modifier.height(10.dp))
 
         ElevatedCard(
             modifier = Modifier.fillMaxWidth(),
@@ -545,33 +550,14 @@ fun InstallationSetupScreen(
             }
         }
 
-        // Actions Category
-        Text(
-            text = "SETUP COMPLETION",
-            style = MaterialTheme.typography.labelMedium,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.padding(start = 4.dp)
-        )
+                Spacer(modifier = Modifier.height(20.dp))
 
-        ElevatedCard(
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(20.dp),
-            colors = CardDefaults.elevatedCardColors(
-                containerColor = MaterialTheme.colorScheme.surfaceVariant
-            ),
-            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
-        ) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp)
-            ) {
+                // Complete Setup & Continue button directly in body (no card wrapper)
                 Button(
                     onClick = onCompleteSetup,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(50.dp),
+                        .height(52.dp),
                     shape = RoundedCornerShape(14.dp),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = MaterialTheme.colorScheme.primary,
@@ -584,8 +570,6 @@ fun InstallationSetupScreen(
                         fontWeight = FontWeight.Bold
                     )
                 }
-            }
-        }
 
                 Spacer(modifier = Modifier.height(20.dp))
             }

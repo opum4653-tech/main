@@ -44,6 +44,7 @@ import com.andorid.ninmods.network.UserTicketItem
 import com.andorid.ninmods.ui.MainViewModel
 import com.andorid.ninmods.ui.dashboard.DashboardScreen
 import com.andorid.ninmods.ui.denylist.DenyListScreen
+import com.andorid.ninmods.ui.deposit.AddFundsScreen
 import com.andorid.ninmods.ui.loader.DriverLoaderScreen
 import com.andorid.ninmods.ui.profile.ProfileScreen
 import com.andorid.ninmods.ui.settings.SettingsScreen
@@ -57,12 +58,13 @@ enum class MainDestination(
     val icon: ImageVector
 ) {
     DASHBOARD("Dashboard", Icons.Filled.Dashboard),
+    SUPPORT("Live Support", Icons.Filled.SupportAgent),
     LOADER("Driver Loader", Icons.Filled.Build),
-    DENYLIST("Magisk DenyList", Icons.Filled.Security),
-    SUPPORT("Support & Messages", Icons.Filled.SupportAgent),
+    DENYLIST("Daily List", Icons.Filled.Security),
+    SETTINGS("General Settings", Icons.Filled.Settings),
+    ADD_FUNDS("Add Funds", Icons.Filled.AccountBalanceWallet),
     CREATE_TICKET("Create Ticket", Icons.Filled.Add),
     TICKET_CHAT("Live Conversation", Icons.AutoMirrored.Filled.Chat),
-    SETTINGS("Settings", Icons.Filled.Settings),
     PROFILE("My Profile", Icons.Filled.AccountCircle)
 }
 
@@ -82,7 +84,6 @@ fun MainAppScreen(
 
     var activeNotifications by remember { mutableStateOf<List<ActiveNotificationItem>>(emptyList()) }
     var popupNotificationToShow by remember { mutableStateOf<ActiveNotificationItem?>(null) }
-    var showDrawerDepositSheet by remember { mutableStateOf(false) }
 
     // Live sync user balance from profile API on startup
     LaunchedEffect(Unit) {
@@ -107,7 +108,8 @@ fun MainAppScreen(
 
     val isSubScreen = currentDestination == MainDestination.TICKET_CHAT ||
             currentDestination == MainDestination.DENYLIST ||
-            currentDestination == MainDestination.CREATE_TICKET
+            currentDestination == MainDestination.CREATE_TICKET ||
+            currentDestination == MainDestination.ADD_FUNDS
 
     BackHandler(enabled = true) {
         when {
@@ -119,6 +121,9 @@ fun MainAppScreen(
             }
             currentDestination == MainDestination.CREATE_TICKET -> {
                 currentDestination = MainDestination.SUPPORT
+            }
+            currentDestination == MainDestination.ADD_FUNDS -> {
+                currentDestination = MainDestination.DASHBOARD
             }
             currentDestination != MainDestination.DASHBOARD -> {
                 currentDestination = MainDestination.DASHBOARD
@@ -223,80 +228,19 @@ fun MainAppScreen(
                                     )
                                 }
                             }
-
-                            Spacer(modifier = Modifier.height(10.dp))
-
-                            FilledTonalButton(
-                                onClick = {
-                                    showDrawerDepositSheet = true
-                                    scope.launch { drawerState.close() }
-                                },
-                                modifier = Modifier.fillMaxWidth(0.85f),
-                                shape = RoundedCornerShape(10.dp),
-                                contentPadding = PaddingValues(vertical = 4.dp, horizontal = 12.dp)
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Filled.AccountBalanceWallet,
-                                    contentDescription = null,
-                                    modifier = Modifier.size(16.dp)
-                                )
-                                Spacer(modifier = Modifier.width(6.dp))
-                                Text(
-                                    text = "Add Funds",
-                                    style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold)
-                                )
-                            }
                         }
                     }
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    // Primary Action Button (Driver Loader)
-                    Surface(
-                        onClick = {
-                            currentDestination = MainDestination.LOADER
-                            scope.launch { drawerState.close() }
-                        },
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(12.dp),
-                        color = if (currentDestination == MainDestination.LOADER) {
-                            MaterialTheme.colorScheme.primary
-                        } else {
-                            MaterialTheme.colorScheme.primary.copy(alpha = 0.85f)
-                        }
-                    ) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 16.dp, vertical = 13.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Icon(
-                                imageVector = Icons.Filled.Build,
-                                contentDescription = "Driver Loader",
-                                tint = MaterialTheme.colorScheme.onPrimary,
-                                modifier = Modifier.size(20.dp)
-                            )
-                            Spacer(modifier = Modifier.width(12.dp))
-                            Text(
-                                text = "Driver Loader",
-                                style = MaterialTheme.typography.titleSmall.copy(
-                                    fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.onPrimary
-                                )
-                            )
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(14.dp))
-
-                    // Authentic Navigation Items
+                    // Authentic Navigation Items in exact specified order
                     Column(
                         modifier = Modifier
                             .weight(1f)
                             .verticalScroll(rememberScrollState()),
                         verticalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
+                        // 1. Dashboard
                         LoaderDrawerItem(
                             title = "Dashboard",
                             icon = Icons.Filled.Dashboard,
@@ -307,18 +251,9 @@ fun MainAppScreen(
                             }
                         )
 
+                        // 2. Live Support
                         LoaderDrawerItem(
-                            title = "Magisk DenyList",
-                            icon = Icons.Filled.Security,
-                            isSelected = currentDestination == MainDestination.DENYLIST,
-                            onClick = {
-                                currentDestination = MainDestination.DENYLIST
-                                scope.launch { drawerState.close() }
-                            }
-                        )
-
-                        LoaderDrawerItem(
-                            title = "Support & Messages",
+                            title = "Live Support",
                             icon = Icons.Filled.SupportAgent,
                             isSelected = currentDestination == MainDestination.SUPPORT,
                             onClick = {
@@ -327,8 +262,31 @@ fun MainAppScreen(
                             }
                         )
 
+                        // 3. Driver Loader
                         LoaderDrawerItem(
-                            title = "Kernel Settings",
+                            title = "Driver Loader",
+                            icon = Icons.Filled.Build,
+                            isSelected = currentDestination == MainDestination.LOADER,
+                            onClick = {
+                                currentDestination = MainDestination.LOADER
+                                scope.launch { drawerState.close() }
+                            }
+                        )
+
+                        // 4. Daily List (Magisk name forbidden)
+                        LoaderDrawerItem(
+                            title = "Daily List",
+                            icon = Icons.Filled.Security,
+                            isSelected = currentDestination == MainDestination.DENYLIST,
+                            onClick = {
+                                currentDestination = MainDestination.DENYLIST
+                                scope.launch { drawerState.close() }
+                            }
+                        )
+
+                        // 5. General Settings
+                        LoaderDrawerItem(
+                            title = "General Settings",
                             icon = Icons.Filled.Settings,
                             isSelected = currentDestination == MainDestination.SETTINGS,
                             onClick = {
@@ -337,12 +295,13 @@ fun MainAppScreen(
                             }
                         )
 
+                        // 6. Add Funds (moved from Profile card to drawer items)
                         LoaderDrawerItem(
-                            title = "My Profile",
-                            icon = Icons.Filled.AccountCircle,
-                            isSelected = currentDestination == MainDestination.PROFILE,
+                            title = "Add Funds",
+                            icon = Icons.Filled.AccountBalanceWallet,
+                            isSelected = currentDestination == MainDestination.ADD_FUNDS,
                             onClick = {
-                                currentDestination = MainDestination.PROFILE
+                                currentDestination = MainDestination.ADD_FUNDS
                                 scope.launch { drawerState.close() }
                             }
                         )
@@ -378,7 +337,8 @@ fun MainAppScreen(
                                     tint = MaterialTheme.colorScheme.onSurface
                                 )
                             }
-                        } else if (currentDestination == MainDestination.DENYLIST) {
+                        } else if (currentDestination == MainDestination.DENYLIST ||
+                            currentDestination == MainDestination.ADD_FUNDS) {
                             IconButton(onClick = { currentDestination = MainDestination.DASHBOARD }) {
                                 Icon(
                                     imageVector = Icons.AutoMirrored.Filled.ArrowBack,
@@ -467,6 +427,10 @@ fun MainAppScreen(
                         sessionManager = sessionManager,
                         onSignOut = onSignOut
                     )
+                    MainDestination.ADD_FUNDS -> AddFundsScreen(
+                        sessionManager = sessionManager,
+                        onNavigateBack = { currentDestination = MainDestination.DASHBOARD }
+                    )
                     MainDestination.PROFILE -> ProfileScreen(
                         sessionManager = sessionManager,
                         onSignOut = onSignOut
@@ -532,25 +496,6 @@ fun MainAppScreen(
                 ) {
                     Text("Got It", fontWeight = FontWeight.Bold)
                 }
-            }
-        )
-    }
-
-    if (showDrawerDepositSheet) {
-        val token = sessionManager.authToken ?: ""
-        com.andorid.ninmods.ui.dialogs.UserDepositBottomSheet(
-            authToken = token,
-            onDismiss = { showDrawerDepositSheet = false },
-            onDepositSuccess = {
-                showDrawerDepositSheet = false
-                scope.launch {
-                    AuthApiClient.getProfileWithEtag(token).onSuccess { (profileData, _, _) ->
-                        if (profileData != null) {
-                            sessionManager.userBalance = profileData.balance
-                        }
-                    }
-                }
-                Toast.makeText(context, "Deposit submitted successfully!", Toast.LENGTH_LONG).show()
             }
         )
     }
