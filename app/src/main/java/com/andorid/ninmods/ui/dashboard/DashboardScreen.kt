@@ -57,7 +57,7 @@ fun DashboardScreen(
         // 4. EXTERNAL MODS Card (Single official external mod from refer/nin)
         ExternalModsCard(sessionManager = sessionManager)
 
-        // 5. WINDOW MANAGER MODS Card (Pure Native WindowManager Floating Overlay)
+        // 5. SUPER MODS Card (Native Floating Engine)
         WindowManagerModsCard(sessionManager = sessionManager)
 
         Spacer(modifier = Modifier.height(20.dp))

@@ -26,7 +26,6 @@ import androidx.compose.material.icons.filled.CloudDownload
 import androidx.compose.material.icons.filled.Layers
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.Icon
@@ -37,7 +36,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -50,11 +48,10 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.andorid.ninmods.R
-import com.andorid.ninmods.config.AppConfig
 import com.andorid.ninmods.data.ModDownloader
 import com.andorid.ninmods.data.SessionManager
 import com.andorid.ninmods.data.ShellExecutor
@@ -99,7 +96,7 @@ fun WindowManagerModsCard(
     }
 
     fun startDownload() {
-        unifiedDialogState = UnifiedModDialogState.Downloading("NINMODS WindowManager", 0)
+        unifiedDialogState = UnifiedModDialogState.Downloading("SUPER MODS", 0)
         downloadJob?.cancel()
         downloadJob = scope.launch {
             val zipFile = File(wmDir, "window_manager_mod.zip")
@@ -111,7 +108,7 @@ fun WindowManagerModsCard(
                 targetDir = wmDir,
                 fileName = "window_manager_mod.zip",
                 onProgress = { pct ->
-                    unifiedDialogState = UnifiedModDialogState.Downloading("NINMODS WindowManager", pct)
+                    unifiedDialogState = UnifiedModDialogState.Downloading("SUPER MODS", pct)
                 }
             )
 
@@ -139,7 +136,7 @@ fun WindowManagerModsCard(
                 }
                 checkFiles()
                 unifiedDialogState = null
-                Toast.makeText(context, "WindowManager Mod downloaded successfully", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, "SUPER MODS downloaded successfully", Toast.LENGTH_SHORT).show()
             } else {
                 val err = result.exceptionOrNull()?.message ?: "Download failed"
                 Toast.makeText(context, err, Toast.LENGTH_LONG).show()
@@ -153,7 +150,7 @@ fun WindowManagerModsCard(
             val intent = Intent(context, FloatingMenuService::class.java)
             context.stopService(intent)
             isRunning = false
-            Toast.makeText(context, "WindowManager Overlay Stopped", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, "SUPER MODS stopped.", Toast.LENGTH_SHORT).show()
         } catch (e: Exception) {
             e.printStackTrace()
         }
@@ -192,7 +189,7 @@ fun WindowManagerModsCard(
                     isSubmitting = false,
                     errorMessage = null,
                     isVerified = false,
-                    terminalLogs = listOf("[*] License key required to activate WindowManager Overlay.")
+                    terminalLogs = listOf("[*] License key required to activate SUPER MODS.")
                 )
                 return@launch
             }
@@ -238,7 +235,7 @@ fun WindowManagerModsCard(
                     context.startService(intent)
                 }
                 isRunning = true
-                Toast.makeText(context, "WindowManager Overlay Started", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, "SUPER MODS Started", Toast.LENGTH_SHORT).show()
             } catch (e: Exception) {
                 e.printStackTrace()
                 Toast.makeText(context, "Failed to launch service: ${e.message}", Toast.LENGTH_LONG).show()
@@ -246,241 +243,7 @@ fun WindowManagerModsCard(
         }
     }
 
-    ElevatedCard(
-        modifier = modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.elevatedCardColors(containerColor = Color(0xFF1E212A)),
-        elevation = CardDefaults.elevatedCardElevation(defaultElevation = 6.dp)
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(20.dp)
-        ) {
-            // Header: Title & Badges
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(14.dp)
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .size(52.dp)
-                            .clip(RoundedCornerShape(16.dp))
-                            .clickable { checkFiles() },
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Image(
-                            painter = painterResource(id = R.drawable.ic_launcher),
-                            contentDescription = "WindowManager Mod",
-                            modifier = Modifier.fillMaxSize(),
-                            contentScale = ContentScale.Crop
-                        )
-                    }
-
-                    Column {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            Text(
-                                text = "NINMODS WindowManager",
-                                color = Color.White,
-                                fontSize = 17.sp,
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
-                        Spacer(modifier = Modifier.height(3.dp))
-                        Text(
-                            text = "OB55 (1.132.1) • Pure Native UI",
-                            color = Color(0xFF9E9E9E),
-                            fontSize = 12.sp
-                        )
-                    }
-                }
-
-                // Status Badge
-                Surface(
-                    shape = RoundedCornerShape(20.dp),
-                    color = when {
-                        isRunning -> Color(0xFF1B5E20).copy(alpha = 0.5f)
-                        isDownloaded -> Color(0xFF4A148C).copy(alpha = 0.5f)
-                        else -> Color(0xFF263238).copy(alpha = 0.6f)
-                    }
-                ) {
-                    Row(
-                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(6.dp)
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .size(7.dp)
-                                .clip(CircleShape)
-                                .then(
-                                    Modifier.padding(0.dp)
-                                )
-                        ) {
-                            Surface(
-                                shape = CircleShape,
-                                color = when {
-                                    isRunning -> Color(0xFF00E676)
-                                    isDownloaded -> Color(0xFFE10098)
-                                    else -> Color(0xFF78909C)
-                                },
-                                modifier = Modifier.fillMaxSize()
-                            ) {}
-                        }
-                        Text(
-                            text = when {
-                                isRunning -> "RUNNING"
-                                isDownloaded -> "READY"
-                                else -> "OFFLINE"
-                            },
-                            color = when {
-                                isRunning -> Color(0xFF00E676)
-                                isDownloaded -> Color(0xFFE10098)
-                                else -> Color(0xFFB0BEC5)
-                            },
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(14.dp))
-
-            // Feature Highlights
-            Text(
-                text = "Pure Android WindowManager floating overlay with Electric Orchid menu, hardware-accelerated Canvas ESP, 0-100% headshot rate, sniper scope lock & zero camera snapping.",
-                color = Color(0xFFB0BEC5),
-                fontSize = 13.sp,
-                lineHeight = 18.sp
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Action Row
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(10.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                // Refresh Button
-                IconButton(
-                    onClick = { checkFiles() },
-                    modifier = Modifier
-                        .size(44.dp)
-                        .clip(RoundedCornerShape(12.dp))
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Refresh,
-                        contentDescription = "Refresh",
-                        tint = Color(0xFF9E9E9E)
-                    )
-                }
-
-                if (!isDownloaded) {
-                    // Download Button
-                    Surface(
-                        modifier = Modifier
-                            .weight(1f)
-                            .height(44.dp)
-                            .clickable { startDownload() },
-                        shape = RoundedCornerShape(14.dp),
-                        color = Color(0xFFE10098)
-                    ) {
-                        Row(
-                            modifier = Modifier.fillMaxSize(),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.Center
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.CloudDownload,
-                                contentDescription = "Download",
-                                tint = Color.White,
-                                modifier = Modifier.size(20.dp)
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(
-                                text = "DOWNLOAD MOD",
-                                color = Color.White,
-                                fontSize = 14.sp,
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
-                    }
-                } else if (isRunning) {
-                    // Stop Button
-                    Surface(
-                        modifier = Modifier
-                            .weight(1f)
-                            .height(44.dp)
-                            .clickable { stopOverlay() },
-                        shape = RoundedCornerShape(14.dp),
-                        color = Color(0xFFD32F2F)
-                    ) {
-                        Row(
-                            modifier = Modifier.fillMaxSize(),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.Center
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Stop,
-                                contentDescription = "Stop",
-                                tint = Color.White,
-                                modifier = Modifier.size(20.dp)
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(
-                                text = "STOP OVERLAY",
-                                color = Color.White,
-                                fontSize = 14.sp,
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
-                    }
-                } else {
-                    // Launch Button
-                    Surface(
-                        modifier = Modifier
-                            .weight(1f)
-                            .height(44.dp)
-                            .clickable { launchOverlay() },
-                        shape = RoundedCornerShape(14.dp),
-                        color = Color(0xFF00E676)
-                    ) {
-                        Row(
-                            modifier = Modifier.fillMaxSize(),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.Center
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.PlayArrow,
-                                contentDescription = "Launch",
-                                tint = Color(0xFF10131A),
-                                modifier = Modifier.size(22.dp)
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(
-                                text = "START OVERLAY",
-                                color = Color(0xFF10131A),
-                                fontSize = 14.sp,
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    // Unified Dialogs for License, Root, Download
+    // Unified Dialogs for License, Root, Download, Stop
     unifiedDialogState?.let { state ->
         ApatchUnifiedModDialog(
             state = state,
@@ -496,6 +259,10 @@ fun WindowManagerModsCard(
                 downloadJob?.cancel()
                 downloadJob = null
                 unifiedDialogState = null
+            },
+            onConfirmStop = {
+                unifiedDialogState = null
+                stopOverlay()
             },
             onSubmitKey = { inputKey ->
                 scope.launch {
@@ -529,5 +296,189 @@ fun WindowManagerModsCard(
                 }
             }
         )
+    }
+
+    // Outer Card matching KernelModsCard & ExternalModsCard exactly
+    ElevatedCard(
+        modifier = modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.elevatedCardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        ) {
+            // Header
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.Layers,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(20.dp)
+                )
+
+                Spacer(modifier = Modifier.width(8.dp))
+
+                Text(
+                    text = "SUPER MOD",
+                    style = MaterialTheme.typography.labelLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary
+                )
+
+                Spacer(modifier = Modifier.weight(1f))
+
+                IconButton(
+                    onClick = { checkFiles() },
+                    modifier = Modifier.size(28.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.Refresh,
+                        contentDescription = "Refresh",
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.size(16.dp)
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(14.dp))
+
+            // Inner Mod Item Card
+            ElevatedCard(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable {
+                        if (!isDownloaded) {
+                            unifiedDialogState = UnifiedModDialogState.ConfirmDownload("SUPER MODS")
+                        } else if (isRunning) {
+                            unifiedDialogState = UnifiedModDialogState.StopConfirm("SUPER MODS")
+                        } else {
+                            launchOverlay()
+                        }
+                    },
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.elevatedCardColors(
+                    containerColor = MaterialTheme.colorScheme.surface
+                ),
+                elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 14.dp, horizontal = 14.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    // Official App Logo container
+                    Surface(
+                        shape = CircleShape,
+                        color = when {
+                            isRunning -> MaterialTheme.colorScheme.primaryContainer
+                            !isDownloaded -> MaterialTheme.colorScheme.surfaceVariant
+                            else -> MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f)
+                        },
+                        modifier = Modifier.size(48.dp)
+                    ) {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            if (isRunning) {
+                                Icon(
+                                    imageVector = Icons.Filled.PlayArrow,
+                                    contentDescription = "Running",
+                                    tint = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.size(26.dp)
+                                )
+                            } else {
+                                Image(
+                                    painter = painterResource(id = R.drawable.logo_n),
+                                    contentDescription = "SUPER MODS",
+                                    contentScale = ContentScale.Fit,
+                                    modifier = Modifier
+                                        .size(32.dp)
+                                        .clip(CircleShape)
+                                )
+                            }
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.width(14.dp))
+
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = "SUPER MODS",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+
+                        Spacer(modifier = Modifier.height(2.dp))
+
+                        Text(
+                            text = if (isRunning) "Overlay active & running in RAM" else "Native floating engine client",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.width(8.dp))
+
+                    // Update / Re-download icon button if already downloaded
+                    if (isDownloaded && !isRunning) {
+                        IconButton(
+                            onClick = {
+                                unifiedDialogState = UnifiedModDialogState.ConfirmDownload("SUPER MODS")
+                            },
+                            modifier = Modifier.size(32.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.CloudDownload,
+                                contentDescription = "Update Mod",
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
+                        Spacer(modifier = Modifier.width(4.dp))
+                    }
+
+                    // Status badge
+                    Surface(
+                        shape = RoundedCornerShape(8.dp),
+                        color = when {
+                            isRunning -> MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)
+                            !isDownloaded -> MaterialTheme.colorScheme.surfaceVariant
+                            else -> MaterialTheme.colorScheme.secondary.copy(alpha = 0.15f)
+                        }
+                    ) {
+                        Text(
+                            text = when {
+                                isRunning -> "ACTIVE"
+                                !isDownloaded -> "AVAILABLE"
+                                else -> "READY"
+                            },
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = when {
+                                isRunning -> MaterialTheme.colorScheme.primary
+                                !isDownloaded -> MaterialTheme.colorScheme.onSurfaceVariant
+                                else -> MaterialTheme.colorScheme.secondary
+                            },
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
+                        )
+                    }
+                }
+            }
+        }
     }
 }
