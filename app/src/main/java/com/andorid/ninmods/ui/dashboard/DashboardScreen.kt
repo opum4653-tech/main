@@ -18,7 +18,6 @@ import com.andorid.ninmods.ui.component.BroadcastNotificationCard
 import com.andorid.ninmods.ui.dashboard.denylist.DenyListCard
 import com.andorid.ninmods.ui.dashboard.external_mods.ExternalModsCard
 import com.andorid.ninmods.ui.dashboard.kernel_mods.KernelModsCard
-import com.andorid.ninmods.ui.dashboard.window_manager_mods.WindowManagerModsCard
 
 @Composable
 fun DashboardScreen(
@@ -56,9 +55,6 @@ fun DashboardScreen(
 
         // 4. EXTERNAL MODS Card (Single official external mod from refer/nin)
         ExternalModsCard(sessionManager = sessionManager)
-
-        // 5. SUPER MODS Card (Native Floating Engine)
-        WindowManagerModsCard(sessionManager = sessionManager)
 
         Spacer(modifier = Modifier.height(20.dp))
     }

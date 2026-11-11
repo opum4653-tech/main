@@ -39,11 +39,6 @@
             android:exported="false"
             android:screenOrientation="portrait" />
 
-        <!-- Pure WindowManager Overlay Floating Service -->
-        <service
-            android:name="com.ninmods.overlay.FloatingMenuService"
-            android:exported="false" />
-
     </application>
 
 </manifest>
