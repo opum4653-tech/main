@@ -357,7 +357,6 @@ fun DenyListScreen(
         }
     }
 }
-}
 
 @Composable
 fun DenyListEnvironmentCard(
