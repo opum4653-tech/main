@@ -1,7 +1,7 @@
 package com.andorid.ninmods.ui.dashboard.denylist
 
 import android.widget.Toast
-import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -16,10 +16,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.andorid.ninmods.R
 import com.andorid.ninmods.data.DenyListManager
 import com.andorid.ninmods.data.RootEnvironmentInfo
 import kotlinx.coroutines.launch
@@ -44,11 +47,13 @@ fun DenyListCard(
         refreshEnv()
     }
 
-    Surface(
+    ElevatedCard(
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(20.dp),
-        color = Color(0xFF141721),
-        border = BorderStroke(1.dp, Color(0xFF232938))
+        colors = CardDefaults.elevatedCardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Column(
             modifier = Modifier
@@ -63,36 +68,39 @@ fun DenyListCard(
             ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     Box(
                         modifier = Modifier
-                            .size(38.dp)
-                            .clip(RoundedCornerShape(10.dp))
-                            .background(Color(0xFF241C38)),
+                            .size(46.dp)
+                            .clip(RoundedCornerShape(14.dp)),
                         contentAlignment = Alignment.Center
                     ) {
-                        Icon(
-                            imageVector = Icons.Filled.Security,
-                            contentDescription = null,
-                            tint = Color(0xFFA78BFA),
-                            modifier = Modifier.size(22.dp)
+                        Image(
+                            painter = painterResource(id = R.drawable.ic_launcher),
+                            contentDescription = "Magisk DenyList",
+                            modifier = Modifier.fillMaxSize(),
+                            contentScale = ContentScale.Crop
                         )
                     }
 
                     Column {
-                        Text(
-                            text = "Magisk DenyList",
-                            style = MaterialTheme.typography.titleMedium.copy(
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Text(
+                                text = "Magisk DenyList",
+                                style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.Bold,
-                                color = Color(0xFFF3F4F6)
+                                color = MaterialTheme.colorScheme.onSurface
                             )
-                        )
+                        }
+
                         Text(
                             text = "Root Cloak & Anti-Detection",
-                            style = MaterialTheme.typography.bodySmall.copy(
-                                color = Color(0xFF9CA3AF)
-                            )
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 }
@@ -102,7 +110,7 @@ fun DenyListCard(
                 val statusText = when {
                     env == null -> "CHECKING"
                     !env.rootAvailable -> "NO ROOT"
-                    !env.isMagisk -> "ACTIVE ROOT"
+                    !env.isMagisk -> "ROOT ACTIVE"
                     env.denylistEnabled -> "ENFORCING"
                     else -> "DISABLED"
                 }
@@ -115,8 +123,7 @@ fun DenyListCard(
 
                 Surface(
                     shape = RoundedCornerShape(8.dp),
-                    color = statusColor.copy(alpha = 0.15f),
-                    border = BorderStroke(1.dp, statusColor.copy(alpha = 0.4f))
+                    color = statusColor.copy(alpha = 0.15f)
                 ) {
                     Row(
                         modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
@@ -131,7 +138,7 @@ fun DenyListCard(
                         )
                         Text(
                             text = statusText,
-                            fontSize = 10.sp,
+                            style = MaterialTheme.typography.labelSmall,
                             fontWeight = FontWeight.Bold,
                             color = statusColor
                         )
@@ -144,35 +151,39 @@ fun DenyListCard(
             // Info row
             envInfo?.let { env ->
                 if (env.isMagisk) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(10.dp))
-                            .background(Color(0xFF1A1E2B))
-                            .padding(12.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
+                    Surface(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(12.dp),
+                        color = MaterialTheme.colorScheme.surface.copy(alpha = 0.5f)
                     ) {
-                        Column {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(12.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Column {
+                                Text(
+                                    text = "Protected Targets",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                                Text(
+                                    text = "${env.totalHiddenPackages} apps (${env.totalHiddenProcesses} processes)",
+                                    style = MaterialTheme.typography.titleSmall,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                            }
+
                             Text(
-                                text = "Protected Targets",
-                                fontSize = 11.sp,
-                                color = Color(0xFF9CA3AF)
-                            )
-                            Text(
-                                text = "${env.totalHiddenPackages} apps (${env.totalHiddenProcesses} processes)",
-                                fontSize = 13.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = Color(0xFFF3F4F6)
+                                text = env.providerName,
+                                style = MaterialTheme.typography.labelMedium,
+                                fontWeight = FontWeight.SemiBold,
+                                color = MaterialTheme.colorScheme.primary
                             )
                         }
-
-                        Text(
-                            text = env.providerName,
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.Medium,
-                            color = Color(0xFFA78BFA)
-                        )
                     }
                     Spacer(modifier = Modifier.height(12.dp))
                 }
@@ -191,7 +202,7 @@ fun DenyListCard(
                             val res = DenyListManager.quickCloakGames(context)
                             isCloaking = false
                             if (res.isSuccess) {
-                                Toast.makeText(context, "Free Fire Protected (${res.getOrNull()} procs)", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, "Free Fire Protected (${res.getOrNull()} processes)", Toast.LENGTH_SHORT).show()
                                 refreshEnv()
                             } else {
                                 Toast.makeText(context, "Failed: ${res.exceptionOrNull()?.message}", Toast.LENGTH_SHORT).show()
@@ -201,8 +212,8 @@ fun DenyListCard(
                     modifier = Modifier.weight(1f),
                     shape = RoundedCornerShape(12.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFF7C3AED),
-                        contentColor = Color.White
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        contentColor = MaterialTheme.colorScheme.onPrimary
                     ),
                     contentPadding = PaddingValues(vertical = 12.dp),
                     enabled = !isCloaking
@@ -210,7 +221,7 @@ fun DenyListCard(
                     if (isCloaking) {
                         CircularProgressIndicator(
                             modifier = Modifier.size(16.dp),
-                            color = Color.White,
+                            color = MaterialTheme.colorScheme.onPrimary,
                             strokeWidth = 2.dp
                         )
                     } else {
@@ -222,7 +233,7 @@ fun DenyListCard(
                         Spacer(modifier = Modifier.width(6.dp))
                         Text(
                             text = "CLOAK GAME",
-                            fontSize = 12.sp,
+                            style = MaterialTheme.typography.labelLarge,
                             fontWeight = FontWeight.Bold
                         )
                     }
@@ -234,14 +245,13 @@ fun DenyListCard(
                     modifier = Modifier.weight(1f),
                     shape = RoundedCornerShape(12.dp),
                     colors = ButtonDefaults.outlinedButtonColors(
-                        contentColor = Color(0xFFF3F4F6)
+                        contentColor = MaterialTheme.colorScheme.onSurface
                     ),
-                    border = BorderStroke(1.dp, Color(0xFF333B4F)),
                     contentPadding = PaddingValues(vertical = 12.dp)
                 ) {
                     Text(
                         text = "MANAGE APPS",
-                        fontSize = 12.sp,
+                        style = MaterialTheme.typography.labelLarge,
                         fontWeight = FontWeight.Bold
                     )
                     Spacer(modifier = Modifier.width(4.dp))
@@ -249,7 +259,7 @@ fun DenyListCard(
                         imageVector = Icons.Filled.ChevronRight,
                         contentDescription = null,
                         modifier = Modifier.size(16.dp),
-                        tint = Color(0xFF9CA3AF)
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }

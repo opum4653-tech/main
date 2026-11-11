@@ -5,7 +5,6 @@ import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -13,7 +12,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -22,13 +20,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
-import com.andorid.ninmods.data.AppProcessItem
 import com.andorid.ninmods.data.DenyListManager
 import com.andorid.ninmods.data.InstalledAppItem
 import com.andorid.ninmods.data.RootEnvironmentInfo
@@ -100,12 +96,12 @@ fun DenyListScreen(
             contentAlignment = Alignment.Center
         ) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                CircularProgressIndicator(color = Color(0xFFA78BFA))
+                CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
                 Spacer(modifier = Modifier.height(12.dp))
                 Text(
                     text = "Inspecting Zygisk & Scanning Packages...",
-                    color = Color(0xFF9CA3AF),
-                    fontSize = 13.sp
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         }
@@ -127,14 +123,14 @@ fun DenyListScreen(
                     Column {
                         Text(
                             text = "Magisk DenyList",
-                            fontSize = 18.sp,
+                            style = MaterialTheme.typography.titleLarge,
                             fontWeight = FontWeight.Bold,
-                            color = Color(0xFFF3F4F6)
+                            color = MaterialTheme.colorScheme.onSurface
                         )
                         Text(
                             text = "Zygote mount namespace isolation & root cloak",
-                            fontSize = 11.sp,
-                            color = Color(0xFF9CA3AF)
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
 
@@ -145,7 +141,7 @@ fun DenyListScreen(
                         Icon(
                             imageVector = Icons.Filled.Refresh,
                             contentDescription = "Refresh",
-                            tint = Color(0xFFA78BFA)
+                            tint = MaterialTheme.colorScheme.primary
                         )
                     }
                 }
@@ -208,12 +204,18 @@ fun DenyListScreen(
                         value = searchQuery,
                         onValueChange = { searchQuery = it },
                         modifier = Modifier.fillMaxWidth(),
-                        placeholder = { Text("Search app or package name...", color = Color(0xFF6B7280), fontSize = 13.sp) },
+                        placeholder = {
+                            Text(
+                                "Search app or package name...",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+                            )
+                        },
                         leadingIcon = {
                             Icon(
                                 imageVector = Icons.Filled.Search,
                                 contentDescription = null,
-                                tint = Color(0xFF9CA3AF)
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         },
                         trailingIcon = {
@@ -222,21 +224,13 @@ fun DenyListScreen(
                                     Icon(
                                         imageVector = Icons.Filled.Clear,
                                         contentDescription = "Clear",
-                                        tint = Color(0xFF9CA3AF)
+                                        tint = MaterialTheme.colorScheme.onSurfaceVariant
                                     )
                                 }
                             }
                         },
                         singleLine = true,
-                        shape = RoundedCornerShape(12.dp),
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedContainerColor = Color(0xFF161922),
-                            unfocusedContainerColor = Color(0xFF161922),
-                            focusedBorderColor = Color(0xFFA78BFA),
-                            unfocusedBorderColor = Color(0xFF262C3A),
-                            focusedTextColor = Color(0xFFF3F4F6),
-                            unfocusedTextColor = Color(0xFFF3F4F6)
-                        )
+                        shape = RoundedCornerShape(12.dp)
                     )
 
                     // Filter Chips
@@ -252,22 +246,11 @@ fun DenyListScreen(
                                 label = {
                                     Text(
                                         text = filter.label,
-                                        fontSize = 12.sp,
+                                        style = MaterialTheme.typography.labelMedium,
                                         fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
                                     )
                                 },
-                                colors = FilterChipDefaults.filterChipColors(
-                                    containerColor = Color(0xFF1A1D27),
-                                    labelColor = Color(0xFF9CA3AF),
-                                    selectedContainerColor = Color(0xFF2D1F47),
-                                    selectedLabelColor = Color(0xFFA78BFA)
-                                ),
-                                border = FilterChipDefaults.filterChipBorder(
-                                    enabled = true,
-                                    selected = isSelected,
-                                    borderColor = Color(0xFF2E3445),
-                                    selectedBorderColor = Color(0xFFA78BFA)
-                                )
+                                shape = RoundedCornerShape(8.dp)
                             )
                         }
                     }
@@ -283,9 +266,9 @@ fun DenyListScreen(
                 ) {
                     Text(
                         text = "INSTALLED APPLICATIONS (${filteredApps.size})",
-                        fontSize = 11.sp,
+                        style = MaterialTheme.typography.labelMedium,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF6B7280),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         letterSpacing = 1.sp
                     )
                 }
@@ -301,8 +284,8 @@ fun DenyListScreen(
                     ) {
                         Text(
                             text = "No matching applications found",
-                            color = Color(0xFF6B7280),
-                            fontSize = 13.sp
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 }
@@ -363,11 +346,13 @@ fun DenyListEnvironmentCard(
     env: RootEnvironmentInfo,
     onToggleDenyList: (Boolean) -> Unit
 ) {
-    Surface(
+    ElevatedCard(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
-        color = Color(0xFF161922),
-        border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFF262C3A))
+        colors = CardDefaults.elevatedCardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Row(
@@ -385,39 +370,39 @@ fun DenyListEnvironmentCard(
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
                         text = env.providerName,
+                        style = MaterialTheme.typography.titleSmall,
                         fontWeight = FontWeight.Bold,
-                        fontSize = 14.sp,
-                        color = Color(0xFFF3F4F6)
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                 }
 
                 if (env.isMagisk) {
                     Surface(
                         shape = RoundedCornerShape(6.dp),
-                        color = if (env.denylistEnabled) Color(0xFF064E3B) else Color(0xFF451A03)
+                        color = if (env.denylistEnabled) Color(0xFF10B981).copy(alpha = 0.2f) else Color(0xFFF59E0B).copy(alpha = 0.2f)
                     ) {
                         Text(
                             text = if (env.denylistEnabled) "ENFORCING" else "DISABLED",
-                            fontSize = 10.sp,
+                            style = MaterialTheme.typography.labelSmall,
                             fontWeight = FontWeight.Bold,
-                            color = if (env.denylistEnabled) Color(0xFF34D399) else Color(0xFFFBBF24),
+                            color = if (env.denylistEnabled) Color(0xFF10B981) else Color(0xFFF59E0B),
                             modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
                         )
                     }
                 }
             }
 
-            Spacer(modifier = Modifier.height(10.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
             Text(
                 text = env.statusMessage,
-                fontSize = 12.sp,
-                color = Color(0xFF9CA3AF)
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
 
             if (env.isMagisk) {
                 Spacer(modifier = Modifier.height(12.dp))
-                Divider(color = Color(0xFF222836))
+                Divider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f))
                 Spacer(modifier = Modifier.height(10.dp))
 
                 Row(
@@ -428,24 +413,22 @@ fun DenyListEnvironmentCard(
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
                             text = "Enforce DenyList",
-                            fontSize = 13.sp,
+                            style = MaterialTheme.typography.bodyMedium,
                             fontWeight = FontWeight.SemiBold,
-                            color = Color(0xFFF3F4F6)
+                            color = MaterialTheme.colorScheme.onSurface
                         )
                         Text(
                             text = "Unmount root files & modules in selected targets",
-                            fontSize = 11.sp,
-                            color = Color(0xFF6B7280)
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                     Switch(
                         checked = env.denylistEnabled,
                         onCheckedChange = onToggleDenyList,
                         colors = SwitchDefaults.colors(
-                            checkedThumbColor = Color(0xFFFFFFFF),
-                            checkedTrackColor = Color(0xFF8B5CF6),
-                            uncheckedThumbColor = Color(0xFF9CA3AF),
-                            uncheckedTrackColor = Color(0xFF262C3A)
+                            checkedThumbColor = MaterialTheme.colorScheme.onPrimary,
+                            checkedTrackColor = MaterialTheme.colorScheme.primary
                         )
                     )
                 }
@@ -458,15 +441,15 @@ fun DenyListEnvironmentCard(
                 ) {
                     Text(
                         text = "Packages: ${env.totalHiddenPackages}",
-                        fontSize = 11.sp,
+                        style = MaterialTheme.typography.labelSmall,
                         fontWeight = FontWeight.Medium,
-                        color = Color(0xFFA78BFA)
+                        color = MaterialTheme.colorScheme.primary
                     )
                     Text(
                         text = "Processes: ${env.totalHiddenProcesses}",
-                        fontSize = 11.sp,
+                        style = MaterialTheme.typography.labelSmall,
                         fontWeight = FontWeight.Medium,
-                        color = Color(0xFF34D399)
+                        color = Color(0xFF10B981)
                     )
                 }
             }
@@ -479,11 +462,13 @@ fun QuickGameCloakCard(
     isQuickCloaking: Boolean,
     onQuickCloak: () -> Unit
 ) {
-    Surface(
+    ElevatedCard(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
-        color = Color(0xFF1E172F),
-        border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFF4C2889))
+        colors = CardDefaults.elevatedCardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Row(
@@ -493,21 +478,21 @@ fun QuickGameCloakCard(
                 Icon(
                     imageVector = Icons.Filled.Security,
                     contentDescription = null,
-                    tint = Color(0xFFA78BFA),
+                    tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.size(24.dp)
                 )
                 Spacer(modifier = Modifier.width(10.dp))
                 Column {
                     Text(
                         text = "1-Tap Auto-Cloak Games",
-                        fontSize = 14.sp,
+                        style = MaterialTheme.typography.titleSmall,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFFF3F4F6)
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                     Text(
                         text = "Free Fire, Free Fire MAX, Google Play Services",
-                        fontSize = 11.sp,
-                        color = Color(0xFFC4B5FD)
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }
@@ -520,18 +505,18 @@ fun QuickGameCloakCard(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(10.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFF7C3AED),
-                    contentColor = Color.White
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary
                 )
             ) {
                 if (isQuickCloaking) {
                     CircularProgressIndicator(
                         modifier = Modifier.size(16.dp),
-                        color = Color.White,
+                        color = MaterialTheme.colorScheme.onPrimary,
                         strokeWidth = 2.dp
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Cloaking...", fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                    Text("Cloaking...", style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Bold)
                 } else {
                     Icon(
                         imageVector = Icons.Filled.Shield,
@@ -539,7 +524,7 @@ fun QuickGameCloakCard(
                         modifier = Modifier.size(16.dp)
                     )
                     Spacer(modifier = Modifier.width(6.dp))
-                    Text("CLOAK ALL TARGETS NOW", fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                    Text("CLOAK ALL TARGETS NOW", style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Bold)
                 }
             }
         }
@@ -554,18 +539,15 @@ fun AppItemCard(
     onToggleAllProcesses: (Boolean) -> Unit,
     onToggleSingleProcess: (String, Boolean) -> Unit
 ) {
-    Surface(
+    ElevatedCard(
         modifier = Modifier
             .fillMaxWidth()
             .animateContentSize(),
         shape = RoundedCornerShape(14.dp),
-        color = Color(0xFF161922),
-        border = androidx.compose.foundation.BorderStroke(
-            1.dp,
-            if (app.isFullyHidden) Color(0xFF059669)
-            else if (app.isPartiallyHidden) Color(0xFFD97706)
-            else Color(0xFF262C3A)
-        )
+        colors = CardDefaults.elevatedCardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Column(modifier = Modifier.padding(12.dp)) {
             Row(
@@ -590,22 +572,22 @@ fun AppItemCard(
                     ) {
                         Text(
                             text = app.appName,
+                            style = MaterialTheme.typography.titleSmall,
                             fontWeight = FontWeight.Bold,
-                            fontSize = 14.sp,
-                            color = Color(0xFFF3F4F6),
+                            color = MaterialTheme.colorScheme.onSurface,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis
                         )
                         if (app.isGameOrTarget) {
                             Surface(
                                 shape = RoundedCornerShape(4.dp),
-                                color = Color(0xFF3B1D54)
+                                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
                             ) {
                                 Text(
                                     text = "TARGET",
-                                    fontSize = 9.sp,
+                                    style = MaterialTheme.typography.labelSmall,
                                     fontWeight = FontWeight.Bold,
-                                    color = Color(0xFFA78BFA),
+                                    color = MaterialTheme.colorScheme.primary,
                                     modifier = Modifier.padding(horizontal = 4.dp, vertical = 1.dp)
                                 )
                             }
@@ -614,9 +596,8 @@ fun AppItemCard(
 
                     Text(
                         text = app.packageName,
-                        fontSize = 11.sp,
-                        fontFamily = FontFamily.Monospace,
-                        color = Color(0xFF6B7280),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
@@ -629,9 +610,9 @@ fun AppItemCard(
                         Surface(
                             shape = RoundedCornerShape(4.dp),
                             color = when {
-                                app.isFullyHidden -> Color(0xFF064E3B)
-                                app.isPartiallyHidden -> Color(0xFF451A03)
-                                else -> Color(0xFF1F2430)
+                                app.isFullyHidden -> Color(0xFF10B981).copy(alpha = 0.2f)
+                                app.isPartiallyHidden -> Color(0xFFF59E0B).copy(alpha = 0.2f)
+                                else -> MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f)
                             }
                         ) {
                             Text(
@@ -640,12 +621,12 @@ fun AppItemCard(
                                     app.isPartiallyHidden -> "PARTIAL (${app.processes.count { it.isHidden }}/${app.processes.size})"
                                     else -> "EXPOSED"
                                 },
-                                fontSize = 9.sp,
+                                style = MaterialTheme.typography.labelSmall,
                                 fontWeight = FontWeight.Bold,
                                 color = when {
-                                    app.isFullyHidden -> Color(0xFF34D399)
-                                    app.isPartiallyHidden -> Color(0xFFFBBF24)
-                                    else -> Color(0xFF6B7280)
+                                    app.isFullyHidden -> Color(0xFF10B981)
+                                    app.isPartiallyHidden -> Color(0xFFF59E0B)
+                                    else -> MaterialTheme.colorScheme.onSurfaceVariant
                                 },
                                 modifier = Modifier.padding(horizontal = 5.dp, vertical = 2.dp)
                             )
@@ -654,8 +635,8 @@ fun AppItemCard(
                         if (app.processes.size > 1) {
                             Text(
                                 text = "${app.processes.size} processes",
-                                fontSize = 10.sp,
-                                color = Color(0xFF9CA3AF)
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
                     }
@@ -667,10 +648,8 @@ fun AppItemCard(
                     checked = app.isFullyHidden,
                     onCheckedChange = onToggleAllProcesses,
                     colors = SwitchDefaults.colors(
-                        checkedThumbColor = Color(0xFFFFFFFF),
-                        checkedTrackColor = Color(0xFF10B981),
-                        uncheckedThumbColor = Color(0xFF6B7280),
-                        uncheckedTrackColor = Color(0xFF262C3A)
+                        checkedThumbColor = MaterialTheme.colorScheme.onPrimary,
+                        checkedTrackColor = Color(0xFF10B981)
                     )
                 )
 
@@ -681,7 +660,7 @@ fun AppItemCard(
                     Icon(
                         imageVector = if (isExpanded) Icons.Filled.ExpandLess else Icons.Filled.ExpandMore,
                         contentDescription = "Expand",
-                        tint = Color(0xFF9CA3AF)
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }
@@ -692,14 +671,14 @@ fun AppItemCard(
                         .fillMaxWidth()
                         .padding(top = 10.dp)
                 ) {
-                    Divider(color = Color(0xFF262C3A))
+                    Divider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f))
                     Spacer(modifier = Modifier.height(8.dp))
 
                     Text(
                         text = "COMPONENT PROCESSES:",
-                        fontSize = 10.sp,
+                        style = MaterialTheme.typography.labelSmall,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF9CA3AF),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         letterSpacing = 0.5.sp
                     )
 
@@ -715,9 +694,8 @@ fun AppItemCard(
                         ) {
                             Text(
                                 text = proc.processName,
-                                fontSize = 11.sp,
-                                fontFamily = FontFamily.Monospace,
-                                color = if (proc.isHidden) Color(0xFF34D399) else Color(0xFF9CA3AF),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = if (proc.isHidden) Color(0xFF10B981) else MaterialTheme.colorScheme.onSurfaceVariant,
                                 modifier = Modifier.weight(1f),
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis
@@ -730,7 +708,6 @@ fun AppItemCard(
                                 },
                                 colors = CheckboxDefaults.colors(
                                     checkedColor = Color(0xFF10B981),
-                                    uncheckedColor = Color(0xFF4B5563),
                                     checkmarkColor = Color.White
                                 )
                             )
@@ -766,13 +743,13 @@ fun AppIcon(
         )
     } else {
         Box(
-            modifier = modifier.background(Color(0xFF262C3A)),
+            modifier = modifier.background(MaterialTheme.colorScheme.surface),
             contentAlignment = Alignment.Center
         ) {
             Icon(
                 imageVector = Icons.Filled.Android,
                 contentDescription = null,
-                tint = Color(0xFFA78BFA),
+                tint = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.size(24.dp)
             )
         }
