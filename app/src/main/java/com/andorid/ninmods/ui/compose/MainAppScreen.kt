@@ -47,6 +47,7 @@ import com.andorid.ninmods.ui.denylist.DenyListScreen
 import com.andorid.ninmods.ui.loader.DriverLoaderScreen
 import com.andorid.ninmods.ui.profile.ProfileScreen
 import com.andorid.ninmods.ui.settings.SettingsScreen
+import com.andorid.ninmods.ui.support.CreateTicketScreen
 import com.andorid.ninmods.ui.support.UserSupportScreen
 import com.andorid.ninmods.ui.support.UserTicketChatScreen
 import kotlinx.coroutines.launch
@@ -59,6 +60,7 @@ enum class MainDestination(
     LOADER("Driver Loader", Icons.Filled.Build),
     DENYLIST("Magisk DenyList", Icons.Filled.Security),
     SUPPORT("Support & Messages", Icons.Filled.SupportAgent),
+    CREATE_TICKET("Create Ticket", Icons.Filled.Add),
     TICKET_CHAT("Live Conversation", Icons.AutoMirrored.Filled.Chat),
     SETTINGS("Settings", Icons.Filled.Settings),
     PROFILE("My Profile", Icons.Filled.AccountCircle)
@@ -103,7 +105,9 @@ fun MainAppScreen(
         }
     }
 
-    val isSubScreen = currentDestination == MainDestination.TICKET_CHAT || currentDestination == MainDestination.DENYLIST
+    val isSubScreen = currentDestination == MainDestination.TICKET_CHAT ||
+            currentDestination == MainDestination.DENYLIST ||
+            currentDestination == MainDestination.CREATE_TICKET
 
     BackHandler(enabled = true) {
         when {
@@ -111,6 +115,9 @@ fun MainAppScreen(
                 scope.launch { drawerState.close() }
             }
             currentDestination == MainDestination.TICKET_CHAT -> {
+                currentDestination = MainDestination.SUPPORT
+            }
+            currentDestination == MainDestination.CREATE_TICKET -> {
                 currentDestination = MainDestination.SUPPORT
             }
             currentDestination != MainDestination.DASHBOARD -> {
@@ -362,7 +369,8 @@ fun MainAppScreen(
                         )
                     },
                     navigationIcon = {
-                        if (currentDestination == MainDestination.TICKET_CHAT) {
+                        if (currentDestination == MainDestination.TICKET_CHAT ||
+                            currentDestination == MainDestination.CREATE_TICKET) {
                             IconButton(onClick = { currentDestination = MainDestination.SUPPORT }) {
                                 Icon(
                                     imageVector = Icons.AutoMirrored.Filled.ArrowBack,
@@ -433,7 +441,15 @@ fun MainAppScreen(
                         onSelectTicket = { ticket ->
                             selectedTicket = ticket
                             currentDestination = MainDestination.TICKET_CHAT
+                        },
+                        onNavigateToCreateTicket = {
+                            currentDestination = MainDestination.CREATE_TICKET
                         }
+                    )
+                    MainDestination.CREATE_TICKET -> CreateTicketScreen(
+                        sessionManager = sessionManager,
+                        onNavigateBack = { currentDestination = MainDestination.SUPPORT },
+                        onTicketCreated = { currentDestination = MainDestination.SUPPORT }
                     )
                     MainDestination.TICKET_CHAT -> {
                         val t = selectedTicket

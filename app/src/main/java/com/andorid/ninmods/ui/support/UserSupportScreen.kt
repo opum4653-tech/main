@@ -33,6 +33,7 @@ import kotlinx.coroutines.withContext
 fun UserSupportScreen(
     sessionManager: SessionManager,
     onSelectTicket: (UserTicketItem) -> Unit,
+    onNavigateToCreateTicket: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val scope = rememberCoroutineScope()
@@ -40,7 +41,6 @@ fun UserSupportScreen(
     var isLoading by remember { mutableStateOf(true) }
     var searchQuery by remember { mutableStateOf("") }
     var selectedFilter by remember { mutableStateOf("ALL") }
-    var showCreateSheet by remember { mutableStateOf(false) }
 
     val filterOptions = listOf("ALL", "OPEN", "ANSWERED", "CLOSED")
 
@@ -269,7 +269,7 @@ fun UserSupportScreen(
 
         // Material 3 Floating Action Button at Bottom-Right (Messenger '+' button)
         FloatingActionButton(
-            onClick = { showCreateSheet = true },
+            onClick = onNavigateToCreateTicket,
             modifier = Modifier
                 .align(Alignment.BottomEnd)
                 .padding(24.dp),
@@ -283,154 +283,6 @@ fun UserSupportScreen(
                 contentDescription = "New Ticket",
                 modifier = Modifier.size(24.dp)
             )
-        }
-    }
-
-    if (showCreateSheet) {
-        CreateTicketBottomSheet(
-            sessionManager = sessionManager,
-            onDismiss = { showCreateSheet = false },
-            onTicketCreated = {
-                showCreateSheet = false
-                loadTickets()
-            }
-        )
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun CreateTicketBottomSheet(
-    sessionManager: SessionManager,
-    onDismiss: () -> Unit,
-    onTicketCreated: () -> Unit
-) {
-    val scope = rememberCoroutineScope()
-    var subject by remember { mutableStateOf("") }
-    var message by remember { mutableStateOf("") }
-    var selectedPriority by remember { mutableStateOf("medium") }
-    var isSubmitting by remember { mutableStateOf(false) }
-    var errorMessage by remember { mutableStateOf<String?>(null) }
-
-    ModalBottomSheet(
-        onDismissRequest = { if (!isSubmitting) onDismiss() },
-        shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
-        containerColor = MaterialTheme.colorScheme.surface,
-        dragHandle = { BottomSheetDefaults.DragHandle() }
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 20.dp)
-                .padding(bottom = 32.dp),
-            verticalArrangement = Arrangement.spacedBy(14.dp)
-        ) {
-            Text(
-                text = "New Support Message",
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-
-            Text(
-                text = "Start a direct conversation thread with administrative support",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-
-            OutlinedTextField(
-                value = subject,
-                onValueChange = { subject = it },
-                label = { Text("Subject / Issue Summary") },
-                placeholder = { Text("e.g. License activation or feature request") },
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(14.dp),
-                enabled = !isSubmitting
-            )
-
-            // Priority
-            Text(
-                text = "Priority Level",
-                style = MaterialTheme.typography.labelMedium,
-                fontWeight = FontWeight.SemiBold
-            )
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                listOf("low" to "Low", "medium" to "Medium", "high" to "High").forEach { (code, label) ->
-                    val isSel = selectedPriority == code
-                    FilterChip(
-                        selected = isSel,
-                        onClick = { selectedPriority = code },
-                        label = { Text(label) },
-                        modifier = Modifier.weight(1f),
-                        shape = RoundedCornerShape(12.dp)
-                    )
-                }
-            }
-
-            OutlinedTextField(
-                value = message,
-                onValueChange = { message = it },
-                label = { Text("Message Body") },
-                placeholder = { Text("Describe what you need assistance with...") },
-                minLines = 4,
-                maxLines = 7,
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(14.dp),
-                enabled = !isSubmitting
-            )
-
-            errorMessage?.let { msg ->
-                Text(
-                    text = msg,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.error
-                )
-            }
-
-            Button(
-                onClick = {
-                    val token = sessionManager.authToken ?: ""
-                    if (token.isBlank() || subject.isBlank() || message.isBlank()) return@Button
-                    scope.launch {
-                        isSubmitting = true
-                        errorMessage = null
-                        val res = AuthApiClient.createMyTicket(token, subject.trim(), message.trim(), selectedPriority)
-                        withContext(Dispatchers.Main) {
-                            isSubmitting = false
-                            res.onSuccess {
-                                onTicketCreated()
-                            }.onFailure { err ->
-                                errorMessage = err.message ?: "Failed to submit message"
-                            }
-                        }
-                    }
-                },
-                enabled = subject.isNotBlank() && message.isNotBlank() && !isSubmitting,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(50.dp),
-                shape = RoundedCornerShape(14.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    contentColor = MaterialTheme.colorScheme.onPrimary
-                )
-            ) {
-                if (isSubmitting) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(20.dp),
-                        strokeWidth = 2.dp,
-                        color = MaterialTheme.colorScheme.onPrimary
-                    )
-                } else {
-                    Icon(imageVector = Icons.AutoMirrored.Filled.Send, contentDescription = null, modifier = Modifier.size(18.dp))
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("Send Message", fontWeight = FontWeight.Bold)
-                }
-            }
         }
     }
 }
