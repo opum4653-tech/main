@@ -262,7 +262,18 @@ fun MainAppScreen(
                             }
                         )
 
-                        // 3. Driver Loader
+                        // 3. Add Funds
+                        LoaderDrawerItem(
+                            title = "Add Funds",
+                            icon = Icons.Filled.AccountBalanceWallet,
+                            isSelected = currentDestination == MainDestination.ADD_FUNDS,
+                            onClick = {
+                                currentDestination = MainDestination.ADD_FUNDS
+                                scope.launch { drawerState.close() }
+                            }
+                        )
+
+                        // 4. Driver Loader
                         LoaderDrawerItem(
                             title = "Driver Loader",
                             icon = Icons.Filled.Build,
@@ -273,7 +284,7 @@ fun MainAppScreen(
                             }
                         )
 
-                        // 4. Daily List (Magisk name forbidden)
+                        // 5. Daily List
                         LoaderDrawerItem(
                             title = "Daily List",
                             icon = Icons.Filled.Security,
@@ -284,24 +295,13 @@ fun MainAppScreen(
                             }
                         )
 
-                        // 5. General Settings
+                        // 6. General Settings
                         LoaderDrawerItem(
                             title = "General Settings",
                             icon = Icons.Filled.Settings,
                             isSelected = currentDestination == MainDestination.SETTINGS,
                             onClick = {
                                 currentDestination = MainDestination.SETTINGS
-                                scope.launch { drawerState.close() }
-                            }
-                        )
-
-                        // 6. Add Funds (moved from Profile card to drawer items)
-                        LoaderDrawerItem(
-                            title = "Add Funds",
-                            icon = Icons.Filled.AccountBalanceWallet,
-                            isSelected = currentDestination == MainDestination.ADD_FUNDS,
-                            onClick = {
-                                currentDestination = MainDestination.ADD_FUNDS
                                 scope.launch { drawerState.close() }
                             }
                         )
