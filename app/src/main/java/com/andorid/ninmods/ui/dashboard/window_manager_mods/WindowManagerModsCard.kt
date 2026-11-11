@@ -142,7 +142,8 @@ fun WindowManagerModsCard(
                 Toast.makeText(context, "WindowManager Mod downloaded successfully", Toast.LENGTH_SHORT).show()
             } else {
                 val err = result.exceptionOrNull()?.message ?: "Download failed"
-                unifiedDialogState = UnifiedModDialogState.DownloadError(err) { startDownload() }
+                Toast.makeText(context, err, Toast.LENGTH_LONG).show()
+                unifiedDialogState = null
             }
         }
     }
@@ -480,42 +481,53 @@ fun WindowManagerModsCard(
     }
 
     // Unified Dialogs for License, Root, Download
-    ApatchUnifiedModDialog(
-        state = unifiedDialogState,
-        onDismiss = { unifiedDialogState = null },
-        onPurchaseKey = {},
-        onSubmitKey = { inputKey ->
-            scope.launch {
-                val hwid = DeviceIdentifier.getHwid(context)
-                val current = unifiedDialogState
-                if (current is UnifiedModDialogState.LicenseAuth) {
-                    unifiedDialogState = current.copy(
-                        isSubmitting = true,
-                        errorMessage = null,
-                        terminalLogs = current.terminalLogs + listOf("[*] Submitting key for online authorization...")
-                    )
-                }
-
-                val verifyRes = withContext(Dispatchers.IO) {
-                    AuthApiClient.verifyLicense(inputKey, hwid)
-                }
-
-                if (verifyRes.isSuccess) {
-                    sessionManager?.activeLicenseKey = inputKey
-                    unifiedDialogState = null
-                    launchOverlay()
-                } else {
-                    val err = verifyRes.exceptionOrNull()?.message ?: "Invalid license key"
-                    val currentAuth = unifiedDialogState
-                    if (currentAuth is UnifiedModDialogState.LicenseAuth) {
-                        unifiedDialogState = currentAuth.copy(
-                            isSubmitting = false,
-                            errorMessage = err,
-                            terminalLogs = currentAuth.terminalLogs + listOf("[-] $err")
+    unifiedDialogState?.let { state ->
+        ApatchUnifiedModDialog(
+            state = state,
+            onDismiss = {
+                downloadJob?.cancel()
+                downloadJob = null
+                unifiedDialogState = null
+            },
+            onConfirmDownload = {
+                startDownload()
+            },
+            onCancelDownload = {
+                downloadJob?.cancel()
+                downloadJob = null
+                unifiedDialogState = null
+            },
+            onSubmitKey = { inputKey ->
+                scope.launch {
+                    val hwid = DeviceIdentifier.getHwid(context)
+                    if (state is UnifiedModDialogState.LicenseAuth) {
+                        unifiedDialogState = state.copy(
+                            isSubmitting = true,
+                            errorMessage = null,
+                            terminalLogs = (state.terminalLogs + listOf("[*] Submitting key for online authorization...")).takeLast(40)
                         )
+                    }
+
+                    val verifyRes = withContext(Dispatchers.IO) {
+                        AuthApiClient.verifyLicense(inputKey, hwid)
+                    }
+
+                    if (verifyRes.isSuccess) {
+                        sessionManager?.activeLicenseKey = inputKey
+                        unifiedDialogState = null
+                        launchOverlay()
+                    } else {
+                        val err = verifyRes.exceptionOrNull()?.message ?: "Invalid license key"
+                        if (state is UnifiedModDialogState.LicenseAuth) {
+                            unifiedDialogState = state.copy(
+                                isSubmitting = false,
+                                errorMessage = err,
+                                terminalLogs = (state.terminalLogs + listOf("[-] $err")).takeLast(40)
+                            )
+                        }
                     }
                 }
             }
-        }
-    )
+        )
+    }
 }
