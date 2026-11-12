@@ -30,7 +30,7 @@ import kotlinx.coroutines.withContext
 
 /**
  * APatch Dedicated Change Password Screen.
- * Pure container composable with zero nested top app bars.
+ * Strictly adheres to APatch ElevatedCard design system with zero uncarded loose components.
  */
 @Composable
 fun ChangePasswordScreen(
@@ -52,13 +52,22 @@ fun ChangePasswordScreen(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .padding(horizontal = 20.dp)
+            .padding(horizontal = 16.dp)
             .verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(4.dp))
 
-        // Security Info Card
+        // Security Header Label
+        Text(
+            text = "ACCOUNT CREDENTIALS",
+            style = MaterialTheme.typography.labelMedium,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.padding(start = 4.dp)
+        )
+
+        // Security Info Banner Card
         ElevatedCard(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(20.dp),
@@ -76,28 +85,27 @@ fun ChangePasswordScreen(
                 Surface(
                     shape = CircleShape,
                     color = MaterialTheme.colorScheme.primaryContainer,
-                    modifier = Modifier.size(48.dp)
+                    modifier = Modifier.size(46.dp)
                 ) {
                     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                         Icon(
                             imageVector = Icons.Filled.LockReset,
                             contentDescription = null,
                             tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(26.dp)
+                            modifier = Modifier.size(24.dp)
                         )
                     }
                 }
 
-                Spacer(modifier = Modifier.width(16.dp))
+                Spacer(modifier = Modifier.width(14.dp))
 
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = "Account Security",
+                        text = "Password Security",
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurface
                     )
-                    Spacer(modifier = Modifier.height(2.dp))
                     Text(
                         text = "Update your credentials. Minimum 6 characters required.",
                         style = MaterialTheme.typography.bodySmall,
@@ -107,136 +115,152 @@ fun ChangePasswordScreen(
             }
         }
 
-        if (errorMessage != null) {
-            Surface(
-                shape = RoundedCornerShape(12.dp),
-                color = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.4f),
-                modifier = Modifier.fillMaxWidth()
+        // APatch Credentials Form Card
+        Text(
+            text = "UPDATE PASSWORD",
+            style = MaterialTheme.typography.labelMedium,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.padding(start = 4.dp)
+        )
+
+        ElevatedCard(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(20.dp),
+            colors = CardDefaults.elevatedCardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceVariant
+            ),
+            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(18.dp),
+                verticalArrangement = Arrangement.spacedBy(14.dp)
             ) {
-                Text(
-                    text = errorMessage ?: "",
-                    color = MaterialTheme.colorScheme.error,
-                    style = MaterialTheme.typography.bodySmall,
-                    modifier = Modifier.padding(14.dp)
-                )
-            }
-        }
-
-        // New Password Input
-        OutlinedTextField(
-            value = newPassword,
-            onValueChange = {
-                newPassword = it
-                errorMessage = null
-            },
-            label = { Text("New Password") },
-            placeholder = { Text("Enter at least 6 characters") },
-            leadingIcon = {
-                Icon(Icons.Filled.Lock, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
-            },
-            trailingIcon = {
-                IconButton(onClick = { newPasswordVisible = !newPasswordVisible }) {
-                    Icon(
-                        imageVector = if (newPasswordVisible) Icons.Filled.VisibilityOff else Icons.Filled.Visibility,
-                        contentDescription = "Toggle password visibility"
-                    )
-                }
-            },
-            visualTransformation = if (newPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-            singleLine = true,
-            shape = RoundedCornerShape(14.dp),
-            modifier = Modifier.fillMaxWidth(),
-            enabled = !isUpdating
-        )
-
-        // Confirm New Password Input
-        OutlinedTextField(
-            value = confirmPassword,
-            onValueChange = {
-                confirmPassword = it
-                errorMessage = null
-            },
-            label = { Text("Confirm New Password") },
-            placeholder = { Text("Re-enter new password") },
-            leadingIcon = {
-                Icon(Icons.Filled.Lock, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
-            },
-            trailingIcon = {
-                IconButton(onClick = { confirmPasswordVisible = !confirmPasswordVisible }) {
-                    Icon(
-                        imageVector = if (confirmPasswordVisible) Icons.Filled.VisibilityOff else Icons.Filled.Visibility,
-                        contentDescription = "Toggle password visibility"
-                    )
-                }
-            },
-            visualTransformation = if (confirmPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-            singleLine = true,
-            shape = RoundedCornerShape(14.dp),
-            modifier = Modifier.fillMaxWidth(),
-            enabled = !isUpdating
-        )
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        // Update Password Action Button
-        Button(
-            onClick = {
-                if (newPassword.isBlank()) {
-                    errorMessage = "Please enter a new password."
-                    return@Button
-                }
-                if (newPassword.length < 6) {
-                    errorMessage = "Password must be at least 6 characters long."
-                    return@Button
-                }
-                if (newPassword != confirmPassword) {
-                    errorMessage = "Passwords do not match."
-                    return@Button
-                }
-
-                isUpdating = true
-                errorMessage = null
-
-                scope.launch {
-                    val res = AuthApiClient.updatePassword(token, newPassword.trim())
-                    withContext(Dispatchers.Main) {
-                        isUpdating = false
-                        res.onSuccess { response ->
-                            if (!response.apiKey.isNullOrBlank()) {
-                                sessionManager.authToken = response.apiKey
-                            }
-                            com.andorid.ninmods.data.UserRepository.clear()
-                            Toast.makeText(context, response.message, Toast.LENGTH_LONG).show()
-                            onPasswordChanged()
-                        }.onFailure { err ->
-                            errorMessage = err.message ?: "Failed to update password."
+                OutlinedTextField(
+                    value = newPassword,
+                    onValueChange = {
+                        newPassword = it
+                        errorMessage = null
+                    },
+                    label = { Text("New Password") },
+                    placeholder = { Text("Enter at least 6 characters") },
+                    leadingIcon = {
+                        Icon(Icons.Filled.Lock, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+                    },
+                    trailingIcon = {
+                        IconButton(onClick = { newPasswordVisible = !newPasswordVisible }) {
+                            Icon(
+                                imageVector = if (newPasswordVisible) Icons.Filled.VisibilityOff else Icons.Filled.Visibility,
+                                contentDescription = "Toggle password visibility"
+                            )
                         }
+                    },
+                    visualTransformation = if (newPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                    singleLine = true,
+                    shape = RoundedCornerShape(14.dp),
+                    modifier = Modifier.fillMaxWidth(),
+                    enabled = !isUpdating
+                )
+
+                OutlinedTextField(
+                    value = confirmPassword,
+                    onValueChange = {
+                        confirmPassword = it
+                        errorMessage = null
+                    },
+                    label = { Text("Confirm New Password") },
+                    placeholder = { Text("Re-enter new password") },
+                    leadingIcon = {
+                        Icon(Icons.Filled.Lock, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+                    },
+                    trailingIcon = {
+                        IconButton(onClick = { confirmPasswordVisible = !confirmPasswordVisible }) {
+                            Icon(
+                                imageVector = if (confirmPasswordVisible) Icons.Filled.VisibilityOff else Icons.Filled.Visibility,
+                                contentDescription = "Toggle password visibility"
+                            )
+                        }
+                    },
+                    visualTransformation = if (confirmPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                    singleLine = true,
+                    shape = RoundedCornerShape(14.dp),
+                    modifier = Modifier.fillMaxWidth(),
+                    enabled = !isUpdating
+                )
+
+                if (errorMessage != null) {
+                    Surface(
+                        shape = RoundedCornerShape(10.dp),
+                        color = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.4f),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(
+                            text = errorMessage ?: "",
+                            color = MaterialTheme.colorScheme.error,
+                            style = MaterialTheme.typography.bodySmall,
+                            modifier = Modifier.padding(12.dp)
+                        )
                     }
                 }
-            },
-            enabled = !isUpdating,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(52.dp),
-            shape = RoundedCornerShape(14.dp),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = MaterialTheme.colorScheme.primary
-            )
-        ) {
-            if (isUpdating) {
-                CircularProgressIndicator(
-                    modifier = Modifier.size(20.dp),
-                    strokeWidth = 2.dp,
-                    color = MaterialTheme.colorScheme.onPrimary
-                )
-                Spacer(modifier = Modifier.width(10.dp))
-                Text("Updating Password...")
-            } else {
-                Icon(Icons.Filled.LockReset, contentDescription = null, modifier = Modifier.size(20.dp))
-                Spacer(modifier = Modifier.width(8.dp))
-                Text("UPDATE PASSWORD", fontWeight = FontWeight.Bold)
+
+                Button(
+                    onClick = {
+                        if (newPassword.isBlank()) {
+                            errorMessage = "Please enter a new password"
+                            return@Button
+                        }
+                        if (newPassword.length < 6) {
+                            errorMessage = "Password must be at least 6 characters"
+                            return@Button
+                        }
+                        if (newPassword != confirmPassword) {
+                            errorMessage = "Passwords do not match"
+                            return@Button
+                        }
+
+                        isUpdating = true
+                        errorMessage = null
+                        scope.launch {
+                            val res = AuthApiClient.changePassword(token, newPassword)
+                            withContext(Dispatchers.Main) {
+                                isUpdating = false
+                                res.onSuccess { msg ->
+                                    Toast.makeText(context, msg, Toast.LENGTH_LONG).show()
+                                    onPasswordChanged()
+                                }.onFailure { err ->
+                                    errorMessage = err.message ?: "Failed to update password"
+                                }
+                            }
+                        }
+                    },
+                    enabled = !isUpdating && newPassword.isNotBlank() && confirmPassword.isNotBlank(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(50.dp),
+                    shape = RoundedCornerShape(14.dp)
+                ) {
+                    if (isUpdating) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(20.dp),
+                            strokeWidth = 2.dp,
+                            color = MaterialTheme.colorScheme.onPrimary
+                        )
+                        Spacer(modifier = Modifier.width(10.dp))
+                        Text("Updating Password...")
+                    } else {
+                        Icon(
+                            imageVector = Icons.Filled.LockReset,
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("UPDATE PASSWORD", fontWeight = FontWeight.Bold)
+                    }
+                }
             }
         }
 

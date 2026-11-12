@@ -35,7 +35,7 @@ import kotlinx.coroutines.withContext
 
 /**
  * APatch Unified Deposit Submission Screen.
- * Pure container composable with zero nested top app bars.
+ * Pure container composable with APatch ElevatedCard hierarchy.
  */
 @Composable
 fun SubmitDepositScreen(
@@ -76,7 +76,7 @@ fun SubmitDepositScreen(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .padding(horizontal = 20.dp)
+            .padding(horizontal = 16.dp)
             .verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
@@ -85,7 +85,7 @@ fun SubmitDepositScreen(
         // Current Balance Overview Card
         ElevatedCard(
             modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(18.dp),
+            shape = RoundedCornerShape(20.dp),
             colors = CardDefaults.elevatedCardColors(
                 containerColor = MaterialTheme.colorScheme.surfaceVariant
             ),
@@ -94,7 +94,7 @@ fun SubmitDepositScreen(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(16.dp),
+                    .padding(18.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -113,7 +113,7 @@ fun SubmitDepositScreen(
                     )
                 }
                 Surface(
-                    shape = RoundedCornerShape(10.dp),
+                    shape = RoundedCornerShape(12.dp),
                     color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)
                 ) {
                     Icon(
@@ -151,240 +151,273 @@ fun SubmitDepositScreen(
                 )
             }
         } else {
-            // Gateway Selector Field
-            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                Text(
-                    text = "Payment Method",
-                    style = MaterialTheme.typography.labelMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
+            // Payment Gateway Selection Section
+            Text(
+                text = "PAYMENT METHOD",
+                style = MaterialTheme.typography.labelMedium,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.padding(start = 4.dp)
+            )
 
-                Surface(
-                    shape = RoundedCornerShape(14.dp),
-                    color = MaterialTheme.colorScheme.surfaceVariant,
-                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)),
+            ElevatedCard(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(20.dp),
+                colors = CardDefaults.elevatedCardColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant
+                ),
+                elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+            ) {
+                Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clickable { showGatewayPicker = true }
+                        .padding(18.dp),
+                    verticalArrangement = Arrangement.spacedBy(14.dp)
                 ) {
-                    Row(
+                    Surface(
+                        shape = RoundedCornerShape(14.dp),
+                        color = MaterialTheme.colorScheme.surface,
+                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)),
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 16.dp, vertical = 14.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
+                            .clickable { showGatewayPicker = true }
                     ) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Surface(
-                                shape = RoundedCornerShape(8.dp),
-                                color = MaterialTheme.colorScheme.primaryContainer,
-                                modifier = Modifier.size(36.dp)
-                            ) {
-                                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                                    Icon(
-                                        imageVector = Icons.Filled.AccountBalanceWallet,
-                                        contentDescription = null,
-                                        tint = MaterialTheme.colorScheme.primary,
-                                        modifier = Modifier.size(20.dp)
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp, vertical = 14.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Surface(
+                                    shape = RoundedCornerShape(8.dp),
+                                    color = MaterialTheme.colorScheme.primaryContainer,
+                                    modifier = Modifier.size(36.dp)
+                                ) {
+                                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                                        Icon(
+                                            imageVector = Icons.Filled.AccountBalanceWallet,
+                                            contentDescription = null,
+                                            tint = MaterialTheme.colorScheme.primary,
+                                            modifier = Modifier.size(20.dp)
+                                        )
+                                    }
+                                }
+                                Spacer(modifier = Modifier.width(12.dp))
+                                Column {
+                                    Text(
+                                        text = selectedMethod?.name ?: "Select Payment Method",
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.onSurface
                                     )
+                                    selectedMethod?.let {
+                                        Text(
+                                            text = "Limits: $${it.minDeposit} - $${it.maxDeposit} USD",
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                    }
                                 }
                             }
-                            Spacer(modifier = Modifier.width(12.dp))
-                            Column {
+
+                            Icon(
+                                imageVector = Icons.Filled.ArrowDropDown,
+                                contentDescription = "Expand",
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+
+                    // Account Details & Instructions inside the gateway card
+                    selectedMethod?.let { method ->
+                        Surface(
+                            shape = RoundedCornerShape(14.dp),
+                            color = MaterialTheme.colorScheme.surface,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(14.dp),
+                                verticalArrangement = Arrangement.spacedBy(6.dp)
+                            ) {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.SpaceBetween
+                                ) {
+                                    Text(
+                                        text = "Payment Account Details",
+                                        style = MaterialTheme.typography.labelSmall,
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.primary
+                                    )
+                                    IconButton(
+                                        onClick = {
+                                            val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                                            val clip = ClipData.newPlainText("Account", method.accountDetails)
+                                            clipboard.setPrimaryClip(clip)
+                                            Toast.makeText(context, "Account details copied!", Toast.LENGTH_SHORT).show()
+                                        },
+                                        modifier = Modifier.size(24.dp)
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Filled.ContentCopy,
+                                            contentDescription = "Copy",
+                                            tint = MaterialTheme.colorScheme.primary,
+                                            modifier = Modifier.size(16.dp)
+                                        )
+                                    }
+                                }
+
                                 Text(
-                                    text = selectedMethod?.name ?: "Select Payment Method",
+                                    text = method.accountDetails,
                                     style = MaterialTheme.typography.bodyMedium,
-                                    fontWeight = FontWeight.Bold,
+                                    fontWeight = FontWeight.SemiBold,
                                     color = MaterialTheme.colorScheme.onSurface
                                 )
-                                selectedMethod?.let {
+
+                                if (method.instructions.isNotBlank()) {
                                     Text(
-                                        text = "Limits: $${it.minDeposit} - $${it.maxDeposit} USD",
+                                        text = method.instructions,
                                         style = MaterialTheme.typography.bodySmall,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant
                                     )
                                 }
                             }
                         }
-
-                        Icon(
-                            imageVector = Icons.Filled.ArrowDropDown,
-                            contentDescription = "Expand",
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
                     }
                 }
             }
 
-            // Payment Instructions Card
-            selectedMethod?.let { method ->
-                ElevatedCard(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(16.dp),
-                    colors = CardDefaults.elevatedCardColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.7f)
-                    ),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
-                ) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Text(
-                            text = "Payment Account Details",
-                            style = MaterialTheme.typography.labelSmall,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.primary
-                        )
+            // Deposit Form Card
+            Text(
+                text = "DEPOSIT SUBMISSION",
+                style = MaterialTheme.typography.labelMedium,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.padding(start = 4.dp)
+            )
 
-                        if (!method.accountDetails.isNullOrBlank()) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Text(
-                                    text = method.accountDetails,
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    fontWeight = FontWeight.SemiBold,
-                                    color = MaterialTheme.colorScheme.onSurface,
-                                    modifier = Modifier.weight(1f)
+            ElevatedCard(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(20.dp),
+                colors = CardDefaults.elevatedCardColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant
+                ),
+                elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(18.dp),
+                    verticalArrangement = Arrangement.spacedBy(14.dp)
+                ) {
+                    OutlinedTextField(
+                        value = amountText,
+                        onValueChange = { amountText = it },
+                        label = { Text("Amount to Deposit ($)") },
+                        placeholder = { Text("Enter USD amount") },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                        singleLine = true,
+                        shape = RoundedCornerShape(14.dp),
+                        modifier = Modifier.fillMaxWidth(),
+                        enabled = !isSubmitting
+                    )
+
+                    OutlinedTextField(
+                        value = trxIdText,
+                        onValueChange = { trxIdText = it },
+                        label = { Text("Transaction ID (TrxID / Hash)") },
+                        placeholder = { Text("Paste transaction identifier") },
+                        singleLine = true,
+                        shape = RoundedCornerShape(14.dp),
+                        modifier = Modifier.fillMaxWidth(),
+                        enabled = !isSubmitting
+                    )
+
+                    OutlinedTextField(
+                        value = notesText,
+                        onValueChange = { notesText = it },
+                        label = { Text("Sender Note / Phone Number (Optional)") },
+                        placeholder = { Text("e.g. bKash / Nagad wallet number") },
+                        singleLine = true,
+                        shape = RoundedCornerShape(14.dp),
+                        modifier = Modifier.fillMaxWidth(),
+                        enabled = !isSubmitting
+                    )
+
+                    Button(
+                        onClick = {
+                            val method = selectedMethod
+                            if (method == null) {
+                                Toast.makeText(context, "Please select a payment gateway", Toast.LENGTH_SHORT).show()
+                                return@Button
+                            }
+                            val amountVal = amountText.toDoubleOrNull()
+                            if (amountVal == null || amountVal <= 0.0) {
+                                Toast.makeText(context, "Please enter a valid deposit amount", Toast.LENGTH_SHORT).show()
+                                return@Button
+                            }
+                            if (amountVal < method.minDeposit || amountVal > method.maxDeposit) {
+                                Toast.makeText(
+                                    context,
+                                    "Amount must be between $${method.minDeposit} and $${method.maxDeposit}",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                                return@Button
+                            }
+                            if (trxIdText.trim().isBlank()) {
+                                Toast.makeText(context, "Please enter the Transaction ID (TrxID)", Toast.LENGTH_SHORT).show()
+                                return@Button
+                            }
+
+                            isSubmitting = true
+                            scope.launch {
+                                val res = AuthApiClient.submitDeposit(
+                                    apiKey = token,
+                                    methodCode = method.methodCode,
+                                    amount = amountVal,
+                                    trxId = trxIdText.trim(),
+                                    notes = notesText.trim()
                                 )
-                                IconButton(
-                                    onClick = {
-                                        val cb = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                                        cb.setPrimaryClip(ClipData.newPlainText("Account", method.accountDetails))
-                                        Toast.makeText(context, "Account details copied", Toast.LENGTH_SHORT).show()
+                                withContext(Dispatchers.Main) {
+                                    isSubmitting = false
+                                    res.onSuccess {
+                                        Toast.makeText(context, "Deposit request submitted successfully!", Toast.LENGTH_LONG).show()
+                                        onDepositSubmitted()
+                                    }.onFailure { err ->
+                                        Toast.makeText(context, err.message ?: "Deposit submission failed", Toast.LENGTH_LONG).show()
                                     }
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Filled.ContentCopy,
-                                        contentDescription = "Copy",
-                                        tint = MaterialTheme.colorScheme.primary,
-                                        modifier = Modifier.size(18.dp)
-                                    )
                                 }
                             }
-                        }
-
-                        if (!method.instructions.isNullOrBlank()) {
-                            Text(
-                                text = method.instructions,
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                        },
+                        enabled = !isSubmitting,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(50.dp),
+                        shape = RoundedCornerShape(14.dp)
+                    ) {
+                        if (isSubmitting) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(20.dp),
+                                strokeWidth = 2.dp,
+                                color = MaterialTheme.colorScheme.onPrimary
                             )
+                            Spacer(modifier = Modifier.width(10.dp))
+                            Text("Submitting Deposit...")
+                        } else {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.Send,
+                                contentDescription = null,
+                                modifier = Modifier.size(18.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("SUBMIT DEPOSIT REQUEST", fontWeight = FontWeight.Bold)
                         }
                     }
-                }
-            }
-
-            // Amount Input
-            OutlinedTextField(
-                value = amountText,
-                onValueChange = { amountText = it.filter { ch -> ch.isDigit() || ch == '.' } },
-                label = { Text("Amount to Deposit ($)") },
-                placeholder = { Text("e.g. 10.00") },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                shape = RoundedCornerShape(14.dp),
-                modifier = Modifier.fillMaxWidth(),
-                singleLine = true
-            )
-
-            // TrxID Input
-            OutlinedTextField(
-                value = trxIdText,
-                onValueChange = { trxIdText = it },
-                label = { Text("Transaction ID (TrxID / Hash)") },
-                placeholder = { Text("e.g. 9B87F293A1") },
-                shape = RoundedCornerShape(14.dp),
-                modifier = Modifier.fillMaxWidth(),
-                singleLine = true
-            )
-
-            // Sender Note / Details Input
-            OutlinedTextField(
-                value = notesText,
-                onValueChange = { notesText = it },
-                label = { Text("Sender Note / Phone Number (Optional)") },
-                placeholder = { Text("e.g. Sent from 017xxxxxxxx") },
-                shape = RoundedCornerShape(14.dp),
-                modifier = Modifier.fillMaxWidth(),
-                singleLine = true
-            )
-
-            Spacer(modifier = Modifier.height(6.dp))
-
-            // Submit Button
-            Button(
-                onClick = {
-                    val method = selectedMethod
-                    if (method == null) {
-                        Toast.makeText(context, "Please select a payment gateway", Toast.LENGTH_SHORT).show()
-                        return@Button
-                    }
-                    val amountVal = amountText.toDoubleOrNull()
-                    if (amountVal == null || amountVal <= 0.0) {
-                        Toast.makeText(context, "Please enter a valid deposit amount", Toast.LENGTH_SHORT).show()
-                        return@Button
-                    }
-                    if (amountVal < method.minDeposit || amountVal > method.maxDeposit) {
-                        Toast.makeText(
-                            context,
-                            "Amount must be between $${method.minDeposit} and $${method.maxDeposit}",
-                            Toast.LENGTH_SHORT
-                        ).show()
-                        return@Button
-                    }
-                    if (trxIdText.trim().isBlank()) {
-                        Toast.makeText(context, "Please enter the Transaction ID (TrxID)", Toast.LENGTH_SHORT).show()
-                        return@Button
-                    }
-
-                    isSubmitting = true
-                    scope.launch {
-                        val res = AuthApiClient.submitDeposit(
-                            apiKey = token,
-                            methodCode = method.methodCode,
-                            amount = amountVal,
-                            trxId = trxIdText.trim(),
-                            notes = notesText.trim()
-                        )
-                        withContext(Dispatchers.Main) {
-                            isSubmitting = false
-                            res.onSuccess {
-                                Toast.makeText(context, "Deposit request submitted successfully!", Toast.LENGTH_LONG).show()
-                                onDepositSubmitted()
-                            }.onFailure { err ->
-                                Toast.makeText(context, err.message ?: "Deposit submission failed", Toast.LENGTH_LONG).show()
-                            }
-                        }
-                    }
-                },
-                enabled = !isSubmitting,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(52.dp),
-                shape = RoundedCornerShape(14.dp)
-            ) {
-                if (isSubmitting) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(20.dp),
-                        strokeWidth = 2.dp,
-                        color = MaterialTheme.colorScheme.onPrimary
-                    )
-                    Spacer(modifier = Modifier.width(10.dp))
-                    Text("Submitting Deposit...")
-                } else {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.Send,
-                        contentDescription = null,
-                        modifier = Modifier.size(18.dp)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("SUBMIT DEPOSIT REQUEST", fontWeight = FontWeight.Bold)
                 }
             }
         }

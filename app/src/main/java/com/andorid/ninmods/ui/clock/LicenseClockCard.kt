@@ -35,6 +35,14 @@ import kotlinx.coroutines.delay
 import java.util.Locale
 import kotlin.math.max
 
+/**
+ * APatch Authentic Digital License Countdown Clock Card.
+ * Exact 1:1 match to official design (media_1794458367238_0aa42bf1.png):
+ * - Stopwatch timer icon + "LICENSE REMAINING" header in cyan/blue
+ * - "ACTIVE" status badge in green
+ * - Inner dark digital display pill with monospace countdown ("00 : 00 : 00")
+ * - Centered "Hours : Minutes : Seconds" label
+ */
 @Composable
 fun LicenseClockCard(
     sessionManager: SessionManager,
@@ -51,12 +59,10 @@ fun LicenseClockCard(
         }
     }
 
-    // Monotonic live counter state
     var remainingSeconds by remember(sessionManager.serverRemainingSeconds, sessionManager.activeLicenseKey) {
         mutableLongStateOf(calculateRemaining())
     }
 
-    // Live clock ticking every 1 second
     LaunchedEffect(sessionManager.serverRemainingSeconds, sessionManager.activeLicenseKey) {
         remainingSeconds = calculateRemaining()
         while (remainingSeconds > 0L) {
@@ -67,14 +73,65 @@ fun LicenseClockCard(
         }
     }
 
-    // Strict policy: Hide completely if no active license or time expired
-    if (remainingSeconds <= 0L || sessionManager.activeLicenseKey.isNullOrBlank()) {
+    if (remainingSeconds <= 0L && sessionManager.activeLicenseKey.isNullOrBlank()) {
         return
     }
 
-    val hours = remainingSeconds / 3600L
-    val minutes = (remainingSeconds % 3600L) / 60L
-    val seconds = remainingSeconds % 60L
+    DigitalClockCardLayout(
+        remainingSeconds = remainingSeconds,
+        title = "LICENSE REMAINING",
+        statusText = if (remainingSeconds > 0L) "ACTIVE" else "EXPIRED",
+        isActive = remainingSeconds > 0L,
+        modifier = modifier
+    )
+}
+
+/**
+ * Dedicated Clock Timer for Individual License Item.
+ * Allows each active license to have its own real-time ticking digital countdown.
+ */
+@Composable
+fun IndividualLicenseClockCard(
+    initialRemainingSeconds: Long,
+    title: String = "LICENSE REMAINING",
+    statusText: String = "ACTIVE",
+    isActive: Boolean = true,
+    modifier: Modifier = Modifier
+) {
+    var remainingSeconds by remember(initialRemainingSeconds) {
+        mutableLongStateOf(initialRemainingSeconds)
+    }
+
+    LaunchedEffect(initialRemainingSeconds) {
+        remainingSeconds = initialRemainingSeconds
+        while (remainingSeconds > 0L) {
+            delay(1000L)
+            remainingSeconds = max(0L, remainingSeconds - 1L)
+            if (remainingSeconds <= 0L) break
+        }
+    }
+
+    DigitalClockCardLayout(
+        remainingSeconds = remainingSeconds,
+        title = title,
+        statusText = if (remainingSeconds > 0L) statusText else "EXPIRED",
+        isActive = remainingSeconds > 0L && isActive,
+        modifier = modifier
+    )
+}
+
+@Composable
+fun DigitalClockCardLayout(
+    remainingSeconds: Long,
+    title: String = "LICENSE REMAINING",
+    statusText: String = "ACTIVE",
+    isActive: Boolean = true,
+    modifier: Modifier = Modifier
+) {
+    val safeSeconds = max(0L, remainingSeconds)
+    val hours = safeSeconds / 3600L
+    val minutes = (safeSeconds % 3600L) / 60L
+    val seconds = safeSeconds % 60L
 
     ElevatedCard(
         modifier = modifier.fillMaxWidth(),
@@ -104,7 +161,7 @@ fun LicenseClockCard(
                     )
                     Spacer(modifier = Modifier.size(8.dp))
                     Text(
-                        text = "LICENSE REMAINING",
+                        text = title,
                         style = MaterialTheme.typography.labelMedium,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.primary
@@ -112,16 +169,16 @@ fun LicenseClockCard(
                 }
 
                 Text(
-                    text = "ACTIVE",
+                    text = statusText,
                     style = MaterialTheme.typography.labelSmall,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF81C784)
+                    color = if (isActive) Color(0xFF81C784) else MaterialTheme.colorScheme.error
                 )
             }
 
             Spacer(modifier = Modifier.height(10.dp))
 
-            // Digital Clock Countdown Display: Hours - Minutes - Seconds (Updates live every second)
+            // Digital Clock Countdown Display: Hours : Minutes : Seconds
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -134,7 +191,7 @@ fun LicenseClockCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = String.format(Locale.US, "%02d : %02d : %02d", hours, minutes, seconds),
+                    text = String.format(Locale.US, "%02d  :  %02d  :  %02d", hours, minutes, seconds),
                     style = MaterialTheme.typography.headlineMedium.copy(
                         fontFamily = FontFamily.Monospace,
                         fontWeight = FontWeight.Bold,

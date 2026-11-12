@@ -24,6 +24,7 @@ import androidx.compose.ui.unit.sp
 import com.andorid.ninmods.data.SessionManager
 import com.andorid.ninmods.network.AuthApiClient
 import com.andorid.ninmods.network.UserLicenseItem
+import com.andorid.ninmods.ui.clock.IndividualLicenseClockCard
 import com.andorid.ninmods.ui.clock.LicenseClockCard
 import kotlinx.coroutines.launch
 import java.util.Locale
@@ -220,84 +221,101 @@ fun MyLicensesScreen(
             }
         } else {
             items(userKeys, key = { it.id }) { key ->
-                ElevatedCard(
+                val isExpired = key.status.equals("expired", ignoreCase = true)
+                val isActive = key.status.equals("active", ignoreCase = true)
+
+                Column(
                     modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(18.dp),
-                    colors = CardDefaults.elevatedCardColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceVariant
-                    ),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(10.dp)
+                    // Dedicated Live Countdown Clock Timer Card for each active license
+                    if (isActive || key.remainingSeconds > 0L) {
+                        IndividualLicenseClockCard(
+                            initialRemainingSeconds = key.remainingSeconds,
+                            title = "LICENSE REMAINING (${key.durationType.uppercase(Locale.US)})",
+                            statusText = if (isActive) "ACTIVE" else "EXPIRED",
+                            isActive = isActive
+                        )
+                    }
+
+                    ElevatedCard(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(18.dp),
+                        colors = CardDefaults.elevatedCardColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceVariant
+                        ),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
                     ) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.SpaceBetween
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp),
+                            verticalArrangement = Arrangement.spacedBy(10.dp)
                         ) {
-                            Text(
-                                text = key.licenseKey,
-                                style = MaterialTheme.typography.titleMedium.copy(
-                                    fontFamily = FontFamily.Monospace,
-                                    fontWeight = FontWeight.Bold
-                                ),
-                                color = MaterialTheme.colorScheme.onSurface,
-                                modifier = Modifier.weight(1f)
-                            )
-                            IconButton(
-                                onClick = {
-                                    val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                                    val clip = ClipData.newPlainText("License Key", key.licenseKey)
-                                    clipboard.setPrimaryClip(clip)
-                                    Toast.makeText(context, "License key copied!", Toast.LENGTH_SHORT).show()
-                                },
-                                modifier = Modifier.size(32.dp)
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Filled.ContentCopy,
-                                    contentDescription = "Copy Key",
-                                    tint = MaterialTheme.colorScheme.primary,
-                                    modifier = Modifier.size(18.dp)
-                                )
-                            }
-                        }
-
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                text = "${key.gameType.uppercase(Locale.US)} • ${key.durationType.uppercase(Locale.US)} (${key.durationHours}h)",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-
-                            val isExpired = key.status.equals("expired", ignoreCase = true)
-                            val isActive = key.status.equals("active", ignoreCase = true)
-                            Surface(
-                                shape = RoundedCornerShape(8.dp),
-                                color = when {
-                                    isActive -> Color(0xFF81C784).copy(alpha = 0.2f)
-                                    isExpired -> MaterialTheme.colorScheme.error.copy(alpha = 0.2f)
-                                    else -> MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
-                                }
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween
                             ) {
                                 Text(
-                                    text = key.status.uppercase(Locale.US),
-                                    style = MaterialTheme.typography.labelSmall,
-                                    fontWeight = FontWeight.Bold,
-                                    color = when {
-                                        isActive -> Color(0xFF81C784)
-                                        isExpired -> MaterialTheme.colorScheme.error
-                                        else -> MaterialTheme.colorScheme.primary
-                                    },
-                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                                    text = key.licenseKey,
+                                    style = MaterialTheme.typography.titleMedium.copy(
+                                        fontFamily = FontFamily.Monospace,
+                                        fontWeight = FontWeight.Bold
+                                    ),
+                                    color = MaterialTheme.colorScheme.onSurface,
+                                    modifier = Modifier.weight(1f)
                                 )
+                                IconButton(
+                                    onClick = {
+                                        val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                                        val clip = ClipData.newPlainText("License Key", key.licenseKey)
+                                        clipboard.setPrimaryClip(clip)
+                                        Toast.makeText(context, "License key copied!", Toast.LENGTH_SHORT).show()
+                                    },
+                                    modifier = Modifier.size(32.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Filled.ContentCopy,
+                                        contentDescription = "Copy Key",
+                                        tint = MaterialTheme.colorScheme.primary,
+                                        modifier = Modifier.size(18.dp)
+                                    )
+                                }
+                            }
+
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = "${key.gameType.uppercase(Locale.US)} • ${key.durationType.uppercase(Locale.US)} (${key.durationHours}h)",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+
+                                Surface(
+                                    shape = RoundedCornerShape(8.dp),
+                                    color = when {
+                                        isActive -> Color(0xFF81C784).copy(alpha = 0.2f)
+                                        isExpired -> MaterialTheme.colorScheme.error.copy(alpha = 0.2f)
+                                        else -> MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
+                                    }
+                                ) {
+                                    Text(
+                                        text = key.status.uppercase(Locale.US),
+                                        style = MaterialTheme.typography.labelSmall,
+                                        fontWeight = FontWeight.Bold,
+                                        color = when {
+                                            isActive -> Color(0xFF81C784)
+                                            isExpired -> MaterialTheme.colorScheme.error
+                                            else -> MaterialTheme.colorScheme.primary
+                                        },
+                                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                                    )
+                                }
+                            }
                             }
                         }
 
