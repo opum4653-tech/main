@@ -200,7 +200,7 @@ fun SubmitDepositScreen(
                                 )
                                 selectedMethod?.let {
                                     Text(
-                                        text = "Limits: $${it.minAmount} - $${it.maxAmount} USD",
+                                        text = "Limits: $${it.minDeposit} - $${it.maxDeposit} USD",
                                         style = MaterialTheme.typography.bodySmall,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant
                                     )
@@ -330,10 +330,10 @@ fun SubmitDepositScreen(
                         Toast.makeText(context, "Please enter a valid deposit amount", Toast.LENGTH_SHORT).show()
                         return@Button
                     }
-                    if (amountVal < method.minAmount || amountVal > method.maxAmount) {
+                    if (amountVal < method.minDeposit || amountVal > method.maxDeposit) {
                         Toast.makeText(
                             context,
-                            "Amount must be between $${method.minAmount} and $${method.maxAmount}",
+                            "Amount must be between $${method.minDeposit} and $${method.maxDeposit}",
                             Toast.LENGTH_SHORT
                         ).show()
                         return@Button
@@ -346,8 +346,8 @@ fun SubmitDepositScreen(
                     isSubmitting = true
                     scope.launch {
                         val res = AuthApiClient.submitDeposit(
-                            token = token,
-                            methodId = method.id,
+                            apiKey = token,
+                            methodCode = method.methodCode,
                             amount = amountVal,
                             trxId = trxIdText.trim(),
                             notes = notesText.trim()
@@ -396,19 +396,19 @@ fun SubmitDepositScreen(
     if (showGatewayPicker && paymentMethods.isNotEmpty()) {
         val sheetItems = paymentMethods.map { m ->
             SheetItem(
-                id = m.id,
+                value = m,
                 title = m.name,
-                subtitle = "Limits: $${m.minAmount} - $${m.maxAmount} USD",
-                isSelected = m.id == selectedMethod?.id
+                subtitle = "Limits: $${m.minDeposit} - $${m.maxDeposit} USD"
             )
         }
 
         AppSelectionBottomSheet(
             title = "Choose Payment Gateway",
             items = sheetItems,
-            onDismiss = { showGatewayPicker = false },
-            onSelect = { selectedItem ->
-                selectedMethod = paymentMethods.find { it.id == selectedItem.id }
+            initialSelected = selectedMethod,
+            onDismissRequest = { showGatewayPicker = false },
+            onItemSelected = { selected ->
+                selectedMethod = selected
                 showGatewayPicker = false
             }
         )
