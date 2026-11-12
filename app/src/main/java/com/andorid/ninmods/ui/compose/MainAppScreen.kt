@@ -47,6 +47,7 @@ import com.andorid.ninmods.ui.denylist.DenyListScreen
 import com.andorid.ninmods.ui.deposit.AddFundsScreen
 import com.andorid.ninmods.ui.deposit.SubmitDepositScreen
 import com.andorid.ninmods.ui.loader.DriverLoaderScreen
+import com.andorid.ninmods.ui.licenses.MyLicensesScreen
 import com.andorid.ninmods.ui.profile.ChangePasswordScreen
 import com.andorid.ninmods.ui.profile.ProfileScreen
 import com.andorid.ninmods.ui.settings.ReportBugScreen
@@ -66,10 +67,11 @@ enum class MainDestination(
 ) {
     DASHBOARD("Dashboard", Icons.Filled.Dashboard),
     SUPPORT("Live Support", Icons.Filled.SupportAgent),
+    ADD_FUNDS("Add Funds", Icons.Filled.AccountBalanceWallet),
+    MY_LICENSES("My Licenses", Icons.Filled.VpnKey),
     LOADER("Driver Loader", Icons.Filled.Build),
     DENYLIST("Daily List", Icons.Filled.Security),
     SETTINGS("General Settings", Icons.Filled.Settings),
-    ADD_FUNDS("Add Funds", Icons.Filled.AccountBalanceWallet),
     SUBMIT_DEPOSIT("Deposit Funds", Icons.Filled.AccountBalanceWallet),
     CREATE_TICKET("Create Ticket", Icons.Filled.Add),
     TICKET_CHAT("Live Conversation", Icons.AutoMirrored.Filled.Chat),
@@ -165,6 +167,7 @@ fun MainAppScreen(
             currentDestination == MainDestination.DENYLIST ||
             currentDestination == MainDestination.CREATE_TICKET ||
             currentDestination == MainDestination.ADD_FUNDS ||
+            currentDestination == MainDestination.MY_LICENSES ||
             currentDestination == MainDestination.SUBMIT_DEPOSIT ||
             currentDestination == MainDestination.CHANGE_PASSWORD ||
             currentDestination == MainDestination.REPORT_BUG ||
@@ -336,7 +339,18 @@ fun MainAppScreen(
                             }
                         )
 
-                        // 4. Driver Loader
+                        // 4. My Licenses
+                        LoaderDrawerItem(
+                            title = "My Licenses",
+                            icon = Icons.Filled.VpnKey,
+                            isSelected = currentDestination == MainDestination.MY_LICENSES,
+                            onClick = {
+                                currentDestination = MainDestination.MY_LICENSES
+                                scope.launch { drawerState.close() }
+                            }
+                        )
+
+                        // 5. Driver Loader
                         LoaderDrawerItem(
                             title = "Driver Loader",
                             icon = Icons.Filled.Build,
@@ -347,7 +361,7 @@ fun MainAppScreen(
                             }
                         )
 
-                        // 5. Daily List
+                        // 6. Daily List
                         LoaderDrawerItem(
                             title = "Daily List",
                             icon = Icons.Filled.Security,
@@ -358,7 +372,7 @@ fun MainAppScreen(
                             }
                         )
 
-                        // 6. General Settings
+                        // 7. General Settings
                         LoaderDrawerItem(
                             title = "General Settings",
                             icon = Icons.Filled.Settings,
@@ -430,6 +444,7 @@ fun MainAppScreen(
                             }
                             MainDestination.DENYLIST,
                             MainDestination.ADD_FUNDS,
+                            MainDestination.MY_LICENSES,
                             MainDestination.PROFILE -> {
                                 IconButton(onClick = { currentDestination = MainDestination.DASHBOARD }) {
                                     Icon(
@@ -538,6 +553,9 @@ fun MainAppScreen(
                     MainDestination.ADD_FUNDS -> AddFundsScreen(
                         sessionManager = sessionManager,
                         onNavigateToSubmitDeposit = { currentDestination = MainDestination.SUBMIT_DEPOSIT }
+                    )
+                    MainDestination.MY_LICENSES -> MyLicensesScreen(
+                        sessionManager = sessionManager
                     )
                     MainDestination.SUBMIT_DEPOSIT -> SubmitDepositScreen(
                         sessionManager = sessionManager,
