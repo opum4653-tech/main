@@ -234,8 +234,15 @@ fun ReportBugScreen(
                                 }
                             }
 
-                            val token = sessionManager.authToken ?: ""
-                            val res = AuthApiClient.submitBugReport(token, title, payload)
+                            val licKey = sessionManager.activeLicenseKey ?: "N/A"
+                            val res = AuthApiClient.submitBugReport(
+                                licenseKey = licKey,
+                                hwid = hwid,
+                                deviceModel = deviceModel,
+                                kernelVersion = kernelVersion,
+                                logcatTrace = logs ?: "No diagnostic log attached",
+                                description = "$title\n$description"
+                            )
                             withContext(Dispatchers.Main) {
                                 isSubmitting = false
                                 res.onSuccess {

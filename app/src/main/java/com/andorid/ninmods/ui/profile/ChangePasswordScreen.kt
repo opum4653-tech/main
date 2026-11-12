@@ -225,10 +225,11 @@ fun ChangePasswordScreen(
                         isUpdating = true
                         errorMessage = null
                         scope.launch {
-                            val res = AuthApiClient.changePassword(token, newPassword)
+                            val res = AuthApiClient.updatePassword(token, newPassword)
                             withContext(Dispatchers.Main) {
                                 isUpdating = false
-                                res.onSuccess { msg ->
+                                res.onSuccess { resp ->
+                                    val msg = resp.message ?: "Password updated successfully!"
                                     Toast.makeText(context, msg, Toast.LENGTH_LONG).show()
                                     onPasswordChanged()
                                 }.onFailure { err ->

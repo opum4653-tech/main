@@ -310,60 +310,59 @@ fun MyLicensesScreen(
                                     )
                                 }
                             }
-                            }
-                        }
 
-                        if (!key.hwid.isNullOrBlank()) {
-                            HorizontalDivider(
-                                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.25f),
-                                modifier = Modifier.padding(vertical = 2.dp)
-                            )
+                            if (!key.hwid.isNullOrBlank()) {
+                                HorizontalDivider(
+                                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.25f),
+                                    modifier = Modifier.padding(vertical = 2.dp)
+                                )
 
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.SpaceBetween
-                            ) {
-                                Column(modifier = Modifier.weight(1f)) {
-                                    Text(
-                                        text = "Bound Device: ${key.deviceModel ?: "Active Phone"}",
-                                        style = MaterialTheme.typography.bodySmall,
-                                        fontWeight = FontWeight.SemiBold,
-                                        color = MaterialTheme.colorScheme.onSurface
-                                    )
-                                    Text(
-                                        text = "HWID: ${key.hwid}",
-                                        style = MaterialTheme.typography.labelSmall.copy(fontFamily = FontFamily.Monospace),
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                                    )
-                                }
-
-                                val isResetting = resettingKeyId == key.id
-                                OutlinedButton(
-                                    onClick = {
-                                        resettingKeyId = key.id
-                                        scope.launch {
-                                            val res = AuthApiClient.resetMyKeyHwid(token, key.id)
-                                            resettingKeyId = null
-                                            res.onSuccess { msg ->
-                                                Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
-                                                loadKeys()
-                                            }.onFailure { err ->
-                                                Toast.makeText(context, err.message ?: "Reset failed", Toast.LENGTH_SHORT).show()
-                                            }
-                                        }
-                                    },
-                                    enabled = !isResetting,
-                                    shape = RoundedCornerShape(8.dp),
-                                    contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp),
-                                    modifier = Modifier.height(32.dp)
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.SpaceBetween
                                 ) {
-                                    if (isResetting) {
-                                        CircularProgressIndicator(modifier = Modifier.size(12.dp), strokeWidth = 1.5.dp)
-                                    } else {
-                                        Icon(Icons.Filled.RestartAlt, contentDescription = null, modifier = Modifier.size(14.dp))
-                                        Spacer(modifier = Modifier.width(4.dp))
-                                        Text("Reset HWID", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                                    Column(modifier = Modifier.weight(1f)) {
+                                        Text(
+                                            text = "Bound Device: ${key.deviceModel ?: "Active Phone"}",
+                                            style = MaterialTheme.typography.bodySmall,
+                                            fontWeight = FontWeight.SemiBold,
+                                            color = MaterialTheme.colorScheme.onSurface
+                                        )
+                                        Text(
+                                            text = "HWID: ${key.hwid}",
+                                            style = MaterialTheme.typography.labelSmall.copy(fontFamily = FontFamily.Monospace),
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                    }
+
+                                    val isResetting = resettingKeyId == key.id
+                                    OutlinedButton(
+                                        onClick = {
+                                            resettingKeyId = key.id
+                                            scope.launch {
+                                                val res = AuthApiClient.resetMyKeyHwid(token, key.id)
+                                                resettingKeyId = null
+                                                res.onSuccess { msg ->
+                                                    Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+                                                    loadKeys()
+                                                }.onFailure { err ->
+                                                    Toast.makeText(context, err.message ?: "Reset failed", Toast.LENGTH_SHORT).show()
+                                                }
+                                            }
+                                        },
+                                        enabled = !isResetting,
+                                        shape = RoundedCornerShape(8.dp),
+                                        contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp),
+                                        modifier = Modifier.height(32.dp)
+                                    ) {
+                                        if (isResetting) {
+                                            CircularProgressIndicator(modifier = Modifier.size(12.dp), strokeWidth = 1.5.dp)
+                                        } else {
+                                            Icon(Icons.Filled.RestartAlt, contentDescription = null, modifier = Modifier.size(14.dp))
+                                            Spacer(modifier = Modifier.width(4.dp))
+                                            Text("Reset HWID", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                                        }
                                     }
                                 }
                             }
