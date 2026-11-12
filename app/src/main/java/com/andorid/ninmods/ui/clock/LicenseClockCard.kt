@@ -67,9 +67,8 @@ fun LicenseClockCard(
         remainingSeconds = calculateRemaining()
         while (remainingSeconds > 0L) {
             delay(1000L)
-            val updated = calculateRemaining()
-            remainingSeconds = updated
-            if (updated <= 0L) break
+            remainingSeconds = max(0L, remainingSeconds - 1L)
+            if (remainingSeconds <= 0L) break
         }
     }
 

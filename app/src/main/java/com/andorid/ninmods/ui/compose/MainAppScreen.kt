@@ -108,6 +108,12 @@ fun MainAppScreen(
                         sessionManager.userBalance = profileData.balance
                         sessionManager.userName = profileData.username
                         sessionManager.userRole = profileData.role
+                        if (profileData.activeLicense != null) {
+                            sessionManager.serverRemainingSeconds = profileData.activeLicense.remainingSeconds
+                            sessionManager.activeLicenseKey = profileData.activeLicense.licenseKey
+                        } else {
+                            sessionManager.clearLicense()
+                        }
                     }
                 },
                 onFailure = { err ->
