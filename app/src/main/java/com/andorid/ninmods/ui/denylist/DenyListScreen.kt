@@ -124,26 +124,28 @@ fun DenyListScreen(
             }
 
             item {
-                // Environment & Global Toggle Card
+                // Environment & Global Toggle Card (Shown only when root is granted)
                 envInfo?.let { env ->
-                    DenyListEnvironmentCard(
-                        env = env,
-                        onToggleDenyList = { enable ->
-                            scope.launch {
-                                val success = DenyListManager.setDenyListEnabled(enable)
-                                if (success) {
-                                    Toast.makeText(
-                                        context,
-                                        if (enable) "DenyList Enforced" else "DenyList Disabled",
-                                        Toast.LENGTH_SHORT
-                                    ).show()
-                                    refreshData()
-                                } else {
-                                    Toast.makeText(context, "Failed to toggle DenyList", Toast.LENGTH_SHORT).show()
+                    if (env.rootAvailable) {
+                        DenyListEnvironmentCard(
+                            env = env,
+                            onToggleDenyList = { enable ->
+                                scope.launch {
+                                    val success = DenyListManager.setDenyListEnabled(enable)
+                                    if (success) {
+                                        Toast.makeText(
+                                            context,
+                                            if (enable) "DenyList Enforced" else "DenyList Disabled",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                        refreshData()
+                                    } else {
+                                        Toast.makeText(context, "Failed to toggle DenyList", Toast.LENGTH_SHORT).show()
+                                    }
                                 }
                             }
-                        }
-                    )
+                        )
+                    }
                 }
             }
 

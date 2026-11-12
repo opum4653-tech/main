@@ -47,7 +47,7 @@ fun DashboardScreen(
         // 1. Digital License Expiry Countdown Clock (Real-Time, hidden if no active plan)
         LicenseClockCard(sessionManager = sessionManager)
 
-        // 2. MAGISK DENYLIST / ROOT CLOAK CARD
+        // 2. DAILY LIST / ROOT CLOAK CARD
         DenyListCard(onOpenManager = onNavigateToDenyList)
 
         // 3. KERNEL MODS Card (Ring 0 Kernel Driver Floating Engine)

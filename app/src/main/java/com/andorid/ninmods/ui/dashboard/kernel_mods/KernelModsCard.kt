@@ -240,7 +240,7 @@ fun KernelModsCard(
             }
             if (!isRooted) {
                 unifiedDialogState = UnifiedModDialogState.RootRequired(
-                    "Superuser Denied: Root access (APatch, KernelSU, or Magisk) is mandatory to interact with the Ring 0 kernel driver and render the floating overlay."
+                    "Superuser Denied: Root access (APatch or KernelSU) is mandatory to interact with the Ring 0 kernel driver and render the floating overlay."
                 )
                 return@launch
             }

@@ -75,12 +75,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.andorid.ninmods.data.SessionManager
 import com.andorid.ninmods.network.AuthApiClient
-import com.andorid.ninmods.network.TransactionItem
 import com.andorid.ninmods.network.UserLicenseItem
 import com.andorid.ninmods.network.UserProfileData
 import com.andorid.ninmods.ui.clock.LicenseClockCard
 import com.andorid.ninmods.ui.dialogs.PurchaseKeyBottomSheet
-import com.andorid.ninmods.ui.dialogs.UserDepositBottomSheet
 import kotlinx.coroutines.launch
 import java.util.Locale
 

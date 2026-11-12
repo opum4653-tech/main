@@ -52,12 +52,12 @@ object DenyListManager {
         if (!rootGranted) {
             return@withContext RootEnvironmentInfo(
                 rootAvailable = false,
-                providerName = "Root Access Not Granted",
+                providerName = "Daily Protection Engine",
                 isMagisk = false,
                 denylistEnabled = false,
                 totalHiddenPackages = 0,
                 totalHiddenProcesses = 0,
-                statusMessage = "Root permission (su) required. Grant root in Magisk, KernelSU, or APatch."
+                statusMessage = "Root permission (su) required. Grant root in APatch or KernelSU."
             )
         }
 

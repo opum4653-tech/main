@@ -114,55 +114,7 @@ fun AddFundsScreen(
         ) {
             Spacer(modifier = Modifier.height(4.dp))
 
-            // Wallet Balance Header Card
-            ElevatedCard(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(18.dp),
-                colors = CardDefaults.elevatedCardColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceVariant
-                ),
-                elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Column {
-                        Text(
-                            text = "Available Balance",
-                            style = MaterialTheme.typography.labelMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        val balanceStr = String.format(Locale.US, "%.2f", sessionManager.userBalance)
-                        Text(
-                            text = "$$balanceStr USD",
-                            style = MaterialTheme.typography.titleLarge,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                    }
-
-                    Surface(
-                        shape = RoundedCornerShape(12.dp),
-                        color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.6f)
-                    ) {
-                        IconButton(onClick = { loadTransactions(silent = false) }) {
-                            Icon(
-                                imageVector = Icons.Filled.Refresh,
-                                contentDescription = "Refresh",
-                                tint = MaterialTheme.colorScheme.primary
-                            )
-                        }
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(10.dp))
-
-            // Search Bar
+            // Search Bar (Identical to Live Support page)
             OutlinedTextField(
                 value = searchQuery,
                 onValueChange = { searchQuery = it },
@@ -184,7 +136,7 @@ fun AddFundsScreen(
 
             Spacer(modifier = Modifier.height(10.dp))
 
-            // Filter Tabs
+            // Filter Tabs (Identical to Live Support page)
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)

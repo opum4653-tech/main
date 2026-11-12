@@ -231,7 +231,7 @@ fun ExternalModsCard(
             }
             if (!isRooted) {
                 unifiedDialogState = UnifiedModDialogState.RootRequired(
-                    "Binary failed to load: This device is not rooted or Superuser (Root) access was denied. Superuser permissions (APatch, KernelSU, or Magisk) are mandatory to allocate RAM memory buffers and render the overlay."
+                    "Binary failed to load: This device is not rooted or Superuser (Root) access was denied. Superuser permissions (APatch or KernelSU) are mandatory to allocate RAM memory buffers and render the overlay."
                 )
                 return@launch
             }
@@ -272,7 +272,7 @@ fun ExternalModsCard(
                         )
                     } else {
                         unifiedDialogState = UnifiedModDialogState.RootRequired(
-                            "Binary failed to load: $errMsg\n\nPlease ensure Superuser permission is granted to NINMODS in your root manager (APatch/KernelSU/Magisk)."
+                            "Binary failed to load: $errMsg\n\nPlease ensure Superuser permission is granted to NINMODS in your root manager (APatch/KernelSU)."
                         )
                     }
                     activeModId = null
