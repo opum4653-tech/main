@@ -39,7 +39,7 @@ fun DenyListCard(
 
     fun refreshEnv() {
         scope.launch {
-            envInfo = DenyListManager.detectEnvironment()
+            envInfo = DenyListManager.detectEnvironment(context)
         }
     }
 

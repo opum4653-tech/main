@@ -59,7 +59,7 @@ fun DenyListScreen(
     fun refreshData() {
         isLoading = true
         scope.launch {
-            val env = DenyListManager.detectEnvironment()
+            val env = DenyListManager.detectEnvironment(context)
             envInfo = env
             val apps = if (env.rootAvailable) {
                 DenyListManager.getInstalledApps(context)
@@ -102,45 +102,34 @@ fun DenyListScreen(
             modifier = modifier.fillMaxSize(),
             contentAlignment = Alignment.Center
         ) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
-                Spacer(modifier = Modifier.height(12.dp))
-                Text(
-                    text = "Inspecting Zygisk & Scanning Packages...",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
+            CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
         }
     } else {
         LazyColumn(
             modifier = modifier
                 .fillMaxSize()
                 .padding(horizontal = 16.dp),
+            contentPadding = PaddingValues(top = 4.dp, bottom = 40.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
+            // 1. Universal Environment & Master Cloak Card
             item {
-                Spacer(modifier = Modifier.height(4.dp))
-            }
-
-            item {
-                // Environment & Global Toggle Card (Shown only when root is granted)
                 envInfo?.let { env ->
                     if (env.rootAvailable) {
                         DenyListEnvironmentCard(
                             env = env,
                             onToggleDenyList = { enable ->
                                 scope.launch {
-                                    val success = DenyListManager.setDenyListEnabled(enable)
+                                    val success = DenyListManager.setDenyListEnabled(context, enable)
                                     if (success) {
                                         Toast.makeText(
                                             context,
-                                            if (enable) "DenyList Enforced" else "DenyList Disabled",
+                                            if (enable) "Root Cloak Active" else "Root Cloak Disabled",
                                             Toast.LENGTH_SHORT
                                         ).show()
                                         refreshData()
                                     } else {
-                                        Toast.makeText(context, "Failed to toggle DenyList", Toast.LENGTH_SHORT).show()
+                                        Toast.makeText(context, "Failed to toggle Root Cloak", Toast.LENGTH_SHORT).show()
                                     }
                                 }
                             }
@@ -149,7 +138,7 @@ fun DenyListScreen(
                 }
             }
 
-            // 1-Tap Quick Action Card for Free Fire & Play Services
+            // 2. 1-Tap Quick Action Card for Free Fire & System Targets
             item {
                 QuickGameCloakCard(
                     isQuickCloaking = isQuickCloaking,
@@ -162,33 +151,26 @@ fun DenyListScreen(
                                 val count = result.getOrDefault(0)
                                 Toast.makeText(
                                     context,
-                                    "Protected Free Fire & Play Services ($count processes)",
-                                    Toast.LENGTH_LONG
+                                    "Protected $count target items",
+                                    Toast.LENGTH_SHORT
                                 ).show()
                                 refreshData()
                             } else {
-                                val err = result.exceptionOrNull()?.message ?: "Operation failed"
-                                Toast.makeText(context, "Error: $err", Toast.LENGTH_LONG).show()
+                                Toast.makeText(context, "Cloak failed", Toast.LENGTH_SHORT).show()
                             }
                         }
                     }
                 )
             }
 
-            // Search & Filter Header
+            // 3. Search & Filter Bar
             item {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     OutlinedTextField(
                         value = searchQuery,
                         onValueChange = { searchQuery = it },
                         modifier = Modifier.fillMaxWidth(),
-                        placeholder = {
-                            Text(
-                                "Search app or package name...",
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
-                            )
-                        },
+                        placeholder = { Text("Search...") },
                         leadingIcon = {
                             Icon(
                                 imageVector = Icons.Filled.Search,
@@ -208,7 +190,7 @@ fun DenyListScreen(
                             }
                         },
                         singleLine = true,
-                        shape = RoundedCornerShape(12.dp)
+                        shape = RoundedCornerShape(14.dp)
                     )
 
                     // Filter Chips
@@ -228,64 +210,66 @@ fun DenyListScreen(
                                         fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
                                     )
                                 },
-                                shape = RoundedCornerShape(8.dp)
+                                shape = RoundedCornerShape(10.dp)
                             )
                         }
                     }
                 }
             }
 
-            // Apps List Header
+            // 4. Section Label
             item {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = "INSTALLED APPLICATIONS (${filteredApps.size})",
-                        style = MaterialTheme.typography.labelMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        letterSpacing = 1.sp
-                    )
-                }
+                Text(
+                    text = "APPLICATIONS (${filteredApps.size})",
+                    style = MaterialTheme.typography.labelMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.padding(start = 4.dp)
+                )
             }
 
+            // 5. Empty State Card
             if (filteredApps.isEmpty()) {
                 item {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 40.dp),
-                        contentAlignment = Alignment.Center
+                    ElevatedCard(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(20.dp),
+                        colors = CardDefaults.elevatedCardColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceVariant
+                        ),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
                     ) {
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.spacedBy(10.dp)
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(32.dp),
+                            contentAlignment = Alignment.Center
                         ) {
-                            Icon(
-                                imageVector = Icons.Filled.SearchOff,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
-                                modifier = Modifier.size(48.dp)
-                            )
-                            Text(
-                                text = "No matching applications found",
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Icon(
+                                    imageVector = Icons.Filled.Security,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f),
+                                    modifier = Modifier.size(48.dp)
+                                )
+                                Spacer(modifier = Modifier.height(10.dp))
+                                Text(
+                                    text = "No applications found",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                            }
                         }
                     }
                 }
             } else {
                 items(filteredApps, key = { it.packageName }) { appItem ->
-                    val isExpanded = expandedPackages.contains(appItem.packageName)
                     AppItemCard(
                         app = appItem,
-                        isExpanded = isExpanded,
+                        isExpanded = expandedPackages.contains(appItem.packageName),
                         onToggleExpand = {
-                            expandedPackages = if (isExpanded) {
+                            expandedPackages = if (expandedPackages.contains(appItem.packageName)) {
                                 expandedPackages - appItem.packageName
                             } else {
                                 expandedPackages + appItem.packageName
@@ -294,9 +278,9 @@ fun DenyListScreen(
                         onToggleAllProcesses = { enable ->
                             scope.launch {
                                 val success = if (enable) {
-                                    DenyListManager.addToDenyList(appItem.packageName)
+                                    DenyListManager.addToDenyList(context, appItem.packageName)
                                 } else {
-                                    DenyListManager.removeFromDenyList(appItem.packageName)
+                                    DenyListManager.removeFromDenyList(context, appItem.packageName)
                                 }
                                 if (success) {
                                     refreshData()
@@ -308,9 +292,9 @@ fun DenyListScreen(
                         onToggleSingleProcess = { procName, enable ->
                             scope.launch {
                                 val success = if (enable) {
-                                    DenyListManager.addToDenyList(appItem.packageName, procName)
+                                    DenyListManager.addToDenyList(context, appItem.packageName, procName)
                                 } else {
-                                    DenyListManager.removeFromDenyList(appItem.packageName, procName)
+                                    DenyListManager.removeFromDenyList(context, appItem.packageName, procName)
                                 }
                                 if (success) {
                                     refreshData()
@@ -322,14 +306,13 @@ fun DenyListScreen(
                     )
                 }
             }
-
-            item {
-                Spacer(modifier = Modifier.height(20.dp))
-            }
         }
     }
 }
 
+/**
+ * APatch Unified Master Cloak Environment Card.
+ */
 @Composable
 fun DenyListEnvironmentCard(
     env: RootEnvironmentInfo,
@@ -337,13 +320,13 @@ fun DenyListEnvironmentCard(
 ) {
     ElevatedCard(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp),
+        shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.elevatedCardColors(
             containerColor = MaterialTheme.colorScheme.surfaceVariant
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
+        Column(modifier = Modifier.padding(18.dp)) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -356,83 +339,87 @@ fun DenyListEnvironmentCard(
                             .clip(CircleShape)
                             .background(if (env.rootAvailable) Color(0xFF10B981) else Color(0xFFEF4444))
                     )
-                    Spacer(modifier = Modifier.width(8.dp))
+                    Spacer(modifier = Modifier.width(10.dp))
                     Text(
-                        text = if (env.providerName.contains("Magisk", ignoreCase = true)) "Daily Protection Engine" else env.providerName,
-                        style = MaterialTheme.typography.titleSmall,
+                        text = env.providerName,
+                        style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurface
                     )
                 }
 
-                if (env.isMagisk) {
-                    Surface(
-                        shape = RoundedCornerShape(6.dp),
-                        color = if (env.denylistEnabled) Color(0xFF10B981).copy(alpha = 0.2f) else Color(0xFFF59E0B).copy(alpha = 0.2f)
-                    ) {
-                        Text(
-                            text = if (env.denylistEnabled) "ENFORCING" else "DISABLED",
-                            style = MaterialTheme.typography.labelSmall,
-                            fontWeight = FontWeight.Bold,
-                            color = if (env.denylistEnabled) Color(0xFF10B981) else Color(0xFFF59E0B),
-                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
-                        )
-                    }
+                Surface(
+                    shape = RoundedCornerShape(8.dp),
+                    color = if (env.denylistEnabled) Color(0xFF10B981).copy(alpha = 0.2f) else Color(0xFFF59E0B).copy(alpha = 0.2f)
+                ) {
+                    Text(
+                        text = if (env.denylistEnabled) "ACTIVE" else "DISABLED",
+                        style = MaterialTheme.typography.labelSmall,
+                        fontWeight = FontWeight.Bold,
+                        color = if (env.denylistEnabled) Color(0xFF10B981) else Color(0xFFF59E0B),
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                    )
                 }
             }
 
-            Spacer(modifier = Modifier.height(6.dp))
+            Spacer(modifier = Modifier.height(10.dp))
+            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f))
+            Spacer(modifier = Modifier.height(10.dp))
 
-            if (env.isMagisk) {
-                Spacer(modifier = Modifier.height(6.dp))
-                Divider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f))
-                Spacer(modifier = Modifier.height(8.dp))
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column {
                     Text(
-                        text = "Enforce DenyList",
+                        text = "Global Root Cloak",
                         style = MaterialTheme.typography.bodyMedium,
-                        fontWeight = FontWeight.SemiBold,
+                        fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurface
                     )
-                    Switch(
-                        checked = env.denylistEnabled,
-                        onCheckedChange = onToggleDenyList,
-                        colors = SwitchDefaults.colors(
-                            checkedThumbColor = MaterialTheme.colorScheme.onPrimary,
-                            checkedTrackColor = MaterialTheme.colorScheme.primary
-                        )
+                    Text(
+                        text = "Hides root & mounts from apps",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
-
-                Spacer(modifier = Modifier.height(6.dp))
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    Text(
-                        text = "Packages: ${env.totalHiddenPackages}",
-                        style = MaterialTheme.typography.labelSmall,
-                        fontWeight = FontWeight.Medium,
-                        color = MaterialTheme.colorScheme.primary
+                Switch(
+                    checked = env.denylistEnabled,
+                    onCheckedChange = onToggleDenyList,
+                    colors = SwitchDefaults.colors(
+                        checkedThumbColor = MaterialTheme.colorScheme.onPrimary,
+                        checkedTrackColor = MaterialTheme.colorScheme.primary
                     )
-                    Text(
-                        text = "Processes: ${env.totalHiddenProcesses}",
-                        style = MaterialTheme.typography.labelSmall,
-                        fontWeight = FontWeight.Medium,
-                        color = Color(0xFF10B981)
-                    )
-                }
+                )
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                Text(
+                    text = "Protected: ${env.totalHiddenPackages} apps",
+                    style = MaterialTheme.typography.labelSmall,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.primary
+                )
+                Text(
+                    text = "Processes: ${env.totalHiddenProcesses}",
+                    style = MaterialTheme.typography.labelSmall,
+                    fontWeight = FontWeight.SemiBold,
+                    color = Color(0xFF10B981)
+                )
             }
         }
     }
 }
 
+/**
+ * 1-Tap Quick Action Card for Targets.
+ */
 @Composable
 fun QuickGameCloakCard(
     isQuickCloaking: Boolean,
@@ -440,43 +427,41 @@ fun QuickGameCloakCard(
 ) {
     ElevatedCard(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp),
+        shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.elevatedCardColors(
             containerColor = MaterialTheme.colorScheme.surfaceVariant
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(18.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(
                     imageVector = Icons.Filled.Security,
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(24.dp)
+                    modifier = Modifier.size(22.dp)
                 )
                 Spacer(modifier = Modifier.width(10.dp))
                 Text(
-                    text = "1-Tap Auto-Cloak Games",
-                    style = MaterialTheme.typography.titleSmall,
+                    text = "1-Tap Game Cloak",
+                    style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurface
                 )
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
-
             Button(
                 onClick = onQuickCloak,
                 enabled = !isQuickCloaking,
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(10.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    contentColor = MaterialTheme.colorScheme.onPrimary
-                )
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(48.dp),
+                shape = RoundedCornerShape(12.dp)
             ) {
                 if (isQuickCloaking) {
                     CircularProgressIndicator(
@@ -485,7 +470,7 @@ fun QuickGameCloakCard(
                         strokeWidth = 2.dp
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Cloaking...", style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Bold)
+                    Text("Cloaking...", fontWeight = FontWeight.Bold)
                 } else {
                     Icon(
                         imageVector = Icons.Filled.Shield,
@@ -493,13 +478,16 @@ fun QuickGameCloakCard(
                         modifier = Modifier.size(16.dp)
                     )
                     Spacer(modifier = Modifier.width(6.dp))
-                    Text("CLOAK ALL TARGETS NOW", style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Bold)
+                    Text("CLOAK TARGETS NOW", fontWeight = FontWeight.Bold)
                 }
             }
         }
     }
 }
 
+/**
+ * App Item Card matching APatch RoundedCornerShape(20.dp).
+ */
 @Composable
 fun AppItemCard(
     app: InstalledAppItem,
@@ -512,13 +500,13 @@ fun AppItemCard(
         modifier = Modifier
             .fillMaxWidth()
             .animateContentSize(),
-        shape = RoundedCornerShape(14.dp),
+        shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.elevatedCardColors(
             containerColor = MaterialTheme.colorScheme.surfaceVariant
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
-        Column(modifier = Modifier.padding(12.dp)) {
+        Column(modifier = Modifier.padding(14.dp)) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -529,7 +517,7 @@ fun AppItemCard(
                     packageName = app.packageName,
                     modifier = Modifier
                         .size(42.dp)
-                        .clip(RoundedCornerShape(8.dp))
+                        .clip(RoundedCornerShape(10.dp))
                 )
 
                 Spacer(modifier = Modifier.width(12.dp))
@@ -586,8 +574,8 @@ fun AppItemCard(
                         ) {
                             Text(
                                 text = when {
-                                    app.isFullyHidden -> "PROTECTED (${app.processes.size}/${app.processes.size})"
-                                    app.isPartiallyHidden -> "PARTIAL (${app.processes.count { it.isHidden }}/${app.processes.size})"
+                                    app.isFullyHidden -> "PROTECTED"
+                                    app.isPartiallyHidden -> "PARTIAL"
                                     else -> "EXPOSED"
                                 },
                                 style = MaterialTheme.typography.labelSmall,
@@ -640,14 +628,14 @@ fun AppItemCard(
                         .fillMaxWidth()
                         .padding(top = 10.dp)
                 ) {
-                    Divider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f))
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f))
                     Spacer(modifier = Modifier.height(8.dp))
 
                     Text(
-                        text = "COMPONENT PROCESSES:",
+                        text = "PROCESSES:",
                         style = MaterialTheme.typography.labelSmall,
                         fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        color = MaterialTheme.colorScheme.primary,
                         letterSpacing = 0.5.sp
                     )
 
