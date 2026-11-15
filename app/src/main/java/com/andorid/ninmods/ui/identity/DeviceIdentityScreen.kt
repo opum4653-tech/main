@@ -3,6 +3,7 @@ package com.andorid.ninmods.ui.identity
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -25,6 +26,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.andorid.ninmods.data.DeviceIdentityManager
 import com.andorid.ninmods.data.DeviceIdentityState
+import com.andorid.ninmods.data.DeviceProfilePreset
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -41,10 +43,12 @@ fun DeviceIdentityScreen(
     var isLoading by remember { mutableStateOf(true) }
     var isApplying by remember { mutableStateOf(false) }
 
+    var selectedPreset by remember { mutableStateOf<DeviceProfilePreset?>(null) }
     var imei1Input by remember { mutableStateOf("") }
     var imei2Input by remember { mutableStateOf("") }
     var androidIdInput by remember { mutableStateOf("") }
     var serialInput by remember { mutableStateOf("") }
+    var macInput by remember { mutableStateOf("") }
     var clearGameGuest by remember { mutableStateOf(true) }
 
     fun refreshInfo() {
@@ -56,6 +60,7 @@ fun DeviceIdentityScreen(
             imei2Input = info.imei2
             androidIdInput = info.androidId
             serialInput = info.serialNumber
+            macInput = info.macAddress
             isLoading = false
         }
     }
@@ -81,7 +86,7 @@ fun DeviceIdentityScreen(
                             color = Color.White
                         )
                         Text(
-                            text = "Device Identity Spoof & Blacklist Bypass",
+                            text = "Hardware Device Identity & Ban Shield",
                             fontSize = 11.sp,
                             color = Color(0xFFB39DDB)
                         )
@@ -168,7 +173,7 @@ fun DeviceIdentityScreen(
                                 fontSize = 15.sp
                             )
                             Text(
-                                text = "Spoof system IMEI, Android ID & device props to bypass hardware-level game bans.",
+                                text = "Real low-level root spoofer: patches SSAID database, system properties & Garena device tokens.",
                                 color = Color(0xFF9E8FB2),
                                 fontSize = 12.sp,
                                 lineHeight = 16.sp
@@ -177,18 +182,89 @@ fun DeviceIdentityScreen(
                     }
                 }
 
-                // 2. QUICK GENERATOR CARD
+                // 2. DEVICE MODEL PRESETS (1-TAP GENUINE PROFILES)
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(cardBg)
+                        .border(1.dp, borderColor, RoundedCornerShape(16.dp))
+                        .padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    Text(
+                        text = "NEW PHONE HARDWARE PRESETS (1-TAP)",
+                        fontWeight = FontWeight.Bold,
+                        color = primaryColor,
+                        fontSize = 13.sp
+                    )
+                    Text(
+                        text = "Select a genuine device profile to randomize all fingerprints according to authentic brand hardware.",
+                        color = Color(0xFF9E8FB2),
+                        fontSize = 11.sp
+                    )
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        DeviceIdentityManager.POPULAR_PRESETS.take(3).forEach { p ->
+                            val isSelected = selectedPreset == p
+                            Box(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .clip(RoundedCornerShape(10.dp))
+                                    .background(if (isSelected) primaryColor else Color(0xFF1D162E))
+                                    .border(
+                                        1.dp,
+                                        if (isSelected) Color.White else Color(0x33E10098),
+                                        RoundedCornerShape(10.dp)
+                                    )
+                                    .clickable {
+                                        selectedPreset = p
+                                        imei1Input = DeviceIdentityManager.generateRealisticImei(p.tacPrefix)
+                                        imei2Input = DeviceIdentityManager.generateRealisticImei(p.tacPrefix)
+                                        androidIdInput = DeviceIdentityManager.generateAndroidId()
+                                        serialInput = DeviceIdentityManager.generateSerialNumber()
+                                        macInput = DeviceIdentityManager.generateMacAddress()
+                                        Toast.makeText(context, "${p.brand} ${p.model} profile selected!", Toast.LENGTH_SHORT).show()
+                                    }
+                                    .padding(vertical = 10.dp, horizontal = 4.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                    Text(
+                                        text = p.brand,
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color.White,
+                                        fontSize = 12.sp
+                                    )
+                                    Text(
+                                        text = p.model,
+                                        color = if (isSelected) Color.White else Color(0xFFB39DDB),
+                                        fontSize = 10.sp
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // 3. QUICK ACTION BUTTONS
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     Button(
                         onClick = {
-                            imei1Input = DeviceIdentityManager.generateRealisticImei()
-                            imei2Input = DeviceIdentityManager.generateRealisticImei()
+                            val preset = selectedPreset ?: DeviceIdentityManager.POPULAR_PRESETS.random()
+                            selectedPreset = preset
+                            imei1Input = DeviceIdentityManager.generateRealisticImei(preset.tacPrefix)
+                            imei2Input = DeviceIdentityManager.generateRealisticImei(preset.tacPrefix)
                             androidIdInput = DeviceIdentityManager.generateAndroidId()
                             serialInput = DeviceIdentityManager.generateSerialNumber()
-                            Toast.makeText(context, "New hardware identity generated!", Toast.LENGTH_SHORT).show()
+                            macInput = DeviceIdentityManager.generateMacAddress()
+                            Toast.makeText(context, "Full new identity generated!", Toast.LENGTH_SHORT).show()
                         },
                         colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF221738)),
                         shape = RoundedCornerShape(12.dp),
@@ -206,10 +282,12 @@ fun DeviceIdentityScreen(
 
                     Button(
                         onClick = {
+                            selectedPreset = null
                             imei1Input = state.imei1
                             imei2Input = state.imei2
                             androidIdInput = state.androidId
                             serialInput = state.serialNumber
+                            macInput = state.macAddress
                             Toast.makeText(context, "Reverted to current system values", Toast.LENGTH_SHORT).show()
                         },
                         colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1D162E)),
@@ -227,7 +305,7 @@ fun DeviceIdentityScreen(
                     }
                 }
 
-                // 3. EDITABLE HARDWARE FIELDS CARD
+                // 4. EDITABLE HARDWARE FIELDS CARD
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -250,7 +328,7 @@ fun DeviceIdentityScreen(
                         value = imei1Input,
                         onValueChange = { imei1Input = it },
                         onCopy = { clipboardManager.setText(AnnotatedString(imei1Input)) },
-                        onRandomize = { imei1Input = DeviceIdentityManager.generateRealisticImei() }
+                        onRandomize = { imei1Input = DeviceIdentityManager.generateRealisticImei(selectedPreset?.tacPrefix) }
                     )
 
                     // IMEI 2
@@ -259,7 +337,7 @@ fun DeviceIdentityScreen(
                         value = imei2Input,
                         onValueChange = { imei2Input = it },
                         onCopy = { clipboardManager.setText(AnnotatedString(imei2Input)) },
-                        onRandomize = { imei2Input = DeviceIdentityManager.generateRealisticImei() }
+                        onRandomize = { imei2Input = DeviceIdentityManager.generateRealisticImei(selectedPreset?.tacPrefix) }
                     )
 
                     // Android ID (SSAID)
@@ -279,9 +357,18 @@ fun DeviceIdentityScreen(
                         onCopy = { clipboardManager.setText(AnnotatedString(serialInput)) },
                         onRandomize = { serialInput = DeviceIdentityManager.generateSerialNumber() }
                     )
+
+                    // MAC Address
+                    IdentityInputField(
+                        label = "Wi-Fi & Bluetooth MAC Address",
+                        value = macInput,
+                        onValueChange = { macInput = it },
+                        onCopy = { clipboardManager.setText(AnnotatedString(macInput)) },
+                        onRandomize = { macInput = DeviceIdentityManager.generateMacAddress() }
+                    )
                 }
 
-                // 4. GAME GUEST & CACHE CLEANUP OPTION
+                // 5. GAME GUEST & CACHE CLEANUP OPTION
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -319,7 +406,7 @@ fun DeviceIdentityScreen(
                     }
                 }
 
-                // 5. APPLY ACTION BUTTON
+                // 6. APPLY ACTION BUTTON
                 Button(
                     onClick = {
                         scope.launch {
@@ -329,6 +416,8 @@ fun DeviceIdentityScreen(
                                 newSerial = serialInput,
                                 newImei1 = imei1Input,
                                 newImei2 = imei2Input,
+                                newMac = macInput,
+                                preset = selectedPreset,
                                 resetGameGuest = clearGameGuest
                             )
                             isApplying = false

@@ -76,6 +76,40 @@ object ShellExecutor {
         }
     }.flowOn(Dispatchers.IO)
 
+    data class CommandResult(val isSuccess: Boolean, val output: String)
+
+    /**
+     * Executes a single command as root synchronously and returns exit status with output.
+     */
+    fun executeRootWithOutput(command: String): CommandResult {
+        return try {
+            val res = com.topjohnwu.superuser.Shell.cmd(command).exec()
+            val text = res.out.joinToString("\n")
+            CommandResult(res.isSuccess, text)
+        } catch (_: Exception) {
+            try {
+                val suBin = listOf(
+                    "/system/bin/su",
+                    "/system/xbin/su",
+                    "/data/adb/ap/bin/su",
+                    "/data/adb/magisk/su"
+                ).firstOrNull { java.io.File(it).exists() } ?: "su"
+
+                val proc = ProcessBuilder(suBin, "-c", command).start()
+                val reader = BufferedReader(InputStreamReader(proc.inputStream))
+                val sb = StringBuilder()
+                var l: String?
+                while (reader.readLine().also { l = it } != null) {
+                    sb.append(l).append("\n")
+                }
+                val exitCode = proc.waitFor()
+                CommandResult(exitCode == 0, sb.toString().trim())
+            } catch (e: Exception) {
+                CommandResult(false, e.message ?: "")
+            }
+        }
+    }
+
     /**
      * Executes a single command as root synchronously on the calling thread (or dispatcher).
      * Leverages LibSu with automatic fallback to ProcessBuilder.
