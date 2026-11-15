@@ -300,7 +300,13 @@ fun ExternalModsCard(
             if (result.isSuccess) {
                 Toast.makeText(context, "${mod.name} downloaded successfully!", Toast.LENGTH_SHORT).show()
                 refreshMods()
-                launchMod(mod)
+                val targetFile = result.getOrNull()
+                val modToLaunch = if (targetFile != null && targetFile.isFile) {
+                    mod.copy(file = targetFile, isDownloaded = true)
+                } else {
+                    mod.copy(isDownloaded = true)
+                }
+                launchMod(modToLaunch)
             } else {
                 Toast.makeText(context, result.exceptionOrNull()?.message ?: "Download failed", Toast.LENGTH_LONG).show()
                 unifiedDialogState = null
