@@ -1,5 +1,7 @@
 package com.andorid.ninmods.ui.dashboard.kernel_mods
 
+import android.content.Context
+import android.os.Build
 import android.os.Environment
 import android.widget.Toast
 import androidx.compose.foundation.Image
@@ -32,9 +34,11 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -48,6 +52,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.andorid.ninmods.R
+import com.andorid.ninmods.config.AppConfig
 import com.andorid.ninmods.data.InteractiveProcessBridge
 import com.andorid.ninmods.data.ModDownloader
 import com.andorid.ninmods.data.SessionManager
@@ -59,6 +64,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
+import java.io.FileOutputStream
 
 // Cyber Purple theme color
 private val CyberPurple = Color(0xFFAD47FA)
