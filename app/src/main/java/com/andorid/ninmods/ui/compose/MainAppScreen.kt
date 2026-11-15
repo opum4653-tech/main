@@ -44,6 +44,7 @@ import com.andorid.ninmods.network.UserTicketItem
 import com.andorid.ninmods.ui.MainViewModel
 import com.andorid.ninmods.ui.dashboard.DashboardScreen
 import com.andorid.ninmods.ui.denylist.DenyListScreen
+import com.andorid.ninmods.ui.identity.DeviceIdentityScreen
 import com.andorid.ninmods.ui.deposit.AddFundsScreen
 import com.andorid.ninmods.ui.deposit.SubmitDepositScreen
 import com.andorid.ninmods.ui.loader.DriverLoaderScreen
@@ -71,6 +72,7 @@ enum class MainDestination(
     MY_LICENSES("My Licenses", Icons.Filled.VpnKey),
     LOADER("Driver Loader", Icons.Filled.Build),
     DENYLIST("Daily List", Icons.Filled.Security),
+    IDENTITY("Anti-Blacklist / IMEI", Icons.Filled.Fingerprint),
     SETTINGS("General Settings", Icons.Filled.Settings),
     SUBMIT_DEPOSIT("Deposit Funds", Icons.Filled.AccountBalanceWallet),
     CREATE_TICKET("Create Ticket", Icons.Filled.Add),
@@ -378,7 +380,18 @@ fun MainAppScreen(
                             }
                         )
 
-                        // 7. General Settings
+                        // 7. Anti-Blacklist / IMEI
+                        LoaderDrawerItem(
+                            title = "Anti-Blacklist / IMEI",
+                            icon = Icons.Filled.Fingerprint,
+                            isSelected = currentDestination == MainDestination.IDENTITY,
+                            onClick = {
+                                currentDestination = MainDestination.IDENTITY
+                                scope.launch { drawerState.close() }
+                            }
+                        )
+
+                        // 8. General Settings
                         LoaderDrawerItem(
                             title = "General Settings",
                             icon = Icons.Filled.Settings,
@@ -510,7 +523,8 @@ fun MainAppScreen(
                 when (destination) {
                     MainDestination.DASHBOARD -> DashboardScreen(
                         sessionManager = sessionManager,
-                        onNavigateToDenyList = { currentDestination = MainDestination.DENYLIST }
+                        onNavigateToDenyList = { currentDestination = MainDestination.DENYLIST },
+                        onNavigateToIdentity = { currentDestination = MainDestination.IDENTITY }
                     )
                     MainDestination.LOADER -> DriverLoaderScreen(
                         viewModel = viewModel,
@@ -518,6 +532,9 @@ fun MainAppScreen(
                     )
                     MainDestination.DENYLIST -> DenyListScreen(
                         refreshTrigger = triggerDenyListRefresh,
+                        onBack = { currentDestination = MainDestination.DASHBOARD }
+                    )
+                    MainDestination.IDENTITY -> DeviceIdentityScreen(
                         onBack = { currentDestination = MainDestination.DASHBOARD }
                     )
                     MainDestination.SUPPORT -> UserSupportScreen(
