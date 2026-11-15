@@ -185,3 +185,24 @@ DriverLoader/
 2. **Standard Comment Style:**
    - Single-line comments must use minimal standard tokens: `// Section Name` or `/* Section Name */`.
    - Documentation headers must use standard Markdown headings (`#`, `##`, `###`) without decorative frames.
+
+---
+
+## 9. Dashboard and Anti-Blacklist UI Architecture Invariants
+
+1. **Dashboard Card Minimalism:**
+   - The Dashboard screen must remain strictly minimal and uncluttered.
+   - Auxiliary features such as `Daily List` (`DenyListCard`) and `Anti-Blacklist` must never be displayed as cards on the Dashboard.
+   - Access to `Daily List` and `Anti-Blacklist & IMEI` is strictly delegated to the Side Navigation Drawer.
+   - The Dashboard displays only Broadcast Notification, License Clock, Kernel Mod, and External Mod cards.
+
+2. **Device Identity and Anti-Blacklist System:**
+   - **Authentic Device Brand & Model Preservation:**
+     - The anti-blacklist / spoofer screen must automatically read and display the device's authentic brand, model, and manufacturer (`Build.BRAND`, `Build.MODEL`, `Build.MANUFACTURER`).
+     - Fake foreign brand presets (e.g. Google Pixel, Samsung Galaxy, OnePlus) are strictly prohibited. The system must never spoof the brand or model name, preserving real hardware signature and preventing compatibility bugs.
+   - **Dynamic Identifiers Randomization:**
+     - Only dynamic tracking tokens (IMEI 1, IMEI 2, Android ID / SSAID, Hardware Serial Number, and WiFi MAC Address) are randomized upon user request.
+   - **Visual Theme and Navigation Hierarchy:**
+     - The screen must adhere strictly to the APatch dark theme (`surfaceVariant`, 20.dp rounded corners, zero elevation, cohesive contrast).
+     - Sub-screens must never contain their own `Scaffold` or nested `TopAppBar`; global navigation headers handle back navigation and title display.
+

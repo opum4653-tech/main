@@ -2,10 +2,8 @@ package com.andorid.ninmods.ui.identity
 
 import android.widget.Toast
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -15,7 +13,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.AnnotatedString
@@ -25,7 +22,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.andorid.ninmods.data.DeviceIdentityManager
 import com.andorid.ninmods.data.DeviceIdentityState
-import com.andorid.ninmods.data.DeviceProfilePreset
 import kotlinx.coroutines.launch
 
 @Composable
@@ -41,7 +37,6 @@ fun DeviceIdentityScreen(
     var isLoading by remember { mutableStateOf(true) }
     var isApplying by remember { mutableStateOf(false) }
 
-    var selectedPreset by remember { mutableStateOf<DeviceProfilePreset?>(null) }
     var imei1Input by remember { mutableStateOf("") }
     var imei2Input by remember { mutableStateOf("") }
     var androidIdInput by remember { mutableStateOf("") }
@@ -84,7 +79,7 @@ fun DeviceIdentityScreen(
         ) {
             Spacer(modifier = Modifier.height(4.dp))
 
-            // 1. APATCH-THEMED STATUS BANNER (ElevatedCard 20.dp radius)
+            // 1. ACTIVE DEVICE INFO CARD (Auto-detects this phone's genuine Brand and Model)
             ElevatedCard(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(20.dp),
@@ -100,71 +95,43 @@ fun DeviceIdentityScreen(
                 ) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(14.dp)
                     ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        Box(
+                            modifier = Modifier
+                                .size(48.dp)
+                                .clip(RoundedCornerShape(14.dp))
+                                .background(MaterialTheme.colorScheme.primaryContainer),
+                            contentAlignment = Alignment.Center
                         ) {
-                            Box(
-                                modifier = Modifier
-                                    .size(44.dp)
-                                    .clip(RoundedCornerShape(12.dp))
-                                    .background(MaterialTheme.colorScheme.primaryContainer),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Filled.Security,
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.primary,
-                                    modifier = Modifier.size(24.dp)
-                                )
-                            }
-
-                            Column {
-                                Text(
-                                    text = "Anti-Blacklist Engine",
-                                    style = MaterialTheme.typography.titleMedium,
-                                    fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.onSurface
-                                )
-                                Text(
-                                    text = "Hardware Device Identity Spoofer",
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            }
+                            Icon(
+                                imageVector = Icons.Filled.PhoneAndroid,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(26.dp)
+                            )
                         }
 
-                        Surface(
-                            shape = RoundedCornerShape(8.dp),
-                            color = Color(0xFF10B981).copy(alpha = 0.15f)
-                        ) {
-                            Row(
-                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(5.dp)
-                            ) {
-                                Box(
-                                    modifier = Modifier
-                                        .size(6.dp)
-                                        .clip(CircleShape)
-                                        .background(Color(0xFF10B981))
-                                )
-                                Text(
-                                    text = "ROOT READY",
-                                    style = MaterialTheme.typography.labelSmall,
-                                    fontWeight = FontWeight.Bold,
-                                    color = Color(0xFF10B981)
-                                )
-                            }
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = "${state.brand} ${state.model}".trim(),
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                            Spacer(modifier = Modifier.height(2.dp))
+                            Text(
+                                text = "Manufacturer: ${state.manufacturer} • Device: ${state.device}",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
                         }
                     }
 
                     Spacer(modifier = Modifier.height(10.dp))
                     Text(
-                        text = "Patches SSAID database, system properties via resetprop & cleanses Garena hardware tokens without breaking SELinux.",
+                        text = "Device model is locked to your installed phone. Only dynamic identifiers (IMEI, SSAID, Serial, MAC) will be refreshed.",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         lineHeight = 16.sp
@@ -172,94 +139,19 @@ fun DeviceIdentityScreen(
                 }
             }
 
-            // 2. DEVICE MODEL PRESETS (APatch Surface Cards)
-            ElevatedCard(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(20.dp),
-                colors = CardDefaults.elevatedCardColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceVariant
-                ),
-                elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(18.dp),
-                    verticalArrangement = Arrangement.spacedBy(10.dp)
-                ) {
-                    Text(
-                        text = "GENUINE DEVICE PRESETS",
-                        style = MaterialTheme.typography.labelLarge,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                    Text(
-                        text = "Select an authentic hardware profile to generate coordinated IMEI, model & fingerprint data.",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        DeviceIdentityManager.POPULAR_PRESETS.take(3).forEach { p ->
-                            val isSelected = selectedPreset == p
-                            Surface(
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .clip(RoundedCornerShape(12.dp))
-                                    .clickable {
-                                        selectedPreset = p
-                                        imei1Input = DeviceIdentityManager.generateRealisticImei(p.tacPrefix)
-                                        imei2Input = DeviceIdentityManager.generateRealisticImei(p.tacPrefix)
-                                        androidIdInput = DeviceIdentityManager.generateAndroidId()
-                                        serialInput = DeviceIdentityManager.generateSerialNumber()
-                                        macInput = DeviceIdentityManager.generateMacAddress()
-                                        Toast.makeText(context, "${p.brand} ${p.model} profile selected", Toast.LENGTH_SHORT).show()
-                                    },
-                                shape = RoundedCornerShape(12.dp),
-                                color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface,
-                                shadowElevation = 0.dp
-                            ) {
-                                Column(
-                                    modifier = Modifier.padding(vertical = 12.dp, horizontal = 6.dp),
-                                    horizontalAlignment = Alignment.CenterHorizontally
-                                ) {
-                                    Text(
-                                        text = p.brand,
-                                        fontWeight = FontWeight.Bold,
-                                        style = MaterialTheme.typography.labelMedium,
-                                        color = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface
-                                    )
-                                    Spacer(modifier = Modifier.height(2.dp))
-                                    Text(
-                                        text = p.model,
-                                        style = MaterialTheme.typography.bodySmall,
-                                        color = if (isSelected) MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.8f) else MaterialTheme.colorScheme.onSurfaceVariant
-                                    )
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-            // 3. ACTION BUTTONS (APatch Pill Buttons matching Dashboard style)
+            // 2. QUICK GENERATOR BUTTONS (APatch Pill Buttons)
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 Button(
                     onClick = {
-                        val preset = selectedPreset ?: DeviceIdentityManager.POPULAR_PRESETS.random()
-                        selectedPreset = preset
-                        imei1Input = DeviceIdentityManager.generateRealisticImei(preset.tacPrefix)
-                        imei2Input = DeviceIdentityManager.generateRealisticImei(preset.tacPrefix)
+                        imei1Input = DeviceIdentityManager.generateRealisticImei()
+                        imei2Input = DeviceIdentityManager.generateRealisticImei()
                         androidIdInput = DeviceIdentityManager.generateAndroidId()
                         serialInput = DeviceIdentityManager.generateSerialNumber()
                         macInput = DeviceIdentityManager.generateMacAddress()
-                        Toast.makeText(context, "All hardware fields randomized", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, "New hardware identifiers generated", Toast.LENGTH_SHORT).show()
                     },
                     modifier = Modifier
                         .weight(1f)
@@ -285,7 +177,6 @@ fun DeviceIdentityScreen(
 
                 FilledTonalButton(
                     onClick = {
-                        selectedPreset = null
                         imei1Input = state.imei1
                         imei2Input = state.imei2
                         androidIdInput = state.androidId
@@ -316,7 +207,7 @@ fun DeviceIdentityScreen(
                 }
             }
 
-            // 4. EDITABLE HARDWARE FIELDS (Matching APatch MaterialTheme surface)
+            // 3. EDITABLE HARDWARE FIELDS (APatch Theme Surface Card)
             ElevatedCard(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(20.dp),
@@ -344,7 +235,7 @@ fun DeviceIdentityScreen(
                         value = imei1Input,
                         onValueChange = { imei1Input = it },
                         onCopy = { clipboardManager.setText(AnnotatedString(imei1Input)) },
-                        onRandomize = { imei1Input = DeviceIdentityManager.generateRealisticImei(selectedPreset?.tacPrefix) }
+                        onRandomize = { imei1Input = DeviceIdentityManager.generateRealisticImei() }
                     )
 
                     // IMEI 2
@@ -353,7 +244,7 @@ fun DeviceIdentityScreen(
                         value = imei2Input,
                         onValueChange = { imei2Input = it },
                         onCopy = { clipboardManager.setText(AnnotatedString(imei2Input)) },
-                        onRandomize = { imei2Input = DeviceIdentityManager.generateRealisticImei(selectedPreset?.tacPrefix) }
+                        onRandomize = { imei2Input = DeviceIdentityManager.generateRealisticImei() }
                     )
 
                     // Android ID (SSAID)
@@ -385,7 +276,7 @@ fun DeviceIdentityScreen(
                 }
             }
 
-            // 5. GAME GUEST & CACHE CLEANUP OPTION
+            // 4. GAME GUEST & CACHE CLEANUP OPTION
             ElevatedCard(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(20.dp),
@@ -426,7 +317,7 @@ fun DeviceIdentityScreen(
                 }
             }
 
-            // 6. APPLY ACTION BUTTON (APatch 16.dp Rounded Button)
+            // 5. APPLY ACTION BUTTON (APatch 16.dp Rounded Button)
             Button(
                 onClick = {
                     scope.launch {
@@ -437,7 +328,6 @@ fun DeviceIdentityScreen(
                             newImei1 = imei1Input,
                             newImei2 = imei2Input,
                             newMac = macInput,
-                            preset = selectedPreset,
                             resetGameGuest = clearGameGuest
                         )
                         isApplying = false

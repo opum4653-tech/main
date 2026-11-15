@@ -15,7 +15,6 @@ import com.andorid.ninmods.data.SessionManager
 import com.andorid.ninmods.network.ActiveNotificationItem
 import com.andorid.ninmods.ui.clock.LicenseClockCard
 import com.andorid.ninmods.ui.component.BroadcastNotificationCard
-import com.andorid.ninmods.ui.dashboard.denylist.DenyListCard
 import com.andorid.ninmods.ui.dashboard.external_mods.ExternalModsCard
 import com.andorid.ninmods.ui.dashboard.kernel_mods.KernelModsCard
 
@@ -47,13 +46,10 @@ fun DashboardScreen(
         // 1. Digital License Expiry Countdown Clock (Real-Time, hidden if no active plan)
         LicenseClockCard(sessionManager = sessionManager)
 
-        // 2. DAILY LIST / ROOT CLOAK CARD
-        DenyListCard(onOpenManager = onNavigateToDenyList)
-
-        // 3. KERNEL MODS Card (Ring 0 Kernel Driver Floating Engine)
+        // 2. KERNEL MODS Card (Ring 0 Kernel Driver Floating Engine)
         KernelModsCard(sessionManager = sessionManager)
 
-        // 4. EXTERNAL MODS Card (Single official external mod from refer/nin)
+        // 3. EXTERNAL MODS Card (Single official external mod from refer/nin)
         ExternalModsCard(sessionManager = sessionManager)
 
         Spacer(modifier = Modifier.height(20.dp))
