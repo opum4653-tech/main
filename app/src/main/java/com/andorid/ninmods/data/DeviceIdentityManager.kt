@@ -36,13 +36,30 @@ object DeviceIdentityManager {
      * Preserves device brand and model exactly as is.
      */
     suspend fun getDeviceInfo(context: Context): DeviceIdentityState = withContext(Dispatchers.IO) {
-        val androidId = ShellExecutor.executeRootWithOutput("settings get secure android_id 2>/dev/null")
-            .output.trim().ifBlank { "0000000000000000" }
+        val rootAndroidId = ShellExecutor.executeRootWithOutput("settings get secure android_id 2>/dev/null").output.trim()
+        val sysAndroidId = try {
+            android.provider.Settings.Secure.getString(context.contentResolver, android.provider.Settings.Secure.ANDROID_ID)
+        } catch (_: Exception) { null } ?: ""
+        val androidId = when {
+            rootAndroidId.isNotBlank() && rootAndroidId != "null" && rootAndroidId != "0000000000000000" -> rootAndroidId
+            sysAndroidId.isNotBlank() && sysAndroidId != "null" && sysAndroidId != "0000000000000000" -> sysAndroidId
+            else -> generateAndroidId()
+        }
 
-        val serial = ShellExecutor.executeRootWithOutput("getprop ro.serialno 2>/dev/null")
-            .output.trim().ifBlank {
-                ShellExecutor.executeRootWithOutput("getprop ro.boot.serialno 2>/dev/null").output.trim().ifBlank { Build.SERIAL ?: "UNKNOWN" }
-            }
+        var serial = ShellExecutor.executeRootWithOutput("getprop ro.serialno 2>/dev/null").output.trim()
+        if (serial.isBlank() || serial.equals("unknown", ignoreCase = true)) {
+            serial = ShellExecutor.executeRootWithOutput("getprop ro.boot.serialno 2>/dev/null").output.trim()
+        }
+        if (serial.isBlank() || serial.equals("unknown", ignoreCase = true)) {
+            serial = ShellExecutor.executeRootWithOutput("cat /sys/class/android_usb/android0/iSerial 2>/dev/null").output.trim()
+        }
+        if (serial.isBlank() || serial.equals("unknown", ignoreCase = true)) {
+            serial = ShellExecutor.executeRootWithOutput("resetprop ro.serialno 2>/dev/null").output.trim()
+        }
+        if (serial.isBlank() || serial.equals("unknown", ignoreCase = true)) {
+            val buildSerial = try { Build.SERIAL } catch (_: Exception) { null } ?: ""
+            serial = if (buildSerial.isNotBlank() && !buildSerial.equals("unknown", ignoreCase = true)) buildSerial else generateSerialNumber()
+        }
 
         val imei1 = ShellExecutor.executeRootWithOutput("service call iphonesubinfo 1 | toybox cut -d \"'\" -f2 | toybox grep -Eo '[0-9]{15}' | head -n 1 2>/dev/null")
             .output.trim().ifBlank {

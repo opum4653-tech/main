@@ -125,7 +125,13 @@ fun CreateTicketScreen(
                             FilterChip(
                                 selected = isSel,
                                 onClick = { selectedPriority = code },
-                                label = { Text(label) },
+                                label = {
+                                    Text(
+                                        text = label,
+                                        maxLines = 1,
+                                        softWrap = false
+                                    )
+                                },
                                 modifier = Modifier.weight(1f),
                                 shape = RoundedCornerShape(12.dp)
                             )

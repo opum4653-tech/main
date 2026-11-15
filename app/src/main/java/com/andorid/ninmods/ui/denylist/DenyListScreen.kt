@@ -6,9 +6,11 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -193,10 +195,12 @@ fun DenyListScreen(
                         shape = RoundedCornerShape(14.dp)
                     )
 
-                    // Filter Chips
+                    // Filter Chips (Horizontal scroll pill tabs)
                     Row(
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .horizontalScroll(rememberScrollState())
                     ) {
                         DenyListFilter.values().forEach { filter ->
                             val isSelected = activeFilter == filter
@@ -207,7 +211,9 @@ fun DenyListScreen(
                                     Text(
                                         text = filter.label,
                                         style = MaterialTheme.typography.labelMedium,
-                                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
+                                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                                        maxLines = 1,
+                                        softWrap = false
                                     )
                                 },
                                 shape = RoundedCornerShape(10.dp)
