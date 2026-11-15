@@ -2,9 +2,11 @@ package com.andorid.ninmods.ui.deposit
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -22,6 +24,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.andorid.ninmods.data.SessionManager
 import com.andorid.ninmods.network.AuthApiClient
@@ -136,9 +139,11 @@ fun AddFundsScreen(
 
             Spacer(modifier = Modifier.height(10.dp))
 
-            // Filter Tabs (Identical to Live Support page)
+            // Filter Tabs (APatch horizontal scroll pill tabs)
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .horizontalScroll(rememberScrollState()),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 filterOptions.forEach { opt ->
@@ -146,7 +151,13 @@ fun AddFundsScreen(
                     FilterChip(
                         selected = isSelected,
                         onClick = { selectedFilter = opt },
-                        label = { Text(opt) },
+                        label = {
+                            Text(
+                                text = opt,
+                                maxLines = 1,
+                                softWrap = false
+                            )
+                        },
                         shape = RoundedCornerShape(12.dp)
                     )
                 }
@@ -302,14 +313,19 @@ fun AddFundsScreen(
                                     Text(
                                         text = if (!tx.trxId.isNullOrBlank()) "TrxID: ${tx.trxId}" else (tx.adminNotes ?: "No TrxID provided"),
                                         style = MaterialTheme.typography.bodySmall,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis,
+                                        modifier = Modifier.weight(1f, fill = false)
                                     )
 
                                     if (!tx.createdAt.isNullOrBlank()) {
+                                        Spacer(modifier = Modifier.width(8.dp))
                                         Text(
-                                            text = tx.createdAt,
+                                            text = formatTransactionDate(tx.createdAt),
                                             style = MaterialTheme.typography.labelSmall,
-                                            color = MaterialTheme.colorScheme.outline
+                                            color = MaterialTheme.colorScheme.outline,
+                                            maxLines = 1
                                         )
                                     }
                                 }
@@ -345,5 +361,24 @@ fun AddFundsScreen(
                 modifier = Modifier.size(24.dp)
             )
         }
+    }
+}
+
+private fun formatTransactionDate(rawIso: String?): String {
+    if (rawIso.isNullOrBlank()) return ""
+    return try {
+        val parser = java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.US).apply {
+            timeZone = java.util.TimeZone.getTimeZone("UTC")
+        }
+        val clean = rawIso.substringBefore(".")
+        val date = parser.parse(clean)
+        if (date != null) {
+            val formatter = java.text.SimpleDateFormat("dd MMM, hh:mm a", Locale.getDefault())
+            formatter.format(date)
+        } else {
+            rawIso.take(19).replace("T", " ")
+        }
+    } catch (_: Exception) {
+        rawIso.take(19).replace("T", " ")
     }
 }

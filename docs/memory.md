@@ -91,3 +91,22 @@ This file serves as the permanent persistent memory and historical engineering l
 | `ModDownloader` | `data/ModDownloader.kt` | Resilient package downloader, cache buffering, self-healing root unpacker |
 | `InteractiveProcessBridge` | `data/InteractiveProcessBridge.kt` | Su process lifecycle, terminal stdout pipe, stdin auth injection |
 | `LicenseClockCard` | `ui/clock/LicenseClockCard.kt` | Real-time digital expiry countdown clock |
+
+---
+
+## 5. UI Layout Breaking Bugs & Path Toast Fixes
+
+### Bug 1: Filter Chips Vertical Letter Wrapping (`AddFundsScreen.kt` & `UserSupportScreen.kt`)
+- **Symptoms:** Filter chips (e.g. `REJECTED`, `ANSWERED`) collapsed horizontally into 1-character columns on standard DPI devices.
+- **Root Cause:** Filter chip rows lacked `Modifier.horizontalScroll(rememberScrollState())` and chip label texts lacked `maxLines = 1, softWrap = false`.
+- **Fix:** Added `Modifier.horizontalScroll(rememberScrollState())` and strict `maxLines = 1, softWrap = false` to all filter tab rows. Also added `formatTransactionDate` to convert raw UTC ISO timestamps into human-readable date/time (`dd MMM, hh:mm a`).
+
+### Bug 2: "Randomize All" Button Text Clipping (`DeviceIdentityScreen.kt`)
+- **Symptoms:** The "Randomize All" button clipped the bottom word ("All" -> `^ll`).
+- **Root Cause:** Hardcoded `height(44.dp)` combined with M3 default `horizontalPadding(24.dp)` forced text onto 2 lines, which the fixed height clipped.
+- **Fix:** Added `contentPadding = PaddingValues(horizontal = 8.dp, vertical = 0.dp)`, `labelMedium` font style, and `maxLines = 1, softWrap = false, overflow = TextOverflow.Ellipsis`.
+
+### Bug 3: Raw Internal File Path Toast on Mod Download Error
+- **Symptoms:** Downloading a mod on a device with restrictive root permissions displayed a raw system path toast (`/data/user/0/com.andorid.ninmods/files/kern...`).
+- **Root Cause:** `ModDownloader.kt` fallback error formatter returned `e.localizedMessage` unformatted when `FileOutputStream` threw `FileNotFoundException` or `ENOENT`.
+- **Fix:** Sanitized all error strings to map raw internal paths into clean, actionable user feedback ("Storage access error. Please grant Superuser access to NinMods."). Validated extracted zip outputs to never return a directory as an executable.

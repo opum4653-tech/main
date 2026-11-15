@@ -2,9 +2,11 @@ package com.andorid.ninmods.ui.support
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -116,9 +118,11 @@ fun UserSupportScreen(
 
             Spacer(modifier = Modifier.height(10.dp))
 
-            // Filter Tabs
+            // Filter Tabs (APatch horizontal scroll pill tabs)
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .horizontalScroll(rememberScrollState()),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 filterOptions.forEach { opt ->
@@ -126,7 +130,13 @@ fun UserSupportScreen(
                     FilterChip(
                         selected = isSelected,
                         onClick = { selectedFilter = opt },
-                        label = { Text(opt) },
+                        label = {
+                            Text(
+                                text = opt,
+                                maxLines = 1,
+                                softWrap = false
+                            )
+                        },
                         shape = RoundedCornerShape(12.dp)
                     )
                 }

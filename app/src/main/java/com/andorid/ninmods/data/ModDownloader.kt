@@ -154,7 +154,12 @@ object ModDownloader {
                 when {
                     targetBin.exists() && targetBin.isFile -> targetBin
                     targetScript.exists() && targetScript.isFile -> targetScript
-                    else -> targetDir
+                    else -> {
+                        // Scan for any executable or matching binary inside unpacked target directory
+                        val unpackedFiles = targetDir.listFiles() ?: emptyArray()
+                        val matching = unpackedFiles.firstOrNull { it.isFile && (it.name == baseName || it.name.startsWith(baseName)) }
+                        matching ?: throw Exception("Unpacked mod package missing '$baseName' binary.")
+                    }
                 }
             } else {
                 val destFileName = if (fileName.endsWith(".zip", ignoreCase = true)) {
@@ -198,17 +203,24 @@ object ModDownloader {
             Result.success(finalTargetFile)
 
         } catch (e: Exception) {
+            val rawMsg = e.localizedMessage ?: e.message ?: ""
             val msg = when {
-                e.message?.contains("Unable to resolve host", ignoreCase = true) == true ->
+                rawMsg.contains("Unable to resolve host", ignoreCase = true) ->
                     "Server unreachable. Check domain configuration or internet connection."
-                e.message?.contains("timed out", ignoreCase = true) == true ->
+                rawMsg.contains("timed out", ignoreCase = true) ->
                     "Download connection timed out. Please try again."
-                e.message?.contains("EACCES", ignoreCase = true) == true || e.message?.contains("Permission denied", ignoreCase = true) == true ->
+                rawMsg.contains("EACCES", ignoreCase = true) || rawMsg.contains("Permission denied", ignoreCase = true) ->
                     "Storage write permission error. Superuser access is required to update files."
-                e.message?.contains("ENOSPC", ignoreCase = true) == true ->
+                rawMsg.contains("ENOENT", ignoreCase = true) || rawMsg.contains("No such file", ignoreCase = true) ->
+                    "Storage directory missing. Superuser access is required."
+                rawMsg.contains("ENOSPC", ignoreCase = true) ->
                     "Storage is full. Please free up space and try again."
+                rawMsg.startsWith("/data/") ->
+                    "Storage access error. Please grant Superuser access to NinMods."
+                rawMsg.isNotBlank() ->
+                    rawMsg
                 else ->
-                    e.localizedMessage ?: e.message ?: "Download failed."
+                    "Download failed. Please try again."
             }
             Result.failure(Exception(msg))
         } finally {
