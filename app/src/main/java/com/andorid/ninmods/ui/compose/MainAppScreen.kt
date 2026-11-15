@@ -462,6 +462,7 @@ fun MainAppScreen(
                                 }
                             }
                             MainDestination.DENYLIST,
+                            MainDestination.IDENTITY,
                             MainDestination.ADD_FUNDS,
                             MainDestination.MY_LICENSES,
                             MainDestination.PROFILE -> {
