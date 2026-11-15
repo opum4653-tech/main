@@ -98,8 +98,6 @@ class InteractiveProcessBridge(
                 if (deviceHwid.isNotBlank()) {
                     val safeHwid = deviceHwid.replace("'", "'\\''")
                     out.writeBytes("export NIN_DEVICE_HWID='$safeHwid'\n")
-                    out.writeBytes("echo '$safeHwid' > /dev/.nin_hwid 2>/dev/null\n")
-                    out.writeBytes("chmod 600 /dev/.nin_hwid 2>/dev/null\n")
                 }
                 if (licenseKey.isNotBlank()) {
                     val safeKey = licenseKey.replace("'", "'\\''")
@@ -245,6 +243,6 @@ class InteractiveProcessBridge(
         activeProcess = null
         outputStream = null
         // Ensure root background instances are truly wiped
-        ShellExecutor.executeRoot("killall -9 gemini-cli 2>/dev/null; killall -9 ninmods-kernel 2>/dev/null; pkill -9 -f gemini_proc 2>/dev/null; rm -f /dev/.gemini_proc_* /dev/shm/.gemini_proc_* /data/adb/.gemini_proc_* /dev/.nin_hwid 2>/dev/null")
+        ShellExecutor.executeRoot("killall -9 gemini-cli 2>/dev/null; killall -9 ninmods-kernel 2>/dev/null; pkill -9 -f gemini_proc 2>/dev/null")
     }
 }
