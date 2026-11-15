@@ -17,10 +17,8 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import com.andorid.ninmods.data.SessionManager
 import com.andorid.ninmods.ui.compose.MainAppScreen
 import com.andorid.ninmods.ui.login.LoginActivity

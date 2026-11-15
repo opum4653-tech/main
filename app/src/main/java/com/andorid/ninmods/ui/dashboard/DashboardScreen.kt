@@ -23,7 +23,6 @@ fun DashboardScreen(
     sessionManager: SessionManager,
     activeBroadcast: ActiveNotificationItem? = null,
     onDismissBroadcast: () -> Unit = {},
-    onNavigateToDenyList: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     Column(

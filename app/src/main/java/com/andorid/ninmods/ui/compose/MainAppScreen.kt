@@ -11,7 +11,6 @@ import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -20,7 +19,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Chat
-import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -524,8 +522,7 @@ fun MainAppScreen(
             ) { destination ->
                 when (destination) {
                     MainDestination.DASHBOARD -> DashboardScreen(
-                        sessionManager = sessionManager,
-                        onNavigateToDenyList = { currentDestination = MainDestination.DENYLIST }
+                        sessionManager = sessionManager
                     )
                     MainDestination.LOADER -> DriverLoaderScreen(
                         viewModel = viewModel,
