@@ -173,6 +173,7 @@ fun MainAppScreen(
 
     val isSubScreen = currentDestination == MainDestination.TICKET_CHAT ||
             currentDestination == MainDestination.DENYLIST ||
+            currentDestination == MainDestination.IDENTITY ||
             currentDestination == MainDestination.CREATE_TICKET ||
             currentDestination == MainDestination.ADD_FUNDS ||
             currentDestination == MainDestination.MY_LICENSES ||
@@ -524,8 +525,7 @@ fun MainAppScreen(
                 when (destination) {
                     MainDestination.DASHBOARD -> DashboardScreen(
                         sessionManager = sessionManager,
-                        onNavigateToDenyList = { currentDestination = MainDestination.DENYLIST },
-                        onNavigateToIdentity = { currentDestination = MainDestination.IDENTITY }
+                        onNavigateToDenyList = { currentDestination = MainDestination.DENYLIST }
                     )
                     MainDestination.LOADER -> DriverLoaderScreen(
                         viewModel = viewModel,

@@ -138,7 +138,34 @@ DriverLoader/
 
 ---
 
-## 7. Official GitHub Release & Home Page Policy
+## 7. Anti-Blacklist & Device Identity Spoofer Architecture
+
+### 7.1 Scope & Placement
+- Accessible exclusively via the **Navigation Drawer** (Item 7: `Anti-Blacklist / IMEI`).
+- **Dashboard Purity Invariant:** The Dashboard MUST NOT contain an Anti-Blacklist card. The Dashboard is strictly reserved for:
+  1. Broadcast Announcements (`BroadcastNotificationCard`)
+  2. Live License Clock (`LicenseClockCard`)
+  3. Root Cloak (`DenyListCard`)
+  4. Kernel Mod Engine (`KernelModsCard`)
+  5. External Mod Engine (`ExternalModsCard`)
+
+### 7.2 UI & Theme Invariant (APatch Signature Dark Blue)
+- `DeviceIdentityScreen` must strictly adhere to the official APatch Material 3 theme (`BlueDarkColorScheme`):
+  - Card Containers: `MaterialTheme.colorScheme.surfaceVariant` with `RoundedCornerShape(20.dp)`
+  - Elevated Cards: `defaultElevation = 0.dp`
+  - Input Fields: `MaterialTheme.colorScheme.surface` with `outlineVariant` borders and standard M3 typography
+  - Buttons: Standard M3 `Button` (Primary Blue) and `FilledTonalButton` with `RoundedCornerShape(12.dp)`
+  - Zero Custom Foreign Theme Colors: Hardcoded dark pink / electric orchid colors are strictly prohibited in the launcher app.
+  - No redundant top app bars or duplicate back buttons. Navigation is handled strictly by the scaffold header in `MainAppScreen`.
+
+### 7.3 Real-World Root Identity Engine
+- SSAID Database Direct Patch: Updates `/data/system/users/0/settings_ssaid.xml` directly to bypass per-app hardware tracking.
+- Magisk / APatch / KernelSU Property Masking: Uses `resetprop -n` for low-level system properties (`ro.serialno`, `ro.boot.serialno`, `ril.gsm.imei`).
+- Memory Token Cleanser: Purges Garena/Unity device hashes and guest account caches across internal and external storage before game launch.
+
+---
+
+## 8. Official GitHub Release & Home Page Policy
 
 1. **GitHub Home Page "Latest" Badge Invariant:**
    - Every production release (`v1.x.x`) MUST be explicitly pinned as the repository's "Latest Release" on the GitHub homepage sidebar (`/releases/latest`).

@@ -17,7 +17,6 @@ import com.andorid.ninmods.ui.clock.LicenseClockCard
 import com.andorid.ninmods.ui.component.BroadcastNotificationCard
 import com.andorid.ninmods.ui.dashboard.denylist.DenyListCard
 import com.andorid.ninmods.ui.dashboard.external_mods.ExternalModsCard
-import com.andorid.ninmods.ui.dashboard.identity.DeviceIdentityCard
 import com.andorid.ninmods.ui.dashboard.kernel_mods.KernelModsCard
 
 @Composable
@@ -26,7 +25,6 @@ fun DashboardScreen(
     activeBroadcast: ActiveNotificationItem? = null,
     onDismissBroadcast: () -> Unit = {},
     onNavigateToDenyList: () -> Unit = {},
-    onNavigateToIdentity: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -52,13 +50,10 @@ fun DashboardScreen(
         // 2. DAILY LIST / ROOT CLOAK CARD
         DenyListCard(onOpenManager = onNavigateToDenyList)
 
-        // 3. ANTI-BLACKLIST / DEVICE IDENTITY CARD
-        DeviceIdentityCard(onOpenIdentityManager = onNavigateToIdentity)
-
-        // 4. KERNEL MODS Card (Ring 0 Kernel Driver Floating Engine)
+        // 3. KERNEL MODS Card (Ring 0 Kernel Driver Floating Engine)
         KernelModsCard(sessionManager = sessionManager)
 
-        // 5. EXTERNAL MODS Card (Single official external mod from refer/nin)
+        // 4. EXTERNAL MODS Card (Single official external mod from refer/nin)
         ExternalModsCard(sessionManager = sessionManager)
 
         Spacer(modifier = Modifier.height(20.dp))
