@@ -483,19 +483,18 @@ fun KernelModsCard(
                         val isRunning = isProcessRunning && activeModId == mod.id
 
                         ElevatedCard(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable {
-                                    if (!mod.isDownloaded) {
-                                        selectedModForAction = mod
-                                        unifiedDialogState = UnifiedModDialogState.ConfirmDownload(mod.name)
-                                    } else if (isRunning) {
-                                        selectedModForAction = mod
-                                        unifiedDialogState = UnifiedModDialogState.StopConfirm(mod.name)
-                                    } else {
-                                        launchMod(mod)
-                                    }
-                                },
+                            onClick = {
+                                if (!mod.isDownloaded) {
+                                    selectedModForAction = mod
+                                    unifiedDialogState = UnifiedModDialogState.ConfirmDownload(mod.name)
+                                } else if (isRunning) {
+                                    selectedModForAction = mod
+                                    unifiedDialogState = UnifiedModDialogState.StopConfirm(mod.name)
+                                } else {
+                                    launchMod(mod)
+                                }
+                            },
+                            modifier = Modifier.fillMaxWidth(),
                             shape = RoundedCornerShape(16.dp),
                             colors = CardDefaults.elevatedCardColors(
                                 containerColor = MaterialTheme.colorScheme.surface

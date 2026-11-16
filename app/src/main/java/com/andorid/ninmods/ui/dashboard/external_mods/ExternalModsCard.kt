@@ -503,22 +503,21 @@ fun ExternalModsCard(
                         val isRunning = isProcessRunning && activeModId == mod.id
 
                         ElevatedCard(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable {
-                                    if (!mod.isDownloaded) {
-                                        // 1. Not downloaded -> Show unified download confirmation dialog
-                                        selectedModForAction = mod
-                                        unifiedDialogState = UnifiedModDialogState.ConfirmDownload(mod.name)
-                                    } else if (isRunning) {
-                                        // 2. Already active -> Ask to stop
-                                        selectedModForAction = mod
-                                        unifiedDialogState = UnifiedModDialogState.StopConfirm(mod.name)
-                                    } else {
-                                        // 3. Downloaded -> Launch mod with root & license checks
-                                        launchMod(mod)
-                                    }
-                                },
+                            onClick = {
+                                if (!mod.isDownloaded) {
+                                    // 1. Not downloaded -> Show unified download confirmation dialog
+                                    selectedModForAction = mod
+                                    unifiedDialogState = UnifiedModDialogState.ConfirmDownload(mod.name)
+                                } else if (isRunning) {
+                                    // 2. Already active -> Ask to stop
+                                    selectedModForAction = mod
+                                    unifiedDialogState = UnifiedModDialogState.StopConfirm(mod.name)
+                                } else {
+                                    // 3. Downloaded -> Launch mod with root & license checks
+                                    launchMod(mod)
+                                }
+                            },
+                            modifier = Modifier.fillMaxWidth(),
                             shape = RoundedCornerShape(16.dp),
                             colors = CardDefaults.elevatedCardColors(
                                 containerColor = MaterialTheme.colorScheme.surface

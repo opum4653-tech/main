@@ -25,6 +25,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import com.andorid.ninmods.data.SessionManager
 import com.andorid.ninmods.network.AuthApiClient
+import com.andorid.ninmods.ui.component.AppButtonLoadingIndicator
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -256,11 +257,7 @@ fun ChangePasswordScreen(
                     shape = RoundedCornerShape(14.dp)
                 ) {
                     if (isUpdating) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(20.dp),
-                            strokeWidth = 2.5.dp,
-                            color = Color.White
-                        )
+                        AppButtonLoadingIndicator()
                         Spacer(modifier = Modifier.width(10.dp))
                         Text("Updating Password...")
                     } else {

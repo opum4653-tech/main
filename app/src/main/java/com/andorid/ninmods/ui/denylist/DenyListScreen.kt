@@ -30,6 +30,7 @@ import coil.compose.AsyncImage
 import com.andorid.ninmods.data.DenyListManager
 import com.andorid.ninmods.data.InstalledAppItem
 import com.andorid.ninmods.data.RootEnvironmentInfo
+import com.andorid.ninmods.ui.component.AppButtonLoadingIndicator
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -476,11 +477,7 @@ fun QuickGameCloakCard(
                 shape = RoundedCornerShape(12.dp)
             ) {
                 if (isQuickCloaking) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(18.dp),
-                        color = Color.White,
-                        strokeWidth = 2.5.dp
-                    )
+                    AppButtonLoadingIndicator(size = 18.dp)
                     Spacer(modifier = Modifier.width(8.dp))
                     Text("Cloaking...", fontWeight = FontWeight.Bold)
                 } else {

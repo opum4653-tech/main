@@ -48,6 +48,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.andorid.ninmods.R
 import com.andorid.ninmods.network.AuthApiClient
+import com.andorid.ninmods.ui.component.AppButtonLoadingIndicator
 import kotlinx.coroutines.launch
 
 @Composable
@@ -194,11 +195,7 @@ fun ForgotPasswordScreen(
                     horizontalArrangement = Arrangement.Center
                 ) {
                     if (isLoading) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(20.dp),
-                            color = Color.White,
-                            strokeWidth = 2.5.dp
-                        )
+                        AppButtonLoadingIndicator()
                         Spacer(modifier = Modifier.width(10.dp))
                         Text(
                             text = "Sending Link...",

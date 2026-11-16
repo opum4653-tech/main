@@ -23,6 +23,7 @@ import com.andorid.ninmods.data.SessionManager
 import com.andorid.ninmods.network.AuthApiClient
 import com.andorid.ninmods.network.UserTicketItem
 import com.andorid.ninmods.network.UserTicketMessageItem
+import com.andorid.ninmods.ui.component.AppButtonLoadingIndicator
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
@@ -213,11 +214,7 @@ fun UserTicketChatScreen(
                         )
                 ) {
                     if (isSending) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(18.dp),
-                            strokeWidth = 2.5.dp,
-                            color = Color.White
-                        )
+                        AppButtonLoadingIndicator(size = 18.dp)
                     } else {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.Send,

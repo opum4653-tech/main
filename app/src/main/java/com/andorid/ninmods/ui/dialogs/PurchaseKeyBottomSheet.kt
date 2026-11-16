@@ -18,6 +18,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.andorid.ninmods.network.AuthApiClient
 import com.andorid.ninmods.network.SubscriptionPlanItem
+import com.andorid.ninmods.ui.component.AppButtonLoadingIndicator
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -266,11 +267,7 @@ fun PurchaseKeyBottomSheet(
                             .height(52.dp)
                     ) {
                         if (isPurchasing) {
-                            CircularProgressIndicator(
-                                modifier = Modifier.size(20.dp),
-                                color = Color.White,
-                                strokeWidth = 2.5.dp
-                            )
+                            AppButtonLoadingIndicator()
                             Spacer(modifier = Modifier.width(10.dp))
                             Text("Processing Purchase...")
                         } else {

@@ -22,6 +22,7 @@ import com.andorid.ninmods.config.AppConfig
 import com.andorid.ninmods.data.SessionManager
 import com.andorid.ninmods.data.ShellExecutor
 import com.andorid.ninmods.network.AuthApiClient
+import com.andorid.ninmods.ui.component.AppButtonLoadingIndicator
 import com.andorid.ninmods.util.DeviceIdentifier
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -272,11 +273,7 @@ fun ReportBugScreen(
                     shape = RoundedCornerShape(14.dp)
                 ) {
                     if (isSubmitting) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(20.dp),
-                            strokeWidth = 2.5.dp,
-                            color = Color.White
-                        )
+                        AppButtonLoadingIndicator()
                         Spacer(modifier = Modifier.width(10.dp))
                         Text("Submitting Diagnostic...")
                     } else {

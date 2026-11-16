@@ -78,6 +78,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.DialogProperties
 import androidx.compose.ui.window.DialogWindowProvider
 import androidx.compose.ui.window.SecureFlagPolicy
+import com.andorid.ninmods.ui.component.AppButtonLoadingIndicator
 import com.andorid.ninmods.util.ui.APDialogBlurBehindUtils
 
 /**
@@ -472,11 +473,7 @@ fun ApatchUnifiedModDialog(
                                             horizontalArrangement = Arrangement.Center
                                         ) {
                                             if (currentState.isSubmitting) {
-                                                CircularProgressIndicator(
-                                                    modifier = Modifier.size(18.dp),
-                                                    color = Color.White,
-                                                    strokeWidth = 2.5.dp
-                                                )
+                                                AppButtonLoadingIndicator(size = 18.dp)
                                                 Spacer(modifier = Modifier.width(8.dp))
                                                 Text(
                                                     text = "Verifying...",
@@ -993,11 +990,7 @@ fun ApatchLicenseKeyDialog(
                                 horizontalArrangement = Arrangement.Center
                             ) {
                                 if (isSubmitting) {
-                                    CircularProgressIndicator(
-                                        modifier = Modifier.size(18.dp),
-                                        color = Color.White,
-                                        strokeWidth = 2.5.dp
-                                    )
+                                    AppButtonLoadingIndicator(size = 18.dp)
                                     Spacer(modifier = Modifier.width(8.dp))
                                     Text(
                                         text = "Verifying...",

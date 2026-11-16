@@ -24,6 +24,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.andorid.ninmods.data.DeviceIdentityManager
 import com.andorid.ninmods.data.DeviceIdentityState
+import com.andorid.ninmods.ui.component.AppButtonLoadingIndicator
 import kotlinx.coroutines.launch
 
 @Composable
@@ -360,11 +361,7 @@ fun DeviceIdentityScreen(
                 enabled = !isApplying
             ) {
                 if (isApplying) {
-                    CircularProgressIndicator(
-                        color = Color.White,
-                        strokeWidth = 2.5.dp,
-                        modifier = Modifier.size(20.dp)
-                    )
+                    AppButtonLoadingIndicator()
                 } else {
                     Icon(imageVector = Icons.Filled.CheckCircle, contentDescription = null)
                     Spacer(modifier = Modifier.width(8.dp))

@@ -27,6 +27,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.andorid.ninmods.network.AuthApiClient
 import com.andorid.ninmods.network.PaymentMethodItem
+import com.andorid.ninmods.ui.component.AppButtonLoadingIndicator
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -320,11 +321,7 @@ fun UserDepositBottomSheet(
                         .height(52.dp)
                 ) {
                     if (isSubmitting) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(20.dp),
-                            color = Color.White,
-                            strokeWidth = 2.5.dp
-                        )
+                        AppButtonLoadingIndicator()
                         Spacer(modifier = Modifier.width(10.dp))
                         Text("Submitting to Server...")
                     } else {

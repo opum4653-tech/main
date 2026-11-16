@@ -128,9 +128,8 @@ fun DriverLoaderScreen(
         ) {
             // Card 1: Kernel Driver (Left - Interactive refresh)
             ElevatedCard(
-                modifier = Modifier
-                    .weight(1f)
-                    .clickable { viewModel.refreshStatus() },
+                onClick = { viewModel.refreshStatus() },
+                modifier = Modifier.weight(1f),
                 shape = RoundedCornerShape(20.dp),
                 colors = CardDefaults.elevatedCardColors(
                     containerColor = MaterialTheme.colorScheme.surfaceVariant
@@ -162,9 +161,8 @@ fun DriverLoaderScreen(
 
             // Card 2: SuperUser (Right - Interactive root authorization prompt)
             ElevatedCard(
-                modifier = Modifier
-                    .weight(1f)
-                    .clickable { viewModel.requestRootAndCheck() },
+                onClick = { viewModel.requestRootAndCheck() },
+                modifier = Modifier.weight(1f),
                 shape = RoundedCornerShape(20.dp),
                 colors = CardDefaults.elevatedCardColors(
                     containerColor = MaterialTheme.colorScheme.surfaceVariant
