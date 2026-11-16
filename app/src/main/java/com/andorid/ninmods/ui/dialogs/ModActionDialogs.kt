@@ -49,6 +49,7 @@ import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -473,8 +474,8 @@ fun ApatchUnifiedModDialog(
                                             if (currentState.isSubmitting) {
                                                 CircularProgressIndicator(
                                                     modifier = Modifier.size(18.dp),
-                                                    color = MaterialTheme.colorScheme.onPrimary,
-                                                    strokeWidth = 2.dp
+                                                    color = Color.White,
+                                                    strokeWidth = 2.5.dp
                                                 )
                                                 Spacer(modifier = Modifier.width(8.dp))
                                                 Text(
@@ -994,8 +995,8 @@ fun ApatchLicenseKeyDialog(
                                 if (isSubmitting) {
                                     CircularProgressIndicator(
                                         modifier = Modifier.size(18.dp),
-                                        color = MaterialTheme.colorScheme.onPrimary,
-                                        strokeWidth = 2.dp
+                                        color = Color.White,
+                                        strokeWidth = 2.5.dp
                                     )
                                     Spacer(modifier = Modifier.width(8.dp))
                                     Text(

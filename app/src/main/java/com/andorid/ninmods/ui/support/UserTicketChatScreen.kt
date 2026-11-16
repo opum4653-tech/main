@@ -215,8 +215,8 @@ fun UserTicketChatScreen(
                     if (isSending) {
                         CircularProgressIndicator(
                             modifier = Modifier.size(18.dp),
-                            strokeWidth = 2.dp,
-                            color = MaterialTheme.colorScheme.onPrimary
+                            strokeWidth = 2.5.dp,
+                            color = Color.White
                         )
                     } else {
                         Icon(

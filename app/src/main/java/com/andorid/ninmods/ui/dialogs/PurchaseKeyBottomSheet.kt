@@ -12,6 +12,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -267,8 +268,8 @@ fun PurchaseKeyBottomSheet(
                         if (isPurchasing) {
                             CircularProgressIndicator(
                                 modifier = Modifier.size(20.dp),
-                                color = MaterialTheme.colorScheme.onPrimary,
-                                strokeWidth = 2.dp
+                                color = Color.White,
+                                strokeWidth = 2.5.dp
                             )
                             Spacer(modifier = Modifier.width(10.dp))
                             Text("Processing Purchase...")

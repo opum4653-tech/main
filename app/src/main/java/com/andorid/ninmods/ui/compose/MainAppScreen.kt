@@ -71,8 +71,8 @@ enum class MainDestination(
     ADD_FUNDS("Add Funds", Icons.Filled.AccountBalanceWallet),
     MY_LICENSES("My Licenses", Icons.Filled.VpnKey),
     LOADER("Driver Loader", Icons.Filled.Build),
-    DENYLIST("Daily List", Icons.Filled.Security),
-    IDENTITY("Anti-Blacklist / IMEI", Icons.Filled.Fingerprint),
+    DENYLIST("Daily List", Icons.Filled.Shield),
+    IDENTITY("Anti-Blacklist / IMEI", Icons.Filled.Security),
     SETTINGS("General Settings", Icons.Filled.Settings),
     SUBMIT_DEPOSIT("Deposit Funds", Icons.Filled.AccountBalanceWallet),
     CREATE_TICKET("Create Ticket", Icons.Filled.Add),
@@ -373,7 +373,7 @@ fun MainAppScreen(
                         // 6. Daily List
                         LoaderDrawerItem(
                             title = "Daily List",
-                            icon = Icons.Filled.Security,
+                            icon = Icons.Filled.Shield,
                             isSelected = currentDestination == MainDestination.DENYLIST,
                             onClick = {
                                 currentDestination = MainDestination.DENYLIST
@@ -384,7 +384,7 @@ fun MainAppScreen(
                         // 7. Anti-Blacklist / IMEI
                         LoaderDrawerItem(
                             title = "Anti-Blacklist / IMEI",
-                            icon = Icons.Filled.Fingerprint,
+                            icon = Icons.Filled.Security,
                             isSelected = currentDestination == MainDestination.IDENTITY,
                             onClick = {
                                 currentDestination = MainDestination.IDENTITY

@@ -477,9 +477,9 @@ fun QuickGameCloakCard(
             ) {
                 if (isQuickCloaking) {
                     CircularProgressIndicator(
-                        modifier = Modifier.size(16.dp),
-                        color = MaterialTheme.colorScheme.onPrimary,
-                        strokeWidth = 2.dp
+                        modifier = Modifier.size(18.dp),
+                        color = Color.White,
+                        strokeWidth = 2.5.dp
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text("Cloaking...", fontWeight = FontWeight.Bold)

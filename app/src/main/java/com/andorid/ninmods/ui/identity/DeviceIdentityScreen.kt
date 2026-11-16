@@ -13,6 +13,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.AnnotatedString
@@ -360,8 +361,9 @@ fun DeviceIdentityScreen(
             ) {
                 if (isApplying) {
                     CircularProgressIndicator(
-                        color = MaterialTheme.colorScheme.onPrimary,
-                        modifier = Modifier.size(24.dp)
+                        color = Color.White,
+                        strokeWidth = 2.5.dp,
+                        modifier = Modifier.size(20.dp)
                     )
                 } else {
                     Icon(imageVector = Icons.Filled.CheckCircle, contentDescription = null)

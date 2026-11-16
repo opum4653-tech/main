@@ -330,8 +330,8 @@ fun SignUpScreen(
                 if (isLoading) {
                     CircularProgressIndicator(
                         modifier = Modifier.size(20.dp),
-                        color = MaterialTheme.colorScheme.onPrimary,
-                        strokeWidth = 2.dp
+                        color = Color.White,
+                        strokeWidth = 2.5.dp
                     )
                     Spacer(modifier = Modifier.width(10.dp))
                     Text(
