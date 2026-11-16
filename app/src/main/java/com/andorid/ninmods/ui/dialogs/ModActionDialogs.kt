@@ -552,10 +552,13 @@ fun ApatchUnifiedModDialog(
                                 }
                             }
                         }
+                        else -> {}
                     }
                 }
             }
         }
+    }
+}
     }
 }
 
