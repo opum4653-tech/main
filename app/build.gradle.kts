@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
@@ -5,7 +7,9 @@ plugins {
 
 // Release signing material is never committed. Put a keystore.properties next to
 // this file (see keystore.properties.example) or export the same keys as env vars.
-val keystoreProps = java.util.Properties().apply {
+// Note: bare `java` here shadows the java package with the Gradle Java extension,
+// so Properties is imported explicitly above.
+val keystoreProps = Properties().apply {
     val f = rootProject.file("keystore.properties")
     if (f.exists()) f.inputStream().use { load(it) }
 }
