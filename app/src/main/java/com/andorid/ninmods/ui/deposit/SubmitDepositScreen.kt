@@ -315,6 +315,14 @@ fun SubmitDepositScreen(
                         .padding(18.dp),
                     verticalArrangement = Arrangement.spacedBy(14.dp)
                 ) {
+                    val fieldColors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = MaterialTheme.colorScheme.primary,
+                        unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.6f),
+                        focusedContainerColor = MaterialTheme.colorScheme.surface,
+                        unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                        disabledContainerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.6f)
+                    )
+
                     OutlinedTextField(
                         value = amountText,
                         onValueChange = { amountText = it },
@@ -324,6 +332,7 @@ fun SubmitDepositScreen(
                         singleLine = true,
                         shape = RoundedCornerShape(14.dp),
                         modifier = Modifier.fillMaxWidth(),
+                        colors = fieldColors,
                         enabled = !isSubmitting
                     )
 
@@ -335,6 +344,7 @@ fun SubmitDepositScreen(
                         singleLine = true,
                         shape = RoundedCornerShape(14.dp),
                         modifier = Modifier.fillMaxWidth(),
+                        colors = fieldColors,
                         enabled = !isSubmitting
                     )
 
@@ -346,6 +356,7 @@ fun SubmitDepositScreen(
                         singleLine = true,
                         shape = RoundedCornerShape(14.dp),
                         modifier = Modifier.fillMaxWidth(),
+                        colors = fieldColors,
                         enabled = !isSubmitting
                     )
 

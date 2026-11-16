@@ -138,6 +138,14 @@ fun ReportBugScreen(
                     .padding(18.dp),
                 verticalArrangement = Arrangement.spacedBy(14.dp)
             ) {
+                val fieldColors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = MaterialTheme.colorScheme.primary,
+                    unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.6f),
+                    focusedContainerColor = MaterialTheme.colorScheme.surface,
+                    unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                    disabledContainerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.6f)
+                )
+
                 OutlinedTextField(
                     value = title,
                     onValueChange = { title = it },
@@ -146,6 +154,7 @@ fun ReportBugScreen(
                     singleLine = true,
                     shape = RoundedCornerShape(14.dp),
                     modifier = Modifier.fillMaxWidth(),
+                    colors = fieldColors,
                     enabled = !isSubmitting
                 )
 
@@ -156,6 +165,7 @@ fun ReportBugScreen(
                     placeholder = { Text("Explain what happened, expected behavior, and error messages...") },
                     shape = RoundedCornerShape(14.dp),
                     modifier = Modifier.fillMaxWidth(),
+                    colors = fieldColors,
                     minLines = 4,
                     maxLines = 8,
                     enabled = !isSubmitting

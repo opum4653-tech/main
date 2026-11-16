@@ -97,6 +97,14 @@ fun CreateTicketScreen(
 
                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f))
 
+                val fieldColors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = MaterialTheme.colorScheme.primary,
+                    unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.6f),
+                    focusedContainerColor = MaterialTheme.colorScheme.surface,
+                    unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                    disabledContainerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.6f)
+                )
+
                 OutlinedTextField(
                     value = subject,
                     onValueChange = { subject = it },
@@ -104,6 +112,7 @@ fun CreateTicketScreen(
                     placeholder = { Text("e.g. License activation or inquiry") },
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(14.dp),
+                    colors = fieldColors,
                     enabled = !isSubmitting,
                     singleLine = true
                 )
@@ -148,6 +157,7 @@ fun CreateTicketScreen(
                     maxLines = 8,
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(14.dp),
+                    colors = fieldColors,
                     enabled = !isSubmitting
                 )
 

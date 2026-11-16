@@ -233,6 +233,14 @@ fun UserDepositBottomSheet(
                     }
                 }
 
+                val fieldColors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = MaterialTheme.colorScheme.primary,
+                    unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.6f),
+                    focusedContainerColor = MaterialTheme.colorScheme.surface,
+                    unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                    disabledContainerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.6f)
+                )
+
                 // Deposit Amount Input
                 OutlinedTextField(
                     value = amountText,
@@ -243,6 +251,7 @@ fun UserDepositBottomSheet(
                     singleLine = true,
                     shape = RoundedCornerShape(14.dp),
                     modifier = Modifier.fillMaxWidth(),
+                    colors = fieldColors,
                     enabled = !isSubmitting
                 )
 
@@ -255,6 +264,7 @@ fun UserDepositBottomSheet(
                     singleLine = true,
                     shape = RoundedCornerShape(14.dp),
                     modifier = Modifier.fillMaxWidth(),
+                    colors = fieldColors,
                     enabled = !isSubmitting
                 )
 
@@ -266,6 +276,7 @@ fun UserDepositBottomSheet(
                     singleLine = true,
                     shape = RoundedCornerShape(14.dp),
                     modifier = Modifier.fillMaxWidth(),
+                    colors = fieldColors,
                     enabled = !isSubmitting
                 )
 

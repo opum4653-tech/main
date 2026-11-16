@@ -302,6 +302,12 @@ fun ApatchUnifiedModDialog(
                                     label = { Text("License Key") },
                                     singleLine = true,
                                     visualTransformation = if (isKeyVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                                    colors = OutlinedTextFieldDefaults.colors(
+                                        focusedBorderColor = MaterialTheme.colorScheme.primary,
+                                        unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.6f),
+                                        focusedContainerColor = MaterialTheme.colorScheme.surface,
+                                        unfocusedContainerColor = MaterialTheme.colorScheme.surface
+                                    ),
                                     trailingIcon = {
                                         IconButton(onClick = { isKeyVisible = !isKeyVisible }) {
                                             Icon(
