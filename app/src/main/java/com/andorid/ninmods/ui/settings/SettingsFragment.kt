@@ -305,8 +305,8 @@ class SettingsFragment : Fragment() {
         )
         sheet.onItemSelected = { index ->
             sheet.dismiss()
-            val command = commands.getOrNull(index) ?: return@onItemSelected
-            runReboot(command)
+            val command = commands.getOrNull(index)
+            if (command != null) runReboot(command)
         }
         sheet.show(childFragmentManager, "reboot_sheet")
     }
