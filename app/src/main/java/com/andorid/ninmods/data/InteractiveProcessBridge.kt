@@ -132,10 +132,11 @@ class InteractiveProcessBridge(
                             val window = accumulated.takeLast(512).toString()
 
                             // Detect license prompt in terminal output even without trailing newline
-                            if (window.contains("Enter API Access Key", ignoreCase = true) ||
+                            if (window.contains("[?] Enter License", ignoreCase = true) ||
+                                window.contains("[?] Enter API", ignoreCase = true) ||
                                 window.contains("Enter License Key", ignoreCase = true) ||
-                                window.contains("[?] Enter", ignoreCase = true) ||
-                                (window.contains("Authentication", ignoreCase = true) && window.contains("Key", ignoreCase = true))
+                                window.contains("Enter API Access Key", ignoreCase = true) ||
+                                window.contains("[?] Enter", ignoreCase = true)
                             ) {
                                 if (!_licensePromptTriggered.value) {
                                     _licensePromptTriggered.value = true
@@ -148,13 +149,16 @@ class InteractiveProcessBridge(
                             // Detect license success and ready to start signal from binary
                             if (window.contains("Awaiting START signal", ignoreCase = true) ||
                                 window.contains("Ready to load into memory", ignoreCase = true) ||
-                                (window.contains("validated successfully", ignoreCase = true) && window.contains("authorized", ignoreCase = true))
+                                (window.contains("validated successfully", ignoreCase = true) && window.contains("authorized", ignoreCase = true)) ||
+                                window.contains("Pre-authorized via", ignoreCase = true)
                             ) {
                                 _isReadyToStart.value = true
                             }
 
                             // Detect overlay execution and memory engine active
                             if (window.contains("Loading overlay engine into RAM", ignoreCase = true) ||
+                                window.contains("Overlay engine started successfully", ignoreCase = true) ||
+                                window.contains("Launching overlay", ignoreCase = true) ||
                                 window.contains("ninmods starting", ignoreCase = true) ||
                                 window.contains("daemon active", ignoreCase = true) ||
                                 window.contains("Kernel engine active", ignoreCase = true) ||

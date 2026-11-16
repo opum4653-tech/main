@@ -154,170 +154,54 @@ fun ApatchUnifiedModDialog(
     onStartMod: () -> Unit = {},
     onConfirmStop: () -> Unit = {}
 ) {
-    ApatchAnimatedDialog(
-        onDismissRequest = onDismiss,
-        dismissOnBackPress = state !is UnifiedModDialogState.Downloading,
-        dismissOnClickOutside = state !is UnifiedModDialogState.Downloading
-    ) {
-        Surface(
-            shape = RoundedCornerShape(20.dp),
-            color = AlertDialogDefaults.containerColor,
-            tonalElevation = AlertDialogDefaults.TonalElevation,
-            modifier = Modifier.fillMaxWidth(0.92f)
-        ) {
-            AnimatedContent(
-                targetState = state,
-                transitionSpec = {
-                    (scaleIn(initialScale = 0.94f, animationSpec = tween(340, easing = FastOutSlowInEasing)) + fadeIn(animationSpec = tween(340)))
-                        .togetherWith(scaleOut(targetScale = 0.94f, animationSpec = tween(250, easing = FastOutSlowInEasing)) + fadeOut(animationSpec = tween(250)))
-                },
-                label = "UnifiedDialogTransition"
-            ) { currentState ->
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(24.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
+    when (state) {
+        is UnifiedModDialogState.ConfirmDownload -> {
+            AppDownloadBottomSheet(
+                title = "Download Required",
+                subtitle = state.modName,
+                packageName = state.modName,
+                progress = -1,
+                onConfirm = onConfirmDownload,
+                onCancel = onCancelDownload
+            )
+        }
+        is UnifiedModDialogState.Downloading -> {
+            AppDownloadBottomSheet(
+                title = "Downloading Component",
+                subtitle = state.modName,
+                packageName = state.modName,
+                progress = state.progress,
+                onCancel = onCancelDownload
+            )
+        }
+        else -> {
+            ApatchAnimatedDialog(
+                onDismissRequest = onDismiss,
+                dismissOnBackPress = true,
+                dismissOnClickOutside = true
+            ) {
+                Surface(
+                    shape = RoundedCornerShape(20.dp),
+                    color = AlertDialogDefaults.containerColor,
+                    tonalElevation = AlertDialogDefaults.TonalElevation,
+                    modifier = Modifier.fillMaxWidth(0.92f)
                 ) {
-                    when (currentState) {
-                        is UnifiedModDialogState.ConfirmDownload -> {
-                            Surface(
-                                shape = CircleShape,
-                                color = MaterialTheme.colorScheme.primaryContainer,
-                                modifier = Modifier.size(56.dp)
-                            ) {
-                                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                                    Icon(
-                                        imageVector = Icons.Filled.CloudDownload,
-                                        contentDescription = null,
-                                        tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                                        modifier = Modifier.size(28.dp)
-                                    )
-                                }
-                            }
-
-                            Spacer(modifier = Modifier.height(16.dp))
-
-                            Text(
-                                text = "Download External Mod",
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.onSurface
-                            )
-
-                            Spacer(modifier = Modifier.height(6.dp))
-
-                            Text(
-                                text = "Do you want to download \"${currentState.modName}\" from the official server?",
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                textAlign = TextAlign.Center
-                            )
-
-                            Spacer(modifier = Modifier.height(24.dp))
-
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(12.dp)
-                            ) {
-                                OutlinedButton(
-                                    onClick = onDismiss,
-                                    modifier = Modifier
-                                        .weight(1f)
-                                        .height(46.dp),
-                                    shape = RoundedCornerShape(14.dp)
-                                ) {
-                                    Text(text = "Cancel")
-                                }
-
-                                Button(
-                                    onClick = onConfirmDownload,
-                                    modifier = Modifier
-                                        .weight(1f)
-                                        .height(46.dp),
-                                    shape = RoundedCornerShape(14.dp),
-                                    colors = ButtonDefaults.buttonColors(
-                                        containerColor = MaterialTheme.colorScheme.primary,
-                                        contentColor = MaterialTheme.colorScheme.onPrimary
-                                    )
-                                ) {
-                                    Text(text = "Download", fontWeight = FontWeight.Bold)
-                                }
-                            }
-                        }
-
-                        is UnifiedModDialogState.Downloading -> {
-                            Surface(
-                                shape = CircleShape,
-                                color = MaterialTheme.colorScheme.primaryContainer,
-                                modifier = Modifier.size(60.dp)
-                            ) {
-                                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                                    Icon(
-                                        imageVector = Icons.Filled.CloudDownload,
-                                        contentDescription = null,
-                                        tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                                        modifier = Modifier.size(30.dp)
-                                    )
-                                }
-                            }
-
-                            Spacer(modifier = Modifier.height(16.dp))
-
-                            Text(
-                                text = "Downloading Mod",
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.onSurface
-                            )
-
-                            Spacer(modifier = Modifier.height(4.dp))
-
-                            Text(
-                                text = currentState.modName,
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.primary,
-                                fontWeight = FontWeight.SemiBold
-                            )
-
-                            Spacer(modifier = Modifier.height(20.dp))
-
-                            if (currentState.progress > 0) {
-                                LinearProgressIndicator(
-                                    progress = { currentState.progress / 100f },
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .height(8.dp),
-                                    color = MaterialTheme.colorScheme.primary,
-                                    trackColor = MaterialTheme.colorScheme.surface
-                                )
-                            } else {
-                                CircularProgressIndicator(
-                                    modifier = Modifier.size(36.dp),
-                                    strokeWidth = 3.dp,
-                                    color = MaterialTheme.colorScheme.primary
-                                )
-                            }
-
-                            Spacer(modifier = Modifier.height(12.dp))
-
-                            Text(
-                                text = if (currentState.progress > 0) "${currentState.progress}% completed" else "Connecting to download mirror...",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-
-                            Spacer(modifier = Modifier.height(20.dp))
-
-                            TextButton(
-                                onClick = onCancelDownload,
-                                shape = RoundedCornerShape(14.dp)
-                            ) {
-                                Text(text = "Cancel", color = MaterialTheme.colorScheme.error)
-                            }
-                        }
-
-                        is UnifiedModDialogState.RootRequired -> {
+                    AnimatedContent(
+                        targetState = state,
+                        transitionSpec = {
+                            (scaleIn(initialScale = 0.94f, animationSpec = tween(340, easing = FastOutSlowInEasing)) + fadeIn(animationSpec = tween(340)))
+                                .togetherWith(scaleOut(targetScale = 0.94f, animationSpec = tween(250, easing = FastOutSlowInEasing)) + fadeOut(animationSpec = tween(250)))
+                        },
+                        label = "UnifiedDialogTransition"
+                    ) { currentState ->
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(24.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            when (currentState) {
+                                is UnifiedModDialogState.RootRequired -> {
                             Surface(
                                 shape = CircleShape,
                                 color = MaterialTheme.colorScheme.errorContainer,
@@ -773,8 +657,8 @@ fun ApatchConfirmDownloadDialog(
 }
 
 /**
- * APatch Official Animated Downloading Dialog.
- * Displayed in the center of the screen when a mod file is downloaded from server.
+ * APatch Official Animated Downloading BottomSheet.
+ * Slides up from the bottom of the screen (matching official driver selection bottomsheet).
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -783,94 +667,13 @@ fun ApatchDownloadDialog(
     progress: Int,
     onCancel: () -> Unit
 ) {
-    ApatchAnimatedDialog(
-        onDismissRequest = onCancel,
-        dismissOnBackPress = true,
-        dismissOnClickOutside = false
-    ) {
-        Surface(
-            shape = RoundedCornerShape(20.dp),
-            color = AlertDialogDefaults.containerColor,
-            tonalElevation = AlertDialogDefaults.TonalElevation,
-            modifier = Modifier.fillMaxWidth(0.92f)
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(24.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Surface(
-                    shape = CircleShape,
-                    color = MaterialTheme.colorScheme.primaryContainer,
-                    modifier = Modifier.size(64.dp)
-                ) {
-                    Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-                        Icon(
-                            imageVector = Icons.Filled.CloudDownload,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                            modifier = Modifier.size(32.dp)
-                        )
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Text(
-                    text = "Downloading Mod",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-
-                Spacer(modifier = Modifier.height(4.dp))
-
-                Text(
-                    text = modName,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.primary,
-                    fontWeight = FontWeight.SemiBold
-                )
-
-                Spacer(modifier = Modifier.height(20.dp))
-
-                if (progress > 0) {
-                    LinearProgressIndicator(
-                        progress = { progress / 100f },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(8.dp),
-                        color = MaterialTheme.colorScheme.primary,
-                        trackColor = MaterialTheme.colorScheme.surface
-                    )
-                } else {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(36.dp),
-                        strokeWidth = 3.dp,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(12.dp))
-
-                Text(
-                    text = if (progress > 0) "$progress% completed" else "Connecting to secure download mirror...",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-
-                Spacer(modifier = Modifier.height(20.dp))
-
-                TextButton(
-                    onClick = onCancel,
-                    shape = RoundedCornerShape(14.dp)
-                ) {
-                    Text(text = "Cancel", color = MaterialTheme.colorScheme.error)
-                }
-            }
-        }
-    }
+    AppDownloadBottomSheet(
+        title = "Downloading Component",
+        subtitle = modName,
+        packageName = modName,
+        progress = progress,
+        onCancel = onCancel
+    )
 }
 
 /**
