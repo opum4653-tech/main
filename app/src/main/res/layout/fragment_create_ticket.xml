@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/nin_background"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingStart="@dimen/screen_gutter"
+        android:paddingTop="@dimen/screen_top_inset"
+        android:paddingEnd="@dimen/screen_gutter"
+        android:paddingBottom="@dimen/screen_bottom_inset">
+
+        <TextView
+            style="@style/Text.Nin.SectionLabel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/create_ticket_section" />
+
+        <TextView
+            style="@style/Text.Nin.Caption"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_xs"
+            android:text="@string/create_ticket_subtitle" />
+
+        <com.google.android.material.card.MaterialCardView
+            style="@style/Widget.Nin.Card"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_lg">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="@dimen/card_padding">
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/input_subject_layout"
+                    style="@style/Widget.Nin.TextInput"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/create_ticket_subject">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/input_subject"
+                        style="@style/Widget.Nin.TextInput.EditText"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:imeOptions="actionNext"
+                        android:inputType="textCapSentences"
+                        android:maxLines="1" />
+
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/input_body_layout"
+                    style="@style/Widget.Nin.TextInput"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_md"
+                    android:hint="@string/create_ticket_body">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/input_body"
+                        style="@style/Widget.Nin.TextInput.EditText"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="top|start"
+                        android:hint="@string/create_ticket_body_hint"
+                        android:inputType="textCapSentences|textMultiLine"
+                        android:minHeight="140dp" />
+
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <TextView
+                    style="@style/Text.Nin.Caption"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_lg"
+                    android:text="@string/create_ticket_priority" />
+
+                <com.google.android.material.button.MaterialButtonToggleGroup
+                    android:id="@+id/group_priority"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_sm"
+                    app:selectionRequired="true"
+                    app:singleSelection="true">
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/priority_low"
+                        style="@style/Widget.Nin.Button.Outline"
+                        android:layout_width="0dp"
+                        android:layout_height="@dimen/button_height_compact"
+                        android:layout_weight="1"
+                        android:text="@string/create_ticket_priority_low" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/priority_medium"
+                        style="@style/Widget.Nin.Button.Outline"
+                        android:layout_width="0dp"
+                        android:layout_height="@dimen/button_height_compact"
+                        android:layout_weight="1"
+                        android:text="@string/create_ticket_priority_medium" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/priority_high"
+                        style="@style/Widget.Nin.Button.Outline"
+                        android:layout_width="0dp"
+                        android:layout_height="@dimen/button_height_compact"
+                        android:layout_weight="1"
+                        android:text="@string/create_ticket_priority_high" />
+
+                </com.google.android.material.button.MaterialButtonToggleGroup>
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/button_submit_ticket"
+                    style="@style/Widget.Nin.Button.Primary"
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/button_height"
+                    android:layout_marginTop="@dimen/space_xl"
+                    android:text="@string/create_ticket_submit" />
+
+                <com.google.android.material.progressindicator.LinearProgressIndicator
+                    android:id="@+id/progress_submit"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_md"
+                    android:indeterminate="true"
+                    android:visibility="gone"
+                    app:indicatorColor="@color/nin_primary"
+                    app:trackColor="@color/nin_surface_variant"
+                    app:trackThickness="2dp" />
+
+            </LinearLayout>
+
+        </com.google.android.material.card.MaterialCardView>
+
+    </LinearLayout>
+
+</androidx.core.widget.NestedScrollView>

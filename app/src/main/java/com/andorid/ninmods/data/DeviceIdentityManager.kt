@@ -18,8 +18,7 @@ data class DeviceIdentityState(
     val model: String = "",
     val manufacturer: String = "",
     val device: String = "",
-    val fingerprint: String = "",
-    val isGameBlacklisted: Boolean = false
+    val fingerprint: String = ""
 )
 
 object DeviceIdentityManager {

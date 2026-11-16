@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- Spacing scale. Every layout consumes these, never raw dp. -->
+    <dimen name="space_xxs">2dp</dimen>
+    <dimen name="space_xs">4dp</dimen>
+    <dimen name="space_sm">8dp</dimen>
+    <dimen name="space_md">12dp</dimen>
+    <dimen name="space_lg">16dp</dimen>
+    <dimen name="space_xl">20dp</dimen>
+    <dimen name="space_2xl">24dp</dimen>
+    <dimen name="space_3xl">32dp</dimen>
+
+    <!-- Screen gutters -->
+    <dimen name="screen_gutter">16dp</dimen>
+    <dimen name="screen_gutter_wide">24dp</dimen>
+    <dimen name="screen_top_inset">4dp</dimen>
+    <dimen name="screen_bottom_inset">40dp</dimen>
+
+    <!-- Card geometry -->
+    <dimen name="radius_card">20dp</dimen>
+    <dimen name="radius_item">14dp</dimen>
+    <dimen name="radius_button">14dp</dimen>
+    <dimen name="radius_chip">10dp</dimen>
+    <dimen name="radius_pill">999dp</dimen>
+    <dimen name="radius_icon_box">22dp</dimen>
+    <dimen name="card_padding">16dp</dimen>
+    <dimen name="card_padding_wide">18dp</dimen>
+    <dimen name="card_stroke">1dp</dimen>
+    <dimen name="card_elevation">0dp</dimen>
+
+    <!-- Icon buckets -->
+    <dimen name="icon_sm">18dp</dimen>
+    <dimen name="icon_md">22dp</dimen>
+    <dimen name="icon_lg">28dp</dimen>
+    <dimen name="icon_box_sm">44dp</dimen>
+    <dimen name="icon_box_md">56dp</dimen>
+    <dimen name="icon_box_lg">76dp</dimen>
+
+    <!-- Touch targets. 48dp is the accessibility floor. -->
+    <dimen name="touch_target">48dp</dimen>
+    <dimen name="row_min_height">56dp</dimen>
+    <dimen name="row_min_height_tall">72dp</dimen>
+    <dimen name="button_height">48dp</dimen>
+    <dimen name="button_height_compact">42dp</dimen>
+
+    <!-- Text sizes used by custom views -->
+    <dimen name="text_display">28sp</dimen>
+    <dimen name="text_title">20sp</dimen>
+    <dimen name="text_subtitle">16sp</dimen>
+    <dimen name="text_body">14sp</dimen>
+    <dimen name="text_caption">12sp</dimen>
+    <dimen name="text_micro">10sp</dimen>
+    <dimen name="text_clock">30sp</dimen>
+
+    <!-- Terminal -->
+    <dimen name="terminal_height">180dp</dimen>
+    <dimen name="terminal_line_height">18dp</dimen>
+
+    <!-- Drawer -->
+    <dimen name="drawer_width">280dp</dimen>
+
+</resources>

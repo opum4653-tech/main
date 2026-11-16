@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingBottom="@dimen/space_lg">
+
+    <TextView
+        android:id="@+id/sheet_title"
+        style="@style/Text.Nin.CardTitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingStart="@dimen/screen_gutter_wide"
+        android:paddingTop="@dimen/space_lg"
+        android:paddingEnd="@dimen/screen_gutter_wide" />
+
+    <TextView
+        android:id="@+id/sheet_subtitle"
+        style="@style/Text.Nin.Caption"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/space_xs"
+        android:paddingStart="@dimen/screen_gutter_wide"
+        android:paddingEnd="@dimen/screen_gutter_wide" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/sheet_list"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginTop="@dimen/space_md"
+        android:layout_weight="1" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/sheet_action"
+        style="@style/Widget.Nin.Button.Primary"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/button_height"
+        android:layout_marginStart="@dimen/screen_gutter_wide"
+        android:layout_marginTop="@dimen/space_md"
+        android:layout_marginEnd="@dimen/screen_gutter_wide" />
+
+</LinearLayout>

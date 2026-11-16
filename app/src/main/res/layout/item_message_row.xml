@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingTop="@dimen/space_xs"
+    android:paddingBottom="@dimen/space_xs">
+
+    <TextView
+        android:id="@+id/message_sender"
+        style="@style/Text.Nin.Caption"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/space_sm"
+        android:layout_marginBottom="@dimen/space_xxs" />
+
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/message_bubble"
+        style="@style/Widget.Nin.Card.Inner"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:maxWidth="300dp">
+
+        <TextView
+            android:id="@+id/message_text"
+            style="@style/Text.Nin.Body"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="@dimen/space_md"
+            android:textIsSelectable="true" />
+
+    </com.google.android.material.card.MaterialCardView>
+
+    <TextView
+        android:id="@+id/message_time"
+        style="@style/Text.Nin.Caption"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/space_sm"
+        android:layout_marginTop="@dimen/space_xxs"
+        android:textSize="@dimen/text_micro" />
+
+</LinearLayout>

@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    style="@style/Widget.Nin.Card.Inner"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="@dimen/space_sm">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:minHeight="@dimen/row_min_height_tall"
+        android:orientation="horizontal"
+        android:paddingStart="@dimen/space_md"
+        android:paddingTop="@dimen/space_md"
+        android:paddingEnd="@dimen/space_md"
+        android:paddingBottom="@dimen/space_md">
+
+        <FrameLayout
+            android:id="@+id/mod_icon_frame"
+            android:layout_width="@dimen/icon_box_sm"
+            android:layout_height="@dimen/icon_box_sm"
+            android:background="@drawable/bg_circle">
+
+            <ImageView
+                android:id="@+id/mod_icon"
+                android:layout_width="@dimen/icon_lg"
+                android:layout_height="@dimen/icon_lg"
+                android:layout_gravity="center"
+                android:contentDescription="@string/cd_kernel_icon"
+                android:src="@drawable/logo_n" />
+
+        </FrameLayout>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/space_md"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/mod_name"
+                style="@style/Text.Nin.ItemTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:maxLines="1" />
+
+            <TextView
+                android:id="@+id/mod_subtitle"
+                style="@style/Text.Nin.Caption"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_xxs"
+                android:ellipsize="end"
+                android:maxLines="1" />
+
+        </LinearLayout>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/mod_update"
+            style="@style/Widget.Nin.Button.Icon"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="@dimen/space_xs"
+            android:contentDescription="@string/dashboard_update_mod"
+            android:visibility="gone"
+            app:icon="@drawable/ic_download"
+            app:iconSize="@dimen/icon_sm" />
+
+        <TextView
+            android:id="@+id/mod_badge"
+            style="@style/Widget.Nin.Badge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bg_pill" />
+
+    </LinearLayout>
+
+</com.google.android.material.card.MaterialCardView>

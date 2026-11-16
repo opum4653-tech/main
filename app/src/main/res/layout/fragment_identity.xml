@@ -1,0 +1,216 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/nin_background"
+    android:orientation="vertical">
+
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:clipToPadding="false"
+        android:paddingStart="@dimen/screen_gutter"
+        android:paddingTop="@dimen/screen_top_inset"
+        android:paddingEnd="@dimen/screen_gutter"
+        android:paddingBottom="@dimen/screen_bottom_inset">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <com.google.android.material.card.MaterialCardView
+                style="@style/Widget.Nin.Card"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:padding="@dimen/card_padding">
+
+                    <ImageView
+                        android:layout_width="@dimen/icon_box_sm"
+                        android:layout_height="@dimen/icon_box_sm"
+                        android:background="@drawable/bg_circle"
+                        android:contentDescription="@string/nav_identity"
+                        android:padding="@dimen/space_md"
+                        android:src="@drawable/ic_fingerprint"
+                        app:tint="@color/nin_primary" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/space_md"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:id="@+id/text_model"
+                            style="@style/Text.Nin.ItemTitle"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:ellipsize="end"
+                            android:maxLines="1"
+                            android:text="@string/state_detecting" />
+
+                        <TextView
+                            android:id="@+id/text_manufacturer"
+                            style="@style/Text.Nin.Caption"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/space_xxs"
+                            android:ellipsize="end"
+                            android:maxLines="1" />
+
+                    </LinearLayout>
+
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
+
+            <TextView
+                style="@style/Text.Nin.SectionLabel"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_xl"
+                android:text="@string/identity_section_hardware" />
+
+            <!-- IMEI 1 -->
+            <include
+                android:id="@+id/field_imei1"
+                layout="@layout/partial_identity_field"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_sm" />
+
+            <!-- IMEI 2 -->
+            <include
+                android:id="@+id/field_imei2"
+                layout="@layout/partial_identity_field"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_sm" />
+
+            <!-- Android ID -->
+            <include
+                android:id="@+id/field_android_id"
+                layout="@layout/partial_identity_field"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_sm" />
+
+            <!-- Serial -->
+            <include
+                android:id="@+id/field_serial"
+                layout="@layout/partial_identity_field"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_sm" />
+
+            <!-- MAC -->
+            <include
+                android:id="@+id/field_mac"
+                layout="@layout/partial_identity_field"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_sm" />
+
+            <!-- Bluetooth -->
+            <include
+                android:id="@+id/field_bluetooth"
+                layout="@layout/partial_identity_field"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_sm" />
+
+            <!-- Build ID -->
+            <include
+                android:id="@+id/field_build_id"
+                layout="@layout/partial_identity_field"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_sm" />
+
+            <!-- Fingerprint -->
+            <include
+                android:id="@+id/field_fingerprint"
+                layout="@layout/partial_identity_field"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_sm" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_lg"
+                android:orientation="horizontal">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/button_randomize_all"
+                    style="@style/Widget.Nin.Button.Primary"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="@dimen/space_sm"
+                    android:layout_weight="1"
+                    android:ellipsize="end"
+                    android:insetLeft="0dp"
+                    android:insetRight="0dp"
+                    android:maxLines="1"
+                    android:minHeight="@dimen/button_height"
+                    android:singleLine="true"
+                    android:text="@string/identity_randomize_all" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/button_reset_fields"
+                    style="@style/Widget.Nin.Button.Outline"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/space_sm"
+                    android:layout_weight="1"
+                    android:ellipsize="end"
+                    android:insetLeft="0dp"
+                    android:insetRight="0dp"
+                    android:maxLines="1"
+                    android:minHeight="@dimen/button_height"
+                    android:singleLine="true"
+                    android:text="@string/identity_reset_fields" />
+
+            </LinearLayout>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/button_apply_identity"
+                style="@style/Widget.Nin.Button.Primary"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/button_height"
+                android:layout_marginTop="@dimen/space_md"
+                android:text="@string/identity_apply_live" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/button_wipe_tokens"
+                style="@style/Widget.Nin.Button.Outline"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/button_height"
+                android:layout_marginTop="@dimen/space_md"
+                android:text="@string/identity_wipe_tokens" />
+
+            <com.google.android.material.progressindicator.LinearProgressIndicator
+                android:id="@+id/progress_identity"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_md"
+                android:indeterminate="true"
+                android:visibility="gone"
+                app:indicatorColor="@color/nin_primary"
+                app:trackColor="@color/nin_surface_variant"
+                app:trackThickness="2dp" />
+
+        </LinearLayout>
+
+    </androidx.core.widget.NestedScrollView>
+
+</LinearLayout>

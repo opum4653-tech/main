@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/nin_background"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingStart="@dimen/screen_gutter"
+        android:paddingTop="@dimen/screen_top_inset"
+        android:paddingEnd="@dimen/screen_gutter">
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/input_search_layout"
+            style="@style/Widget.Nin.TextInput"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:hint="@string/wallet_search_hint"
+            app:endIconMode="clear_text"
+            app:startIconDrawable="@drawable/ic_search">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/input_search"
+                style="@style/Widget.Nin.TextInput.EditText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:imeOptions="actionSearch"
+                android:inputType="text"
+                android:maxLines="1" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/button_new_ticket"
+            style="@style/Widget.Nin.Button.Primary"
+            android:layout_width="wrap_content"
+            android:layout_height="@dimen/button_height"
+            android:layout_marginStart="@dimen/space_sm"
+            android:text="@string/support_new_ticket" />
+
+    </LinearLayout>
+
+    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+        android:id="@+id/support_refresh"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/ticket_list"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:clipToPadding="false"
+            android:paddingStart="@dimen/screen_gutter"
+            android:paddingTop="@dimen/space_md"
+            android:paddingEnd="@dimen/screen_gutter"
+            android:paddingBottom="@dimen/screen_bottom_inset" />
+
+    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+
+    <TextView
+        android:id="@+id/text_empty"
+        style="@style/Text.Nin.Caption"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/screen_gutter"
+        android:layout_marginTop="@dimen/space_2xl"
+        android:layout_marginEnd="@dimen/screen_gutter"
+        android:gravity="center"
+        android:text="@string/support_no_messages"
+        android:visibility="gone" />
+
+</LinearLayout>

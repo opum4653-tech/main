@@ -4,8 +4,6 @@ import android.content.Context
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
-import java.io.FileOutputStream
-import java.util.zip.ZipInputStream
 
 class DriverRepository(private val context: Context) {
 
@@ -131,9 +129,5 @@ class DriverRepository(private val context: Context) {
 
         // 3. Fallback: Return all available drivers for this mode so the dialog ALWAYS presents options
         allFiles.sortedBy { it.name }
-    }
-
-    suspend fun getAllDrivers(mode: String): List<File> = withContext(Dispatchers.IO) {
-        findMatchingDrivers("", mode)
     }
 }

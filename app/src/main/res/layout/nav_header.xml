@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bg_drawer_header"
+    android:orientation="vertical"
+    android:paddingStart="@dimen/screen_gutter_wide"
+    android:paddingTop="@dimen/space_3xl"
+    android:paddingEnd="@dimen/screen_gutter_wide"
+    android:paddingBottom="@dimen/space_xl">
+
+    <com.google.android.material.imageview.ShapeableImageView
+        android:id="@+id/header_avatar"
+        android:layout_width="@dimen/icon_box_md"
+        android:layout_height="@dimen/icon_box_md"
+        android:background="@drawable/bg_circle"
+        android:contentDescription="@string/cd_user_avatar"
+        android:padding="@dimen/space_md"
+        android:src="@drawable/ic_profile"
+        app:tint="@color/nin_primary" />
+
+    <TextView
+        android:id="@+id/header_name"
+        style="@style/Text.Nin.CardTitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/space_md"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:text="@string/brand_default_user" />
+
+    <TextView
+        android:id="@+id/header_email"
+        style="@style/Text.Nin.Caption"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/space_xxs"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:text="@string/brand_tagline" />
+
+    <TextView
+        android:id="@+id/header_role"
+        style="@style/Widget.Nin.Badge"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/space_md"
+        android:background="@drawable/bg_pill"
+        android:textColor="@color/nin_primary"
+        android:visibility="gone" />
+
+</LinearLayout>

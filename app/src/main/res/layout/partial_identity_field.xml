@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    style="@style/Widget.Nin.Card.Outlined"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="@dimen/space_md">
+
+        <TextView
+            android:id="@+id/field_label"
+            style="@style/Text.Nin.Caption"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_xs"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <EditText
+                android:id="@+id/field_value"
+                style="@style/Text.Nin.Value"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:background="@null"
+                android:imeOptions="actionDone"
+                android:inputType="textNoSuggestions"
+                android:maxLines="1"
+                android:minHeight="@dimen/touch_target"
+                android:paddingStart="0dp"
+                android:paddingEnd="0dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/field_randomize"
+                style="@style/Widget.Nin.Button.Icon"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:contentDescription="@string/identity_randomize"
+                app:icon="@drawable/ic_refresh"
+                app:iconSize="@dimen/icon_sm" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/field_copy"
+                style="@style/Widget.Nin.Button.Icon"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:contentDescription="@string/action_copy"
+                app:icon="@drawable/ic_check"
+                app:iconSize="@dimen/icon_sm" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</com.google.android.material.card.MaterialCardView>

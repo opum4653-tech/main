@@ -1,0 +1,262 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/nin_background"
+    android:orientation="vertical">
+
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:clipToPadding="false"
+        android:paddingStart="@dimen/screen_gutter"
+        android:paddingTop="@dimen/screen_top_inset"
+        android:paddingEnd="@dimen/screen_gutter"
+        android:paddingBottom="@dimen/screen_bottom_inset">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <TextView
+                style="@style/Text.Nin.SectionLabel"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/loader_section_kernel" />
+
+            <!-- Kernel release -->
+            <com.google.android.material.card.MaterialCardView
+                style="@style/Widget.Nin.Card"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_md">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:padding="@dimen/card_padding">
+
+                    <ImageView
+                        android:layout_width="@dimen/icon_md"
+                        android:layout_height="@dimen/icon_md"
+                        android:contentDescription="@string/loader_kernel_label"
+                        android:src="@drawable/ic_driver"
+                        app:tint="@color/nin_primary" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/space_md"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            style="@style/Text.Nin.Caption"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="@string/loader_kernel_label" />
+
+                        <TextView
+                            android:id="@+id/text_kernel_release"
+                            style="@style/Text.Nin.ItemTitle"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/space_xxs"
+                            android:ellipsize="end"
+                            android:maxLines="1"
+                            android:text="@string/state_detecting" />
+
+                    </LinearLayout>
+
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Driver state + root state -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_md"
+                android:orientation="horizontal">
+
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/card_driver_state"
+                    style="@style/Widget.Nin.Card"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="@dimen/space_sm"
+                    android:layout_weight="1">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:orientation="vertical"
+                        android:paddingStart="@dimen/card_padding"
+                        android:paddingTop="@dimen/card_padding_wide"
+                        android:paddingEnd="@dimen/card_padding"
+                        android:paddingBottom="@dimen/card_padding_wide">
+
+                        <ImageView
+                            android:id="@+id/icon_driver_state"
+                            android:layout_width="@dimen/icon_box_sm"
+                            android:layout_height="@dimen/icon_box_sm"
+                            android:contentDescription="@string/loader_kernel_label"
+                            android:src="@drawable/ic_pause"
+                            app:tint="@color/nin_error" />
+
+                        <TextView
+                            android:id="@+id/text_driver_state"
+                            style="@style/Text.Nin.ItemTitle"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/space_sm"
+                            android:text="@string/state_not_loaded"
+                            android:textColor="@color/nin_error" />
+
+                    </LinearLayout>
+
+                </com.google.android.material.card.MaterialCardView>
+
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/card_root_state"
+                    style="@style/Widget.Nin.Card"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/space_sm"
+                    android:layout_weight="1">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:orientation="vertical"
+                        android:paddingStart="@dimen/card_padding"
+                        android:paddingTop="@dimen/card_padding_wide"
+                        android:paddingEnd="@dimen/card_padding"
+                        android:paddingBottom="@dimen/card_padding_wide">
+
+                        <ImageView
+                            android:id="@+id/icon_root_state"
+                            android:layout_width="@dimen/icon_box_sm"
+                            android:layout_height="@dimen/icon_box_sm"
+                            android:contentDescription="@string/loader_root_status"
+                            android:src="@drawable/ic_lock"
+                            app:tint="@color/nin_error" />
+
+                        <TextView
+                            android:id="@+id/text_root_state"
+                            style="@style/Text.Nin.ItemTitle"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/space_sm"
+                            android:text="@string/state_denied"
+                            android:textColor="@color/nin_error" />
+
+                    </LinearLayout>
+
+                </com.google.android.material.card.MaterialCardView>
+
+            </LinearLayout>
+
+            <!-- Mode buttons -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_lg"
+                android:orientation="horizontal">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/button_mode_qx"
+                    style="@style/Widget.Nin.Button.Primary"
+                    android:layout_width="0dp"
+                    android:layout_height="@dimen/button_height"
+                    android:layout_marginEnd="@dimen/space_sm"
+                    android:layout_weight="1"
+                    android:text="@string/loader_qx_mode" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/button_mode_rt"
+                    style="@style/Widget.Nin.Button.Primary"
+                    android:layout_width="0dp"
+                    android:layout_height="@dimen/button_height"
+                    android:layout_marginStart="@dimen/space_sm"
+                    android:layout_weight="1"
+                    android:text="@string/loader_rt_mode" />
+
+            </LinearLayout>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/button_stop_driver"
+                style="@style/Widget.Nin.Button.Outline"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/button_height"
+                android:layout_marginTop="@dimen/space_md"
+                android:enabled="false"
+                android:text="@string/loader_stop_driver"
+                app:icon="@drawable/ic_delete"
+                app:iconTint="@color/nin_error" />
+
+            <!-- Live terminal -->
+            <com.google.android.material.card.MaterialCardView
+                style="@style/Widget.Nin.Card"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_lg">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:paddingStart="@dimen/card_padding"
+                        android:paddingTop="@dimen/space_md"
+                        android:paddingEnd="@dimen/space_sm">
+
+                        <TextView
+                            style="@style/Text.Nin.SectionLabel"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="@string/loader_terminal_log" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/button_clear_log"
+                            style="@style/Widget.Nin.Button.Text"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:minHeight="@dimen/touch_target"
+                            android:text="@string/action_clear" />
+
+                    </LinearLayout>
+
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/log_list"
+                        android:layout_width="match_parent"
+                        android:layout_height="@dimen/terminal_height"
+                        android:layout_marginStart="@dimen/space_md"
+                        android:layout_marginEnd="@dimen/space_md"
+                        android:layout_marginBottom="@dimen/space_md"
+                        android:background="@drawable/bg_terminal"
+                        android:padding="@dimen/space_sm"
+                        android:scrollbars="vertical" />
+
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
+
+        </LinearLayout>
+
+    </androidx.core.widget.NestedScrollView>
+
+</LinearLayout>

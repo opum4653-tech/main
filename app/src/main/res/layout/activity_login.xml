@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/auth_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/nin_background">
+
+    <androidx.fragment.app.FragmentContainerView
+        android:id="@+id/auth_container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+    <!-- Session verification overlay. Shown while the stored token is validated. -->
+    <LinearLayout
+        android:id="@+id/verifying_overlay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/nin_background"
+        android:clickable="true"
+        android:focusable="true"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:visibility="gone">
+
+        <ImageView
+            android:layout_width="@dimen/icon_box_lg"
+            android:layout_height="@dimen/icon_box_lg"
+            android:contentDescription="@string/cd_logo"
+            android:src="@drawable/logo_n" />
+
+        <com.google.android.material.progressindicator.CircularProgressIndicator
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_xl"
+            android:indeterminate="true"
+            app:indicatorColor="@color/nin_primary"
+            app:indicatorSize="28dp"
+            app:trackColor="@color/nin_surface_variant"
+            app:trackThickness="2dp" />
+
+        <TextView
+            style="@style/Text.Nin.Body"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_lg"
+            android:text="@string/login_verifying_session" />
+
+    </LinearLayout>
+
+</FrameLayout>

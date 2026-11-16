@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <group android:id="@+id/group_workspace" android:checkableBehavior="single">
+        <item
+            android:id="@+id/nav_dashboard"
+            android:icon="@drawable/ic_dashboard"
+            android:title="@string/nav_dashboard" />
+        <item
+            android:id="@+id/nav_loader"
+            android:icon="@drawable/ic_driver"
+            android:title="@string/nav_loader" />
+        <item
+            android:id="@+id/nav_denylist"
+            android:icon="@drawable/ic_shield"
+            android:title="@string/nav_denylist" />
+        <item
+            android:id="@+id/nav_identity"
+            android:icon="@drawable/ic_fingerprint"
+            android:title="@string/nav_identity" />
+    </group>
+
+    <item android:id="@+id/group_workspace_label" android:title="@string/nav_section_main" />
+
+    <group android:id="@+id/group_account" android:checkableBehavior="single">
+        <item
+            android:id="@+id/nav_my_licenses"
+            android:icon="@drawable/ic_license_key"
+            android:title="@string/nav_my_licenses" />
+        <item
+            android:id="@+id/nav_add_funds"
+            android:icon="@drawable/ic_wallet"
+            android:title="@string/nav_add_funds" />
+        <item
+            android:id="@+id/nav_profile"
+            android:icon="@drawable/ic_profile"
+            android:title="@string/nav_profile" />
+        <item
+            android:id="@+id/nav_settings"
+            android:icon="@drawable/ic_settings"
+            android:title="@string/nav_settings" />
+    </group>
+
+    <group android:id="@+id/group_support" android:checkableBehavior="single">
+        <item
+            android:id="@+id/nav_support"
+            android:icon="@drawable/ic_support"
+            android:title="@string/nav_support" />
+    </group>
+
+</menu>

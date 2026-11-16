@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingBottom="@dimen/space_lg">
+
+    <TextView
+        style="@style/Text.Nin.CardTitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingStart="@dimen/screen_gutter_wide"
+        android:paddingTop="@dimen/space_lg"
+        android:paddingEnd="@dimen/screen_gutter_wide"
+        android:text="@string/purchase_title" />
+
+    <TextView
+        style="@style/Text.Nin.Caption"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/space_xs"
+        android:paddingStart="@dimen/screen_gutter_wide"
+        android:paddingEnd="@dimen/screen_gutter_wide"
+        android:text="@string/purchase_subtitle" />
+
+    <com.google.android.material.card.MaterialCardView
+        style="@style/Widget.Nin.Card"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/screen_gutter_wide"
+        android:layout_marginTop="@dimen/space_lg"
+        android:layout_marginEnd="@dimen/screen_gutter_wide">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="@dimen/card_padding">
+
+            <TextView
+                style="@style/Text.Nin.SectionLabel"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/purchase_available_balance" />
+
+            <TextView
+                android:id="@+id/text_balance"
+                style="@style/Text.Nin.ScreenTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_xs"
+                android:text="@string/state_loading" />
+
+        </LinearLayout>
+
+    </com.google.android.material.card.MaterialCardView>
+
+    <TextView
+        style="@style/Text.Nin.SectionLabel"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/screen_gutter_wide"
+        android:layout_marginTop="@dimen/space_lg"
+        android:layout_marginEnd="@dimen/screen_gutter_wide"
+        android:text="@string/purchase_select_duration" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/plan_list"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginTop="@dimen/space_sm"
+        android:layout_weight="1" />
+
+    <TextView
+        android:id="@+id/text_empty"
+        style="@style/Text.Nin.Caption"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/screen_gutter_wide"
+        android:layout_marginTop="@dimen/space_lg"
+        android:layout_marginEnd="@dimen/screen_gutter_wide"
+        android:gravity="center"
+        android:text="@string/purchase_no_plans"
+        android:visibility="gone" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/button_buy"
+        style="@style/Widget.Nin.Button.Primary"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/button_height"
+        android:layout_marginStart="@dimen/screen_gutter_wide"
+        android:layout_marginTop="@dimen/space_md"
+        android:layout_marginEnd="@dimen/screen_gutter_wide"
+        android:enabled="false"
+        android:text="@string/purchase_buy_now" />
+
+    <com.google.android.material.progressindicator.LinearProgressIndicator
+        android:id="@+id/progress_buy"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/screen_gutter_wide"
+        android:layout_marginTop="@dimen/space_md"
+        android:layout_marginEnd="@dimen/screen_gutter_wide"
+        android:indeterminate="true"
+        android:visibility="gone"
+        app:indicatorColor="@color/nin_primary"
+        app:trackColor="@color/nin_surface_variant"
+        app:trackThickness="2dp" />
+
+</LinearLayout>

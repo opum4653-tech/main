@@ -13,13 +13,6 @@ import java.util.zip.ZipInputStream
 
 object ModDownloader {
 
-    sealed class DownloadState {
-        object Idle : DownloadState()
-        data class Progress(val percentage: Int, val bytesDownloaded: Long, val totalBytes: Long) : DownloadState()
-        data class Success(val destinationDir: File) : DownloadState()
-        data class Error(val message: String) : DownloadState()
-    }
-
     /**
      * Download a mod package (zip or binary) from backend server to local directory.
      * Features an automated multi-tier fallback ladder across server routes and GitHub releases.

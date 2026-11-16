@@ -1,0 +1,304 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.swiperefreshlayout.widget.SwipeRefreshLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/dashboard_refresh"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/nin_background">
+
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:clipToPadding="false"
+        android:paddingStart="@dimen/screen_gutter"
+        android:paddingTop="@dimen/screen_top_inset"
+        android:paddingEnd="@dimen/screen_gutter"
+        android:paddingBottom="@dimen/screen_bottom_inset">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <!-- Broadcast / announcement banner -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/broadcast_card"
+                style="@style/Widget.Nin.Card.Outlined"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/space_lg"
+                android:visibility="gone">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:padding="@dimen/card_padding">
+
+                    <ImageView
+                        android:layout_width="@dimen/icon_md"
+                        android:layout_height="@dimen/icon_md"
+                        android:layout_marginTop="@dimen/space_xxs"
+                        android:contentDescription="@string/cd_notifications"
+                        android:src="@drawable/ic_notifications"
+                        app:tint="@color/nin_info"
+/>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/space_md"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:id="@+id/broadcast_title"
+                            style="@style/Text.Nin.ItemTitle"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:ellipsize="end"
+                            android:maxLines="1" />
+
+                        <TextView
+                            android:id="@+id/broadcast_message"
+                            style="@style/Text.Nin.Caption"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/space_xxs" />
+
+                    </LinearLayout>
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/broadcast_dismiss"
+                        style="@style/Widget.Nin.Button.Text"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:minWidth="0dp"
+                        android:minHeight="@dimen/touch_target"
+                        android:text="@string/action_dismiss" />
+
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- License countdown clock -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/clock_card"
+                style="@style/Widget.Nin.Card"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/space_lg"
+                android:visibility="gone">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_horizontal"
+                    android:orientation="vertical"
+                    android:padding="@dimen/card_padding">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <ImageView
+                            android:layout_width="@dimen/icon_md"
+                            android:layout_height="@dimen/icon_md"
+                            android:contentDescription="@string/cd_license_timer"
+                            android:src="@drawable/ic_timer"
+                            app:tint="@color/nin_primary"
+/>
+
+                        <TextView
+                            style="@style/Text.Nin.SectionLabel"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="@dimen/space_sm"
+                            android:layout_weight="1"
+                            android:text="@string/clock_title"
+                            android:textColor="@color/nin_primary" />
+
+                        <TextView
+                            android:id="@+id/clock_status"
+                            style="@style/Widget.Nin.Badge"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:background="@drawable/bg_badge_success"
+                            android:textColor="@color/nin_success" />
+
+                    </LinearLayout>
+
+                    <TextView
+                        android:id="@+id/clock_display"
+                        style="@style/Text.Nin.Clock"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/space_lg"
+                        android:background="@drawable/bg_terminal"
+                        android:paddingStart="@dimen/space_xl"
+                        android:paddingTop="@dimen/space_md"
+                        android:paddingEnd="@dimen/space_xl"
+                        android:paddingBottom="@dimen/space_md"
+                        android:text="@string/clock_format" />
+
+                    <TextView
+                        style="@style/Text.Nin.Caption"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/space_md"
+                        android:text="@string/clock_caption" />
+
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Kernel mods -->
+            <com.google.android.material.card.MaterialCardView
+                style="@style/Widget.Nin.Card"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/space_lg">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="@dimen/card_padding">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <ImageView
+                            android:layout_width="@dimen/icon_md"
+                            android:layout_height="@dimen/icon_md"
+                            android:contentDescription="@string/cd_kernel_icon"
+                            android:src="@drawable/ic_driver"
+                            app:tint="@color/nin_kernel_accent"
+/>
+
+                        <TextView
+                            style="@style/Text.Nin.SectionLabel"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="@dimen/space_sm"
+                            android:layout_weight="1"
+                            android:text="@string/dashboard_kernel_mod"
+                            android:textColor="@color/nin_kernel_accent" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/kernel_refresh"
+                            style="@style/Widget.Nin.Button.Icon"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:contentDescription="@string/action_refresh"
+                            app:icon="@drawable/ic_refresh"
+                            app:iconSize="@dimen/icon_sm"
+/>
+
+                    </LinearLayout>
+
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/kernel_list"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/space_md"
+                        android:nestedScrollingEnabled="false" />
+
+                    <TextView
+                        android:id="@+id/kernel_empty"
+                        style="@style/Text.Nin.Caption"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/space_md"
+                        android:background="@drawable/bg_card"
+                        android:gravity="center"
+                        android:paddingTop="@dimen/space_xl"
+                        android:paddingBottom="@dimen/space_xl"
+                        android:text="@string/dashboard_no_kernel_mod"
+                        android:visibility="gone" />
+
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- External mods -->
+            <com.google.android.material.card.MaterialCardView
+                style="@style/Widget.Nin.Card"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="@dimen/card_padding">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <ImageView
+                            android:layout_width="@dimen/icon_md"
+                            android:layout_height="@dimen/icon_md"
+                            android:contentDescription="@string/cd_external_icon"
+                            android:src="@drawable/ic_chat"
+                            app:tint="@color/nin_external_accent"
+/>
+
+                        <TextView
+                            style="@style/Text.Nin.SectionLabel"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="@dimen/space_sm"
+                            android:layout_weight="1"
+                            android:text="@string/dashboard_external_mod"
+                            android:textColor="@color/nin_external_accent" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/external_refresh"
+                            style="@style/Widget.Nin.Button.Icon"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:contentDescription="@string/action_refresh"
+                            app:icon="@drawable/ic_refresh"
+                            app:iconSize="@dimen/icon_sm"
+/>
+
+                    </LinearLayout>
+
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/external_list"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/space_md"
+                        android:nestedScrollingEnabled="false" />
+
+                    <TextView
+                        android:id="@+id/external_empty"
+                        style="@style/Text.Nin.Caption"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/space_md"
+                        android:background="@drawable/bg_card"
+                        android:gravity="center"
+                        android:paddingTop="@dimen/space_xl"
+                        android:paddingBottom="@dimen/space_xl"
+                        android:text="@string/dashboard_no_external_mod"
+                        android:visibility="gone" />
+
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
+
+        </LinearLayout>
+
+    </androidx.core.widget.NestedScrollView>
+
+</androidx.swiperefreshlayout.widget.SwipeRefreshLayout>

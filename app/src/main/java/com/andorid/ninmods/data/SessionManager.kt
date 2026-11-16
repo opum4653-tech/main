@@ -14,7 +14,6 @@ class SessionManager(context: Context) {
         private const val KEY_AUTH_TOKEN = "auth_token"
         private const val KEY_USER_EMAIL = "user_email"
         private const val KEY_USER_NAME = "user_name"
-        private const val KEY_USER_PASSWORD = "user_password"
         private const val KEY_REMEMBER = "remember_login"
         private const val KEY_LICENSE_EXPIRY = "license_expiry_time"
     }
@@ -113,10 +112,6 @@ class SessionManager(context: Context) {
     var userBalance: Double
         get() = java.lang.Double.longBitsToDouble(prefs.getLong("user_balance", java.lang.Double.doubleToLongBits(0.0)))
         set(value) = prefs.edit().putLong("user_balance", java.lang.Double.doubleToLongBits(value)).apply()
-
-    var userSpent: Double
-        get() = java.lang.Double.longBitsToDouble(prefs.getLong("user_spent", java.lang.Double.doubleToLongBits(0.0)))
-        set(value) = prefs.edit().putLong("user_spent", java.lang.Double.doubleToLongBits(value)).apply()
 
     var activeLicenseKey: String?
         get() = prefs.getString("active_license_key", null)

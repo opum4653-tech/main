@@ -1,24 +1,43 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools">
 
+    <!-- Application theme. Manifest points here. -->
     <style name="Theme.DriverLoader" parent="Theme.Material3.Dark.NoActionBar">
-        <item name="android:statusBarColor">@color/apatch_background</item>
-        <item name="android:navigationBarColor">@color/apatch_surface</item>
-        <item name="android:windowBackground">@color/apatch_background</item>
-        <item name="colorPrimary">@color/apatch_primary</item>
-        <item name="colorSecondary">@color/apatch_secondary</item>
-        <item name="colorSurface">@color/apatch_surface</item>
-        <item name="colorOutline">@color/apatch_outline</item>
+        <item name="android:statusBarColor">@color/nin_background</item>
+        <item name="android:navigationBarColor">@color/nin_surface</item>
+        <item name="android:windowBackground">@color/nin_background</item>
         <item name="android:windowLayoutInDisplayCutoutMode" tools:targetApi="o_mr1">shortEdges</item>
+        <item name="colorPrimary">@color/nin_primary</item>
+        <item name="colorOnPrimary">@color/nin_on_primary</item>
+        <item name="colorPrimaryContainer">@color/nin_primary_container</item>
+        <item name="colorOnPrimaryContainer">@color/nin_on_primary_container</item>
+        <item name="colorSecondary">@color/nin_secondary</item>
+        <item name="colorOnSecondary">@color/nin_on_secondary</item>
+        <item name="colorTertiary">@color/nin_tertiary</item>
+        <item name="colorOnTertiary">@color/nin_on_tertiary</item>
+        <item name="colorSurface">@color/nin_surface</item>
+        <item name="colorSurfaceVariant">@color/nin_surface_variant</item>
+        <item name="colorOnSurface">@color/nin_text_primary</item>
+        <item name="colorOnSurfaceVariant">@color/nin_text_secondary</item>
+        <item name="colorOutline">@color/nin_outline</item>
+        <item name="colorError">@color/nin_error</item>
+        <item name="android:colorBackground">@color/nin_background</item>
+        <item name="android:textColorPrimary">@color/nin_text_primary</item>
+        <item name="android:textColorSecondary">@color/nin_text_secondary</item>
     </style>
 
-    <style name="Theme.APatch" parent="Theme.DriverLoader">
-        <item name="android:windowLayoutInDisplayCutoutMode" tools:targetApi="o_mr1">shortEdges</item>
+    <!-- Splash-less launch theme: identical surface, no flash between activities. -->
+    <style name="Theme.DriverLoader.Launch">
+        <item name="android:windowBackground">@color/nin_background</item>
+        <item name="android:windowDisablePreview">true</item>
     </style>
 
-    <style name="Theme.APatch.WebUI" parent="Theme.DriverLoader">
-        <item name="android:windowLightStatusBar">true</item>
-        <item name="android:windowLightNavigationBar" tools:targetApi="o_mr1">true</item>
+    <!-- Dialog theme for XML-defined dialogs. -->
+    <style name="Theme.DriverLoader.Dialog" parent="ThemeOverlay.Material3.Dark">
+        <item name="android:windowBackground">@color/nin_surface</item>
+        <item name="android:textColorPrimary">@color/nin_text_primary</item>
+        <item name="android:textColorSecondary">@color/nin_text_secondary</item>
+        <item name="colorPrimary">@color/nin_primary</item>
     </style>
 
 </resources>

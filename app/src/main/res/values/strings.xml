@@ -1,292 +1,501 @@
-<?xml version='1.0' encoding='utf-8'?>
-<resources>
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+
+    <!-- ============================================================
+         Identity
+         ============================================================ -->
     <string name="app_name">NinMods</string>
-    <string name="nav_home">Home</string>
-    <string name="nav_drivers">Drivers</string>
-    <string name="nav_settings">Settings</string>
-    <string name="status_active">WORKING</string>
-    <string name="status_inactive">NOT LOADED</string>
-    <string name="kernel_info_title">Kernel Information</string>
-    <string name="superuser_title">Superuser (Root)</string>
-    <string name="node_status_title">Character Device Nodes</string>
-    <string name="driver_actions_title">Driver Control</string>
-    <string name="btn_load_qx">Load QX Driver</string>
-    <string name="btn_load_rt">Load RT Driver</string>
-    <string name="btn_unload">Unload Driver</string>
-    <string name="btn_clear_log">Clear Log</string>
-    <string name="console_output_title">Real-Time Console Output</string>
-    <string name="home">Home</string>
-    <string name="search">Search</string>
-    <string name="search_apps">Search Apps</string>
-    <string name="search_modules">Search modules</string>
-    <string name="back">Back</string>
-    <string name="learn_more">Learn more</string>
-    <string name="success">Success</string>
-    <string name="failure">Failure</string>
-    <string name="patch_warnning">Installation comes with risks. Please ensure your data is backed up.</string>
-    <string name="patch">Patch</string>
-    <string name="kernel_patch">KernelPatch</string>
-    <string name="android_patch">AndroidPatch</string>
-    <string name="reboot">Reboot</string>
-    <string name="settings">Settings</string>
-    <string name="reboot_recovery">Reboot to Recovery</string>
-    <string name="reboot_bootloader">Reboot to Bootloader</string>
-    <string name="reboot_download">Reboot to Download</string>
-    <string name="reboot_edl">Reboot to EDL</string>
-    <string name="reboot_download_confirm">Reboot into Download mode? The device will boot into the firmware flashing interface.</string>
-    <string name="reboot_edl_confirm">Reboot into EDL (Emergency Download) mode? The screen will stay black and the device can only be recovered with a deep flash tool.</string>
-    <string name="about">About</string>
-    <string name="settings_app_language">Language</string>
-    <string name="system_default">System default</string>
-    <string name="settings_global_namespace_mode">Global namespace mode</string>
-    <string name="settings_global_namespace_mode_summary">All root sessions use the global mount namespace</string>
-    <string name="settings_sucompat">Legacy su compatibility</string>
-    <string name="settings_sucompat_summary">"Enable legacy su compatibility (for when su doesn't work)"</string>
-    <string name="settings_selinux_hide">Hide SELinux modification (Test)</string>
-    <string name="settings_selinux_hide_summary">"Hide SELinux changes from being detected by user processes (this feature may be unstable). Safe mode disables this feature."</string>
-    <string name="settings_selinux_hide_warning_title">Warning</string>
-    <string name="settings_selinux_hide_warning_below_5_10">"This feature is only tested on kernel 5.10 and above and may be unstable on lower kernel versions."</string>
-    <string name="settings_selinux_hide_warning_non_gki">"Non-GKI kernels carry a higher risk and may cause boot failure. Make sure your data is backed up."</string>
-    <string name="settings_jailbreak_mode">Jailbreak mode</string>
-    <string name="settings_jailbreak_mode_summary">"Load the KernelPatch module on a stock kernel. Patching is not allowed in this mode."</string>
-    <string name="settings_jailbreak_soft_reboot">Soft reboot</string>
-    <string name="settings_jailbreak_soft_reboot_message">"The module has been loaded. Restart the framework now?"</string>
-    <string name="settings_jailbreak_loaded">Jailbreak module loaded</string>
-    <string name="settings_jailbreak_failed">Failed to load jailbreak module</string>
-    <string name="jailbreak_no_patch">Patching is not allowed in jailbreak mode.</string>
-    <string name="jailbreak">Jailbreak</string>
-    <string name="jailbreak_triggered">Jailbreak triggered. Wait for root, then soft reboot.</string>
-    <string name="reboot_soft">Soft reboot</string>
-    <string name="settings_clear_super_key_dialog">Do you really want to proceed?</string>
-    <string name="settings_check_update">Check for updates</string>
-    <string name="settings_check_update_summary">Automatically check for updates when opening the app</string>
-    <string name="home_learn_apatch">Learn APatch</string>
-    <string name="home_click_to_learn_apatch">Learn about the features of APatch and how to use</string>
-    <string name="about_source_code">&lt;p&gt;View source code at %1$s&lt;p/&gt;Join our %2$s channel&lt;p/&gt;Join our %3$s group</string>
-    <string name="send_log">Send logs</string>
-    <string name="save_log">Save logs</string>
-    <string name="log_saved">Logs saved</string>
-    <string name="safe_mode">Safe mode</string>
-    <string name="super_key">SuperKey</string>
-    <string name="patch_set_superkey">Set SuperKey</string>
-    <string name="home_patch_set_key_desc">Only credential for KernelPatch</string>
-    <string name="home_patch_next_step">Next step</string>
-    <string name="home_not_installed">Not installed</string>
-    <string name="home_install_unknown">KernelPatch not installed</string>
-    <string name="home_install_unknown_summary">Root is unavailable. The kernel may not be patched or flashed yet.</string>
-    <string name="home_click_to_install">Click to install</string>
-    <string name="home_working">Working 😋</string>
-    <string name="home_installing">Installing</string>
-    <string name="home_need_update">New version available</string>
-    <string name="kpatch_version">Version: %s</string>
-    <string name="apatch_version">Version: %s</string>
-    <string name="apatch_version_update">Version: %1$s -&gt; %2$s</string>
-    <string name="kpatch_version_update">Version: %1$s -&gt; %2$s</string>
-    <string name="kpatch_shadow_path_title">kpatch</string>
-    <string name="home_kpatch_info_title">Info</string>
-    <string name="home_ap_cando_install">Install</string>
-    <string name="home_ap_cando_update">Update</string>
-    <string name="home_ap_cando_uninstall">Uninstall</string>
-    <string name="home_ap_cando_reboot">Reboot</string>
-    <string name="patch_title">Patch</string>
-    <string name="patch_config_title">Patches</string>
-    <string name="patch_mode_bootimg_patch">Mode: Patch</string>
-    <string name="patch_mode_patch_and_install">Mode: Patch and install</string>
-    <string name="patch_mode_install_to_next_slot">Mode: Install to inactive slot (After OTA)</string>
-    <string name="patch_mode_uninstall_patch">Mode: Uninstall KPatch</string>
-    <string name="patch_select_bootimg_btn">Select boot</string>
-    <string name="patch_embed_kpm_btn">Embed KPM</string>
-    <string name="patch_start_patch_btn">Start</string>
-    <string name="patch_start_unpatch_btn">UnPatch</string>
-    <string name="patch_item_error">!!ERROR!!</string>
-    <string name="patch_item_bootimg">bootimg</string>
-    <string name="patch_item_bootimg_slot">Slot:</string>
-    <string name="patch_item_bootimg_dev">Device:</string>
-    <string name="patch_item_kernel">Kernel</string>
-    <string name="patch_item_kpimg">kpimg</string>
-    <string name="patch_item_kpimg_version">Version:</string>
-    <string name="patch_item_kpimg_comile_time">Time:</string>
-    <string name="patch_item_kpimg_config">Config:</string>
-    <string name="patch_item_new_extra_kpm">Embed new</string>
-    <string name="patch_item_existed_extra_kpm">Existed</string>
-    <string name="patch_item_extra_name">Name:</string>
-    <string name="patch_item_extra_version">Version:</string>
-    <string name="patch_item_extra_author">Author:</string>
-    <string name="patch_item_extra_kpm_license">License:</string>
-    <string name="patch_item_extra_kpm_desciption">Description:</string>
-    <string name="patch_item_extra_args">Args:</string>
-    <string name="patch_item_extra_event">Event:</string>
-    <string name="patch_item_skey">SuperKey</string>
-    <string name="patch_custom_superkey">Custom SuperKey</string>
-    <string name="patch_custom_superkey_summary">still can use superkey manager root, now we are verify manager signature by kernel</string>
-    <string name="patch_item_set_skey_label">The SuperKey should be 8-63 characters long and include numbers and letters, but no special characters.</string>
-    <string name="home_kernel">Kernel version</string>
-    <string name="home_manager_version">Manager version</string>
-    <string name="home_fingerprint">Fingerprint</string>
-    <string name="home_selinux_status">SELinux status</string>
-    <string name="home_selinux_status_disabled">Disabled</string>
-    <string name="home_selinux_status_enforcing">Enforcing</string>
-    <string name="home_selinux_status_permissive">Permissive</string>
-    <string name="home_selinux_status_unknown">Unknown</string>
-    <string name="home_device_info">Device</string>
-    <string name="home_system_version">System version</string>
-    <string name="home_kpatch_version">KernelPatch version</string>
-    <string name="home_su_path">Executable su</string>
-    <string name="home_apatch_version">APatch version</string>
-    <string name="kpm">KPModule</string>
-    <string name="kpm_kp_not_installed">KernelPatch not installed</string>
-    <string name="kpm_add_kpm">Add KPM</string>
-    <string name="kpm_load">Load</string>
-    <string name="kpm_install">Install</string>
-    <string name="kpm_install_toast_succ">Installed successfully; takes effect after reboot</string>
-    <string name="kpm_embed">Embed</string>
-    <string name="kpm_load_toast_succ">Load succeed</string>
-    <string name="kpm_load_toast_failed">Load failed</string>
-    <string name="kpm_unload_confirm">Unload %s module?</string>
-    <string name="kpm_unload">Unload</string>
-    <string name="kpm_control">Control</string>
-    <string name="kpm_apm_empty">No module loaded</string>
-    <string name="kpm_version">Version</string>
-    <string name="kpm_license">License</string>
-    <string name="kpm_author">Author</string>
-    <string name="kpm_desc">Desc</string>
-    <string name="kpm_args">Args</string>
-    <string name="kpm_installed">Installed</string>
-    <string name="kpm_disabled">Disabled (takes effect after reboot)</string>
-    <string name="kpm_embedded">Embedded</string>
-    <string name="kpm_embedded_unload_invalid">Embedded KPMs cannot be unloaded; it will remain active after reboot.</string>
-    <string name="kpm_update">Update</string>
-    <string name="kpm_update_available">Update to %s</string>
-    <string name="kpm_update_confirm_title">Update KPModule</string>
-    <string name="kpm_update_confirm">Update %1$s to version %2$s? The installed KPM is replaced and takes effect after reboot.</string>
-    <string name="kpm_update_succ">Updated to %s; reboot to take effect</string>
-    <string name="online_module">Online modules</string>
-    <string name="online_module_title">Module repository</string>
-    <string name="online_filter_all">All</string>
-    <string name="online_filter_system">System</string>
-    <string name="online_filter_kpm">KPM</string>
-    <string name="online_install">Install</string>
-    <string name="online_install_confirm">Install %s?</string>
-    <string name="online_update">Update</string>
-    <string name="online_update_available">Update to %s</string>
-    <string name="online_update_confirm">Update %1$s from %2$s to %3$s?</string>
-    <string name="online_installed">Installed</string>
-    <string name="online_installed_version">Installed %s</string>
-    <string name="online_stars">%s stars</string>
-    <string name="online_empty">No modules</string>
-    <string name="online_load_failed">Failed to load the module list</string>
-    <string name="online_download_failed">Download failed</string>
-    <string name="online_download_cancelled">Download cancelled</string>
-    <string name="online_install_failed">Install failed: %d</string>
-    <string name="online_downloading">Downloading %1$s (%2$d%%)</string>
-    <string name="su_title">Superuser</string>
-    <string name="su_selinux_via_hook">Bypass via hook</string>
-    <string name="su_pkg_excluded_label">Exclude</string>
-    <string name="su_pkg_excluded_setting_title">Exclude modifications</string>
-    <string name="su_pkg_excluded_setting_summary">Enabling this option will allow APatch to restore any files modified by the modules of this app.</string>
-    <string name="su_show_system_apps">Show system apps</string>
-    <string name="su_hide_system_apps">Hide system apps</string>
-    <string name="su_refresh">Refresh</string>
-    <string name="apm">APModule</string>
-    <string name="apm_not_installed">AndroidPatch not installed</string>
-    <string name="apm_failed_to_enable">Failed to enable module: %s</string>
-    <string name="apm_failed_to_disable">Failed to disable module: %s</string>
-    <string name="apm_empty">No module installed</string>
-    <string name="apm_remove">Remove</string>
-    <string name="apm_undo">Undo</string>
-    <string name="apm_install">Install</string>
-    <string name="apm_uninstall_confirm">Uninstall the %s module?</string>
-    <string name="metamodule_uninstall_confirm">"Are you sure you want to uninstall module %s? This action will affect all modules, and certain features provided by the metamodule (such as mounting) will no longer work.  "</string>
-    <string name="apm_uninstall_success">%s uninstalled</string>
-    <string name="apm_uninstall_failed">Failed to uninstall: %s</string>
-    <string name="apm_module_undo_uninstall_success">Successfully canceled uninstall of %s</string>
-    <string name="apm_module_undo_uninstall_failed">Failed to undo uninstall: %s</string>
-    <string name="apm_version">Version</string>
-    <string name="apm_author">Author</string>
-    <string name="apm_desc">Desc</string>
-    <string name="apm_overlay_fs_not_available">Modules are unavailable as OverlayFS is disabled by the kernel!</string>
-    <string name="apm_magisk_conflict">Modules are unavailable due to a conflict with Magisk!</string>
-    <string name="apm_reboot_to_apply">Reboot to take effect</string>
-    <string name="apm_changelog">Changelog</string>
-    <string name="apm_update">Update</string>
-    <string name="apm_downloading">Downloading module: %s</string>
-    <string name="apm_start_downloading">Start downloading: %s</string>
-    <string name="apm_new_version_available">New version %s is available, click to upgrade.</string>
-    <string name="warning_of_meta_module_title">Require Meta module</string>
-    <string name="warning_of_meta_module_summary">This module want to mount /system, meta module will handle that. Otherwise, it might not work.</string>
-    <string name="meta_module_disabled">module not mounted, because metamodule disabled</string>
-    <string name="meta_module_removed">module not mounted, because metamodule being delete</string>
-    <string name="no_meta_module_installed">module not mounted, because metamodule not installed</string>
-    <string name="hide_apatch_manager">Hide APatch Manager</string>
-    <string name="hide_apatch_manager_summary">Install a proxy app with a random package ID and custom app label</string>
-    <string name="hide_apatch_dialog_new_manager_name">New manager name</string>
-    <string name="hide_apatch_dialog_summary">It will be used as the new app label shown in launcher</string>
-    <string name="hide_apatch_manager_failure">Failed to hide. Please report the bug!</string>
-    <string name="setting_reset_su_path">Reset su path</string>
-    <string name="setting_reset_su_new_path">New full path</string>
-    <string name="apm_webui_open">Open</string>
-    <string name="apm_action">Action</string>
-    <string name="enable_web_debugging">Enable WebView debugging</string>
-    <string name="enable_web_debugging_summary">Can be used to debug WebUI. Please enable only when needed.</string>
-    <string name="home_new_apatch_found">New version %s is available, click to upgrade.</string>
-    <string name="mode_select_page_title">Install</string>
-    <string name="mode_select_page_patch_and_install">Patch and install</string>
-    <string name="mode_select_page_select_file">Select a boot image to patch</string>
-    <string name="mode_select_page_install_inactive_slot">Install to inactive slot (After OTA)</string>
-    <string name="mode_select_page_install_inactive_slot_warning">Your device will be **FORCED** to boot to the current inactive slot after a reboot!\nOnly use this option after OTA is done.\nContinue?</string>
-    <string name="home_more_menu_feedback_or_suggestion">Feedback or suggestion</string>
-    <string name="home_more_menu_about">About</string>
-    <string name="home_dialog_uninstall_title">Uninstall</string>
-    <string name="home_dialog_uninstall_ap_only">Remove AndroidPatch</string>
-    <string name="home_dialog_uninstall_all">Uninstall all</string>
-    <string name="home_dialog_uninstall_message">Remove AndroidPatch only removes the manager app and keeps the patched boot image. Uninstall all also restores the stock boot image, and the device will lose root until it is patched again.</string>
-    <string name="kpm_control_dialog_title">Control KPModule</string>
-    <string name="kpm_control_dialog_content">Input control parameters:</string>
-    <string name="kpm_control_paramters">Parameters</string>
-    <string name="kpm_control_outMsg">Message</string>
-    <string name="kpm_control_ok">Operation succeeded!</string>
-    <string name="kpm_control_failed">Operation failed!</string>
-    <string name="settings_night_mode_follow_sys">Follow system\'s dark theme</string>
-    <string name="settings_night_mode_follow_sys_summary">Automatically switch to dark theme based on system settings</string>
-    <string name="settings_night_theme_enabled">Enable dark theme</string>
-    <string name="settings_use_system_color_theme">System color theme</string>
-    <string name="settings_use_system_color_theme_summary">Use a color theme generated by the system based on the current wallpaper</string>
-    <string name="settings_custom_color_theme">Color theme</string>
-    <string name="amber_theme">Amber</string>
-    <string name="blue_grey_theme">Blue grey</string>
-    <string name="blue_theme">Blue</string>
-    <string name="brown_theme">Brown</string>
-    <string name="cyan_theme">Cyan</string>
-    <string name="deep_orange_theme">Deep orange</string>
-    <string name="deep_purple_theme">Deep purple</string>
-    <string name="green_theme">Green</string>
-    <string name="indigo_theme">Indigo</string>
-    <string name="light_blue_theme">Light blue</string>
-    <string name="light_green_theme">Light green</string>
-    <string name="lime_theme">Lime</string>
-    <string name="orange_theme">Orange</string>
-    <string name="pink_theme">Pink</string>
-    <string name="purple_theme">Purple</string>
-    <string name="red_theme">Red</string>
-    <string name="sakura_theme">Sakura</string>
-    <string name="teal_theme">Teal</string>
-    <string name="yellow_theme">Yellow</string>
-    <string name="about_app_version">Version %1$s</string>
-    <string name="about_app_desc">Kernel root solution with only a stripped kernel image, providing the ability of mounting system module and hooking kernel function.</string>
-    <string name="about_github" translatable="false">GitHub</string>
-    <string name="about_weblate" translatable="false">Weblate</string>
-    <string name="about_telegram_channel">Telegram channel</string>
-    <string name="about_telegram_group">Telegram group</string>
-    <string name="about_powered_by">Powered by %1$s</string>
-    <string name="crash_handle_title">App crashed…</string>
-    <string name="crash_handle_copy">Copy crash log</string>
-    <string name="crash_handle_copied">Crash log copied to clipboard.</string>
-    <!-- Server and Network Error Messages -->
-    <string name="server_maintenance_error">Server is currently under maintenance. Please try again shortly.</string>
-    <string name="server_unreachable_error">Server unreachable. Please check your internet connection.</string>
-    <string name="server_timeout_error">Server connection timed out. Please try again.</string>
-    <string name="invalid_credentials_error">Invalid email or password.</string>
-    <string name="account_suspended_error">Your account is suspended. Please contact support.</string>
-    <string name="permission_setup_title">Installation &amp; Setup</string>
-    <string name="permission_setup_btn">Permission Setup</string>
+    <string name="brand_name">NinMods</string>
+    <string name="brand_tagline">Ring 0 driver loader &amp; overlay engine</string>
+    <string name="brand_version_format">NinMods DriverLoader %1$s</string>
+    <string name="brand_default_user">NinMods User</string>
+
+    <!-- ============================================================
+         Navigation
+         ============================================================ -->
+    <string name="nav_dashboard">Dashboard</string>
+    <string name="nav_loader">Driver Loader</string>
+    <string name="nav_denylist">Daily List</string>
+    <string name="nav_identity">Anti-Blacklist / IMEI</string>
+    <string name="nav_support">Live Support</string>
+    <string name="nav_add_funds">Add Funds</string>
+    <string name="nav_my_licenses">My Licenses</string>
+    <string name="nav_settings">General Settings</string>
+    <string name="nav_profile">My Profile</string>
+    <string name="nav_submit_deposit">Deposit Funds</string>
+    <string name="nav_create_ticket">Create Ticket</string>
+    <string name="nav_ticket_chat">Live Conversation</string>
+    <string name="nav_change_password">Change Password</string>
+    <string name="nav_report_bug">Report Bug</string>
+    <string name="nav_section_main">Workspace</string>
+    <string name="nav_section_account">Account</string>
+    <string name="nav_section_support">Support</string>
+
+    <!-- ============================================================
+         Generic actions
+         ============================================================ -->
+    <string name="action_back">Back</string>
+    <string name="action_refresh">Refresh</string>
+    <string name="action_open_drawer">Open Drawer Menu</string>
+    <string name="action_close">Close</string>
+    <string name="action_cancel">Cancel</string>
+    <string name="action_retry">Retry</string>
+    <string name="action_got_it">Got It</string>
+    <string name="action_understood">Understood</string>
+    <string name="action_download">Download</string>
+    <string name="action_start">Start</string>
+    <string name="action_stop">Stop</string>
+    <string name="action_sign_out">Sign Out</string>
+    <string name="action_dismiss">Dismiss</string>
+    <string name="action_confirm">Confirm</string>
+    <string name="action_verify">Verify</string>
+    <string name="action_verifying">Verifying…</string>
+    <string name="action_copy">Copy</string>
+    <string name="action_copy_key">Copy Key</string>
+    <string name="action_clear">Clear</string>
+    <string name="action_expand">Expand</string>
+    <string name="action_search">Search</string>
+    <string name="action_send">Send</string>
+    <string name="action_grant">Grant</string>
+    <string name="action_login">Login</string>
+    <string name="action_sign_up">Sign Up</string>
+    <string name="action_next">Next</string>
+    <string name="action_skip">Skip</string>
+    <string name="action_toggle_password">Toggle password visibility</string>
+
+    <!-- ============================================================
+         States
+         ============================================================ -->
+    <string name="state_active">ACTIVE</string>
+    <string name="state_expired">EXPIRED</string>
+    <string name="state_ready">READY</string>
+    <string name="state_available">AVAILABLE</string>
+    <string name="state_pending">PENDING</string>
+    <string name="state_rejected">REJECTED</string>
+    <string name="state_completed">COMPLETED</string>
+    <string name="state_approved">APPROVED</string>
+    <string name="state_open">OPEN</string>
+    <string name="state_answered">ANSWERED</string>
+    <string name="state_closed">CLOSED</string>
+    <string name="state_loading">Loading…</string>
+    <string name="state_empty">Nothing here yet</string>
+    <string name="state_offline">No connection</string>
+    <string name="state_detecting">Detecting…</string>
+    <string name="state_working">Working…</string>
+    <string name="state_granted">Granted</string>
+    <string name="state_denied">Denied</string>
+    <string name="state_enabled">Enabled</string>
+    <string name="state_disabled">DISABLED</string>
+    <string name="state_not_loaded">Not Loaded</string>
+    <string name="state_exposed">EXPOSED</string>
+    <string name="state_partial">PARTIAL</string>
+    <string name="state_protected">PROTECTED</string>
+
+    <!-- ============================================================
+         Login / auth
+         ============================================================ -->
+    <string name="login_subtitle">Secure access to your overlay workspace</string>
+    <string name="login_email">Email</string>
+    <string name="login_password">Password</string>
+    <string name="login_remember">Remember</string>
+    <string name="login_forgot_password">Forgot password?</string>
+    <string name="login_no_account">Don\'t have an account?</string>
+    <string name="login_have_account">Already have an account?</string>
+    <string name="login_logging_in">Logging in…</string>
+    <string name="login_welcome">Welcome, %1$s</string>
+    <string name="login_error_empty">Please enter email and password</string>
+    <string name="login_verifying_session">Verifying secure session…</string>
+    <string name="login_session_expired">Session expired: password changed or account logged in on another device.</string>
+
+    <string name="signup_username">Username</string>
+    <string name="signup_email">Email</string>
+    <string name="signup_password">Password</string>
+    <string name="signup_confirm_password">Confirm Password</string>
+    <string name="signup_hint_username">john_doe</string>
+    <string name="signup_signing_up">Signing Up…</string>
+    <string name="signup_success">Account created successfully! Please login.</string>
+    <string name="signup_error_username_required">Username is required</string>
+    <string name="signup_error_username_format">Username must be 3-30 letters, numbers, or _</string>
+    <string name="signup_error_email_required">Email is required</string>
+    <string name="signup_error_password_short">Password must be at least 6 characters</string>
+    <string name="signup_error_password_mismatch">Passwords do not match</string>
+
+    <string name="forgot_password_title">Reset Password</string>
+    <string name="forgot_password_hint">Enter your registered email address to receive password reset instructions.</string>
+    <string name="forgot_password_send">Send Reset Link</string>
+    <string name="forgot_password_sending">Sending Link…</string>
+    <string name="forgot_password_sent">A reset link has been dispatched to %1$s. Check your inbox to proceed.</string>
+    <string name="forgot_password_remembered">Remembered your credentials?</string>
+    <string name="forgot_password_error_identifier">Username or Email is required</string>
+
+    <string name="change_password_section">ACCOUNT CREDENTIALS</string>
+    <string name="change_password_hint">Update your credentials. Minimum 6 characters required.</string>
+    <string name="change_password_new">New Password</string>
+    <string name="change_password_new_hint">Enter at least 6 characters</string>
+    <string name="change_password_confirm">Confirm New Password</string>
+    <string name="change_password_confirm_hint">Re-enter new password</string>
+    <string name="change_password_submit">UPDATE PASSWORD</string>
+    <string name="change_password_updating">Updating Password…</string>
+    <string name="change_password_success">Password updated successfully!</string>
+    <string name="change_password_error_empty">Please enter a new password</string>
+    <string name="change_password_error_short">Password must be at least 6 characters</string>
+    <string name="change_password_error_mismatch">Passwords do not match</string>
+    <string name="change_password_error_failed">Failed to update password</string>
+
+    <!-- ============================================================
+         Dashboard
+         ============================================================ -->
+    <string name="dashboard_broadcast_default_title">Announcement</string>
+    <string name="dashboard_kernel_mod">KERNEL MOD</string>
+    <string name="dashboard_external_mod">EXTERNAL MOD</string>
+    <string name="dashboard_no_kernel_mod">No kernel mod configured</string>
+    <string name="dashboard_no_external_mod">No external mod configured</string>
+    <string name="dashboard_kernel_subtitle_idle">OB55 (1.132.1) • Ring 0 Floating Engine</string>
+    <string name="dashboard_kernel_subtitle_active">Ring 0 Engine Active • Connected to Driver</string>
+    <string name="dashboard_external_subtitle_idle">Official in-memory client engine</string>
+    <string name="dashboard_external_subtitle_active">Process active &amp; running in RAM</string>
+    <string name="dashboard_initializing">Initializing %1$s…</string>
+    <string name="dashboard_loading_kernel">Loading kernel floating engine into RAM…</string>
+    <string name="dashboard_loading_external">Loading floating engine into RAM…</string>
+    <string name="dashboard_mod_stopped">%1$s stopped.</string>
+    <string name="dashboard_update_mod">Update Mod</string>
+    <string name="dashboard_running">Running</string>
+    <string name="dashboard_empty_image">Alert Image</string>
+
+    <!-- ============================================================
+         License clock
+         ============================================================ -->
+    <string name="clock_title">LICENSE REMAINING</string>
+    <string name="clock_caption">Hours  :  Minutes  :  Seconds</string>
+    <string name="clock_format">%1$02d : %2$02d : %3$02d</string>
+    <string name="clock_remaining_typed">LICENSE REMAINING (%1$s)</string>
+
+    <!-- ============================================================
+         Driver loader
+         ============================================================ -->
+    <string name="loader_section_kernel">KERNEL CONFIGURATION</string>
+    <string name="loader_root_status">SuperUser</string>
+    <string name="loader_kernel_label">Kernel Driver</string>
+    <string name="loader_terminal_log">TERMINAL LOG</string>
+    <string name="loader_load_driver">Load Driver</string>
+    <string name="loader_stop_driver">Stop Driver</string>
+    <string name="loader_matched_kernel">Matched Kernel: Linux %1$s</string>
+    <string name="loader_compatible_drivers">Compatible Kernel Drivers</string>
+    <string name="loader_select_driver">Select %1$s Driver</string>
+    <string name="loader_kernel_driver_script">Kernel Driver Script</string>
+    <string name="loader_downloading_package">Kernel Drivers Package (%1$s)</string>
+    <string name="loader_download_failed">Driver Download Failed: %1$s</string>
+    <string name="loader_driver_download_failed">Driver download failed.</string>
+    <string name="loader_qx_mode">QX</string>
+    <string name="loader_rt_mode">RT</string>
+    <string name="loader_mode_title">Mode</string>
+
+    <!-- ============================================================
+         Denylist / root cloak
+         ============================================================ -->
+    <string name="denylist_global_cloak">Global Root Cloak</string>
+    <string name="denylist_global_cloak_hint">Hides root &amp; mounts from apps</string>
+    <string name="denylist_cloak_active">Root Cloak Active</string>
+    <string name="denylist_cloak_disabled">Root Cloak Disabled</string>
+    <string name="denylist_cloak_targets">CLOAK TARGETS NOW</string>
+    <string name="denylist_cloaking">Cloaking…</string>
+    <string name="denylist_cloak_failed">Cloak failed</string>
+    <string name="denylist_toggle_failed">Failed to toggle Root Cloak</string>
+    <string name="denylist_protected_count">Protected %1$d target items</string>
+    <string name="denylist_protected_apps">Protected: %1$d apps</string>
+    <string name="denylist_processes_count">Processes: %1$d</string>
+    <string name="denylist_applications">APPLICATIONS (%1$d)</string>
+    <string name="denylist_games_targets">Games &amp; Targets</string>
+    <string name="denylist_processes_label">PROCESSES:</string>
+    <string name="denylist_target_badge">TARGET</string>
+    <string name="denylist_no_apps">No applications found</string>
+    <string name="denylist_search_hint">Search…</string>
+    <string name="denylist_operation_failed">Operation failed</string>
+    <string name="denylist_isolation_active">Isolation Active</string>
+    <string name="denylist_isolation_disabled">Isolation Disabled</string>
+
+    <!-- ============================================================
+         Device identity
+         ============================================================ -->
+    <string name="identity_section_hardware">HARDWARE IDENTIFIERS</string>
+    <string name="identity_imei_primary">IMEI (Primary Slot)</string>
+    <string name="identity_imei_secondary">IMEI 2 (Secondary Slot)</string>
+    <string name="identity_android_id">Android ID</string>
+    <string name="identity_serial">Hardware Serial (ro.serialno)</string>
+    <string name="identity_mac">Wi-Fi &amp; Bluetooth MAC Address</string>
+    <string name="identity_bluetooth">Bluetooth Address</string>
+    <string name="identity_build_id">Build ID</string>
+    <string name="identity_fingerprint">Build Fingerprint</string>
+    <string name="identity_manufacturer_brand">Manufacturer &amp; Brand</string>
+    <string name="identity_model_device">Model &amp; Device</string>
+    <string name="identity_randomize_all">Randomize All</string>
+    <string name="identity_randomize">Randomize</string>
+    <string name="identity_reset_fields">Reset Fields</string>
+    <string name="identity_apply_live">APPLY NEW IDENTITY LIVE</string>
+    <string name="identity_wipe_tokens">Wipe Game Blacklist Tokens</string>
+    <string name="identity_applied">Anti-Blacklist applied! Device ID updated.</string>
+    <string name="identity_generated">New hardware identifiers generated</string>
+    <string name="identity_reverted">Reverted to current system values</string>
+    <string name="identity_failed">Failed: %1$s</string>
+    <string name="identity_manufacturer_format">Manufacturer: %1$s  Device: %2$s</string>
+
+    <!-- ============================================================
+         Support / tickets
+         ============================================================ -->
+    <string name="support_title">Live Support</string>
+    <string name="support_create_ticket">Create Ticket</string>
+    <string name="support_new_ticket">New Ticket</string>
+    <string name="support_no_messages">No messages found</string>
+    <string name="support_ticket_row">Ticket #%1$d • %2$s</string>
+    <string name="support_last_activity">Last activity: %1$s</string>
+    <string name="support_ticket_title">Ticket #%1$d</string>
+
+    <string name="create_ticket_section">Ticket Information</string>
+    <string name="create_ticket_subtitle">Submit a request to direct technical assistance</string>
+    <string name="create_ticket_subject">Subject / Issue Summary</string>
+    <string name="create_ticket_body">Message Body</string>
+    <string name="create_ticket_body_hint">Describe what you need assistance with…</string>
+    <string name="create_ticket_priority">Priority Level</string>
+    <string name="create_ticket_submit">Submit Ticket</string>
+    <string name="create_ticket_failed">Failed to submit message</string>
+    <string name="create_ticket_priority_low">low</string>
+    <string name="create_ticket_priority_medium">medium</string>
+    <string name="create_ticket_priority_high">high</string>
+    <string name="ticket_chat_hint">Write a message…</string>
+
+    <!-- ============================================================
+         Settings
+         ============================================================ -->
+    <string name="settings_section_permissions">PERMISSIONS &amp; ROOT ENVIRONMENT</string>
+    <string name="settings_section_kernel">KERNEL CONFIGURATION</string>
+    <string name="settings_section_updates">SOFTWARE UPDATES</string>
+    <string name="settings_section_diagnostics">DIAGNOSTICS &amp; BUG REPORT</string>
+    <string name="settings_section_power">DEVICE POWER</string>
+    <string name="settings_section_account">SESSION &amp; ACCOUNT</string>
+    <string name="settings_section_community">COMMUNITY</string>
+
+    <string name="settings_root_manager">Root Manager</string>
+    <string name="settings_superuser_access">SuperUser (su) Access</string>
+    <string name="settings_storage_permission">Storage Permission</string>
+    <string name="settings_notification_permission">Notification Permission</string>
+    <string name="settings_setup_wizard">Permission Setup Wizard</string>
+    <string name="settings_setup_wizard_hint">Reconfigure root, overlay, storage, and notifications</string>
+    <string name="settings_global_namespace">Global Namespace</string>
+    <string name="settings_global_namespace_hint">Mount namespace shared with system services</string>
+    <string name="settings_legacy_su">Legacy su Compatibility</string>
+    <string name="settings_legacy_su_hint">Provide /system/bin/su symlink</string>
+    <string name="settings_check_updates">Check for Updates</string>
+    <string name="settings_update_hint_idle">Tap to check latest release</string>
+    <string name="settings_update_connecting">Connecting to server…</string>
+    <string name="settings_update_available">New release available: %1$s</string>
+    <string name="settings_update_current">Up to date (%1$s)</string>
+    <string name="settings_update_official">Running official build %1$s</string>
+    <string name="settings_report_bug">Report an Issue / Bug</string>
+    <string name="settings_report_bug_hint">Submit diagnostic logs &amp; crash reports to engineering</string>
+    <string name="settings_reboot">Reboot Device</string>
+    <string name="settings_reboot_hint">System reboot, recovery, bootloader or soft reboot</string>
+    <string name="settings_reboot_title">Select desired reboot mode</string>
+    <string name="settings_reboot_normal">Normal Reboot</string>
+    <string name="settings_reboot_normal_hint">Restart system cleanly</string>
+    <string name="settings_reboot_recovery">Reboot to Recovery</string>
+    <string name="settings_reboot_recovery_hint">Boot into TWRP or OrangeFox recovery</string>
+    <string name="settings_reboot_bootloader">Reboot to Bootloader</string>
+    <string name="settings_reboot_bootloader_hint">Boot into Fastboot mode</string>
+    <string name="settings_reboot_soft">Soft Reboot</string>
+    <string name="settings_reboot_soft_hint">Restart Android runtime (Zygote)</string>
+    <string name="settings_session_active">Session: Active</string>
+    <string name="settings_telegram">Telegram Channel</string>
+    <string name="settings_granted_uid">Granted (uid=0)</string>
+    <string name="settings_denied_root">Denied (Tap to Authorize Root Prompt)</string>
+    <string name="settings_denied_storage">Denied (Tap to Grant All Files Access)</string>
+    <string name="settings_denied_notification">Denied (Tap to Grant Notification)</string>
+    <string name="settings_root_granted">SuperUser (uid=0) authorized!</string>
+    <string name="settings_root_denied">SuperUser request denied.</string>
+
+    <!-- ============================================================
+         Report bug
+         ============================================================ -->
+    <string name="bug_section_environment">SYSTEM ENVIRONMENT</string>
+    <string name="bug_section_details">BUG REPORT DETAILS</string>
+    <string name="bug_auto_metrics">Auto-Detected Metrics</string>
+    <string name="bug_device_format">Device: %1$s • %2$s</string>
+    <string name="bug_kernel_format">Kernel: %1$s • Build: %2$s</string>
+    <string name="bug_issue_title">Issue Title</string>
+    <string name="bug_description">Problem Description &amp; Steps to Reproduce</string>
+    <string name="bug_description_hint">Explain what happened, expected behavior, and error messages…</string>
+    <string name="bug_attach_log">Attach Diagnostic Log</string>
+    <string name="bug_attach_log_hint">Captures kernel dmesg / logcat buffer</string>
+    <string name="bug_submit">SUBMIT BUG REPORT</string>
+    <string name="bug_submitting">Submitting Diagnostic…</string>
+    <string name="bug_success">Bug report submitted successfully! Thank you.</string>
+    <string name="bug_failed">Submission failed</string>
+    <string name="bug_error_title">Please enter an issue title</string>
+    <string name="bug_error_description">Please describe the problem</string>
+    <string name="bug_log_unavailable">Logcat capture unavailable</string>
+
+    <!-- ============================================================
+         Wallet / deposit
+         ============================================================ -->
+    <string name="wallet_balance">WALLET BALANCE</string>
+    <string name="wallet_current_balance">Current Wallet Balance</string>
+    <string name="wallet_add_funds">Add Funds</string>
+    <string name="wallet_direct_gateway">Direct Gateway</string>
+    <string name="wallet_no_records">No records found</string>
+    <string name="wallet_trx_id_format">TrxID: %1$s</string>
+    <string name="wallet_note_format">Note: %1$s</string>
+    <string name="wallet_no_trx">No TrxID provided</string>
+    <string name="wallet_date_format" tools:ignore="TypographyDashes">dd MMM, hh:mm a</string>
+    <string name="wallet_search_hint">Search…</string>
+
+    <string name="deposit_section">DEPOSIT SUBMISSION</string>
+    <string name="deposit_choose_gateway">Choose Payment Gateway</string>
+    <string name="deposit_payment_method">PAYMENT METHOD</string>
+    <string name="deposit_select_method">Select Payment Method</string>
+    <string name="deposit_amount">Amount to Deposit ($)</string>
+    <string name="deposit_amount_hint">Enter USD amount</string>
+    <string name="deposit_account_details">Payment Account Details</string>
+    <string name="deposit_account">Account</string>
+    <string name="deposit_trx_id">Transaction ID (TrxID / Hash)</string>
+    <string name="deposit_trx_hint">Paste transaction identifier</string>
+    <string name="deposit_sender_note">Sender Note / Phone Number (Optional)</string>
+    <string name="deposit_submit">SUBMIT DEPOSIT REQUEST</string>
+    <string name="deposit_submitting">Submitting Deposit…</string>
+    <string name="deposit_success">Deposit request submitted successfully!</string>
+    <string name="deposit_failed">Deposit submission failed</string>
+    <string name="deposit_limits">Limits: $%1$.2f - $%2$.2f USD</string>
+    <string name="deposit_error_amount_range">Amount must be between $%1$.2f and $%2$.2f</string>
+    <string name="deposit_error_amount">Please enter a valid deposit amount</string>
+    <string name="deposit_error_method">Please select a payment gateway</string>
+    <string name="deposit_error_trx">Please enter the Transaction ID (TrxID)</string>
+    <string name="deposit_error_load_methods">Failed to load payment options</string>
+    <string name="deposit_error_no_server">Failed to connect to payment server</string>
+    <string name="deposit_copied">Account details copied!</string>
+
+    <!-- ============================================================
+         Licenses
+         ============================================================ -->
+    <string name="licenses_current_active">Current Active License</string>
+    <string name="licenses_my_keys">MY LICENSE KEYS (%1$d)</string>
+    <string name="licenses_no_licenses">No licenses found</string>
+    <string name="licenses_refresh_keys">Refresh Keys</string>
+    <string name="licenses_copy_key">Copy License Key</string>
+    <string name="licenses_copied">License key copied!</string>
+    <string name="licenses_reset_hwid">Reset HWID</string>
+    <string name="licenses_reset_failed">Reset failed</string>
+    <string name="licenses_hwid_format">HWID: %1$s</string>
+    <string name="licenses_bound_device">Bound Device: %1$s</string>
+    <string name="licenses_unbound">Unbound</string>
+    <string name="licenses_key_label">License Key</string>
+    <string name="licenses_active_plan">Active Plan</string>
+    <string name="licenses_buy_key">Buy VIP Key</string>
+
+    <string name="purchase_title">Purchase License Key</string>
+    <string name="purchase_select_duration">Select Subscription Duration</string>
+    <string name="purchase_available_balance">Your Available Balance</string>
+    <string name="purchase_subtitle">Instant VIP key activation using wallet funds</string>
+    <string name="purchase_buy_now">BUY &amp; ACTIVATE KEY NOW</string>
+    <string name="purchase_processing">Processing Purchase…</string>
+    <string name="purchase_no_plans">No active plans available at this moment.</string>
+    <string name="purchase_load_failed">Failed to load subscription plans</string>
+    <string name="purchase_failed">Failed to purchase plan</string>
+    <string name="purchase_success">VIP key purchased successfully!</string>
+    <string name="purchase_insufficient">Insufficient funds. Required: $%1$s</string>
+
+    <!-- ============================================================
+         Profile
+         ============================================================ -->
+    <string name="profile_authenticated">Authenticated User</string>
+    <string name="profile_refresh_profile">Refresh Profile</string>
+    <string name="profile_refresh_balance">Refresh Balance</string>
+    <string name="profile_section_actions">ACCOUNT ACTIONS</string>
+    <string name="profile_change_password_hint">Update your account password on the server</string>
+    <string name="profile_add_funds_hint">Use Add Funds in menu to deposit balance</string>
+    <string name="profile_no_token">No authorization token found. Please log in again.</string>
+    <string name="profile_backend_failed">Failed to connect to backend server.</string>
+    <string name="profile_active_license_format">Active License: %1$s</string>
+
+    <!-- ============================================================
+         Setup / permissions
+         ============================================================ -->
+    <string name="setup_title">Installation &amp; Setup</string>
+    <string name="setup_section_required">REQUIRED PERMISSIONS &amp; SYSTEM ROOT</string>
+    <string name="setup_section_environment">System Environment</string>
+    <string name="setup_root_access">Superuser (Root) Access</string>
+    <string name="setup_root_hint">Download, extract (.zip) &amp; load engine</string>
+    <string name="setup_overlay">Display Over Other Apps</string>
+    <string name="setup_overlay_hint">Required for floating menu overlay</string>
+    <string name="setup_storage">Storage &amp; Files Management</string>
+    <string name="setup_storage_hint">Required for RAM allocation (%1$s)</string>
+    <string name="setup_notifications">Background Notifications</string>
+    <string name="setup_notifications_hint">Background daemon alerts &amp; download tracking</string>
+    <string name="setup_complete">Complete Setup &amp; Continue</string>
+    <string name="setup_all_granted">Active &amp; Allowed</string>
+    <string name="setup_full_access">Full Access Granted</string>
+    <string name="setup_root_granted_format">Granted (%1$s)</string>
+    <string name="setup_root_denied_format">Root manager: %1$s (Access denied)</string>
+    <string name="setup_root_granted_toast">Root granted!</string>
+    <string name="setup_root_denied_toast">Root request denied (%1$s)</string>
+    <string name="setup_logo">Logo</string>
+
+    <!-- ============================================================
+         Mod dialogs
+         ============================================================ -->
+    <string name="dialog_root_required">Root Privilege Required</string>
+    <string name="dialog_auth_required">Authentication Required</string>
+    <string name="dialog_auth_success">Authentication Successful</string>
+    <string name="dialog_license_key">License Key</string>
+    <string name="dialog_license_hint">NINMODS Official In-Memory Engine requires an active commercial license key.</string>
+    <string name="dialog_show_key">Show Key</string>
+    <string name="dialog_hide_key">Hide Key</string>
+    <string name="dialog_license_verified">License key verified! In-memory engine authorized and ready to load into RAM.</string>
+    <string name="dialog_download_title">Downloading Mod</string>
+    <string name="dialog_download_external">Download External Mod</string>
+    <string name="dialog_connecting_mirror">Connecting to secure download mirror…</string>
+    <string name="dialog_confirm_download">Do you want to download \&quot;%1$s\&quot;?</string>
+    <string name="dialog_confirm_stop">Do you want to stop \&quot;%1$s\&quot;?</string>
+    <string name="dialog_stop_mod">Stop Mod</string>
+    <string name="dialog_terminal_stream">LIVE TERMINAL STREAM</string>
+    <string name="dialog_terminal_authorized">TERMINAL: AUTHORIZED</string>
+    <string name="dialog_verifying_license">[*] Verifying license key with authorization server…</string>
+    <string name="dialog_sync_handshake">[*] Synchronizing secure handshake…</string>
+    <string name="dialog_license_authorized">[+] Cloud License Authorized!</string>
+    <string name="dialog_license_ready">[+] Ready to load into memory.</string>
+    <string name="dialog_license_validated">[+] License validated! Engine authorized and ready.</string>
+    <string name="dialog_kernel_driver_missing">Kernel Driver Missing: %1$s\n\nPlease load your matching kernel driver in the Driver Loader tab before starting NinMods Kernel.</string>
+    <string name="dialog_kernel_engine_error">Kernel Engine Error: %1$s\n\nPlease ensure Superuser is granted and a compatible kernel driver is loaded.</string>
+    <string name="dialog_root_denied_message">Superuser Denied: Root access (APatch or KernelSU) is mandatory to interact with the Ring 0 kernel driver and render the floating overlay.</string>
+    <string name="dialog_server_rejected">Server verification rejected license key.</string>
+
+    <!-- ============================================================
+         Sheet / picker
+         ============================================================ -->
+    <string name="sheet_selected">Selected</string>
+    <string name="sheet_no_items">No items available to display.</string>
+
+    <!-- ============================================================
+         Errors
+         ============================================================ -->
+    <string name="error_generic">Something went wrong</string>
+    <string name="error_network">Server unreachable. Check your connection.</string>
+    <string name="error_session_expired">Session expired. Please sign in again.</string>
+    <string name="error_root_required">Superuser access is required for this action</string>
+    <string name="error_storage_permission">Storage access is required</string>
+    <string name="error_press_back_exit">Press back again to exit</string>
+    <string name="error_invalid_api_key">Invalid API key</string>
+    <string name="error_session_revoked">SESSION_REVOKED</string>
+    <string name="error_token_expired">token expired</string>
+    <string name="error_unauthorized">Unauthorized</string>
+
+    <!-- ============================================================
+         Content descriptions
+         ============================================================ -->
+    <string name="cd_logo">Logo</string>
+    <string name="cd_user_avatar">User Avatar</string>
+    <string name="cd_license_timer">License Timer</string>
+    <string name="cd_profile">Profile</string>
+    <string name="cd_notifications">Notifications</string>
+    <string name="cd_status_dot">Status</string>
+    <string name="cd_kernel_icon">Kernel mod icon</string>
+    <string name="cd_external_icon">External mod icon</string>
+
 </resources>

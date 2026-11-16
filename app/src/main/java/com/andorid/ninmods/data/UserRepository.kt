@@ -2,9 +2,6 @@ package com.andorid.ninmods.data
 
 import com.andorid.ninmods.network.AuthApiClient
 import com.andorid.ninmods.network.UserProfileData
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
@@ -20,10 +17,6 @@ import kotlinx.coroutines.sync.withLock
  */
 object UserRepository {
 
-    // Reactive StateFlow for Compose UI subscriptions
-    private val _profileState = MutableStateFlow<UserProfileData?>(null)
-    val profileState: StateFlow<UserProfileData?> = _profileState.asStateFlow()
-
     // In-memory cache store
     private var cachedProfile: UserProfileData? = null
     private var cachedEtag: String? = null
@@ -38,7 +31,7 @@ object UserRepository {
     /**
      * Get the cached profile immediately (0ms latency, zero network).
      */
-    fun getCachedProfile(): UserProfileData? = cachedProfile ?: _profileState.value
+    fun getCachedProfile(): UserProfileData? = cachedProfile
 
     /**
      * Fetch user profile with intelligent caching & request deduplication.
@@ -72,7 +65,6 @@ object UserRepository {
                         cachedProfile = data
                         cachedEtag = newEtag ?: cachedEtag
                         lastFetchTimestamp = System.currentTimeMillis()
-                        _profileState.value = data
                         Result.success(data)
                     } else if (cachedProfile != null) {
                         Result.success(cachedProfile!!)
@@ -110,15 +102,7 @@ object UserRepository {
      */
     fun seedProfile(profile: UserProfileData) {
         cachedProfile = profile
-        _profileState.value = profile
         lastFetchTimestamp = System.currentTimeMillis()
-    }
-
-    /**
-     * Invalidate cache to force fresh inquiry on next fetch (e.g. on license activation).
-     */
-    fun invalidate() {
-        lastFetchTimestamp = 0L
     }
 
     /**
@@ -128,6 +112,5 @@ object UserRepository {
         cachedProfile = null
         cachedEtag = null
         lastFetchTimestamp = 0L
-        _profileState.value = null
     }
 }

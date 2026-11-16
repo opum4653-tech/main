@@ -47,4 +47,7 @@
 # Keep Kotlin intrinsics and metadata safe
 -dontwarn kotlin.**
 -dontwarn kotlinx.**
+-dontwarn com.topjohnwu.**
+-dontwarn org.jetbrains.annotations.**
 -keepattributes *Annotation*
+-keepattributes InnerClasses,EnclosingMethod

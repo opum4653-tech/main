@@ -9,7 +9,7 @@ This file serves as the permanent persistent memory and historical engineering l
 - **Repository:** `opum4653-tech/main` (Branch: `main`)
 - **Package Name:** `com.andorid.ninmods`
 - **Application Role:** Superuser Root Game Overlay Launcher & Driver Bridge
-- **Current Version:** `v1.5.4` (Build Code: 154)
+- **Current Version:** `v1.5.6` (Build Code: 156)
 - **Primary Backend:** `https://ninmods.smmtor.com`
 - **Base UI Theme:** Material 3 Dark Palette modeled after official APatch Android client.
 
@@ -17,24 +17,25 @@ This file serves as the permanent persistent memory and historical engineering l
 
 ## 2. Key Architectural Invariants & Decisions
 
-### Decision 1: Pure APatch Material 3 UI Styling
+### Decision 1: Pure APatch Material 3 UI Styling (XML View System)
 - **Context:** Previously, miscellaneous screens introduced disparate styling (bright pink buttons, custom font weights, custom elevation shadows, disparate card radii).
-- **Resolution:** Enforced uniform APatch theme across all screens.
-  - Background surface: `MaterialTheme.colorScheme.surfaceVariant`
-  - Child cards: `MaterialTheme.colorScheme.surface` with `RoundedCornerShape(20.dp)`
-  - Action buttons: Pill buttons with `RoundedCornerShape(12.dp)` or `16.dp`
-  - Elevations: Flat `0.dp` across all cards.
-  - Sub-screen topbars: Managed solely by `MainAppScreen.kt` global scaffold.
+- **Resolution:** Enforced uniform APatch theme across all screens, but expressed entirely through XML resources and the Android View system — Compose is gone from the project.
+  - Background surface: `@color/nin_background`
+  - Child cards: `@style/Widget.Nin.Card.Inner` on `MaterialCardView`, flat elevation
+  - Action buttons: `@style/Widget.Nin.Button.Primary` / `.Outline`, pill corner shape
+  - Typography: `Text.Nin.*` style family mapped to Material 3 text appearances
+  - Sub-screen topbars: managed solely by `activity_main.xml`'s toolbar + `MainActivity.openSubScreen()`
 
 ### Decision 2: Minimalist Dashboard & Auxiliary Drawer Allocation
 - **Context:** Overcrowded dashboard cluttered with DenyList and Anti-Blacklist cards.
-- **Resolution:** Purged all auxiliary cards from `DashboardScreen.kt`.
+- **Resolution:** Purged all auxiliary cards from the dashboard.
   - The Dashboard is strictly reserved for:
     1. Active Broadcast Announcement (if present)
     2. Digital License Countdown Clock
     3. Kernel Mod Card (Cyber Purple)
     4. External Mod Card (Cyan Blue)
   - `Daily List` (Root Cloak / DenyList) and `Anti-Blacklist & IMEI` are strictly navigated via Drawer items 6 and 7.
+  - Compiled in XML as `fragment_dashboard.xml` hosted by `DashboardFragment.kt`.
 
 ### Decision 3: Device Identity Engine — Real Hardware Lockdown
 - **Context:** Previous spoofer implementation provided foreign brand presets (Google Pixel, Samsung S24 Ultra, OnePlus 12).
@@ -72,9 +73,9 @@ This file serves as the permanent persistent memory and historical engineering l
   4. **Sanitized User Feedback:** Error messages no longer leak raw filesystem paths to toasts.
 
 ### Incident 2: Sub-Screen Duplicate Header & Navigation Collision
-- **Symptoms:** Navigating to `DeviceIdentityScreen` displayed two stacked topbars with two back arrow buttons.
-- **Root Cause:** `DeviceIdentityScreen.kt` declared an internal `TopAppBar` while `MainAppScreen.kt` was simultaneously rendering the global topbar because `isSubScreen` was true.
-- **Fix:** Removed internal `TopAppBar` from `DeviceIdentityScreen.kt`. Global scaffold now cleanly manages title and back navigation.
+- **Symptoms:** Navigating to the identity screen displayed two stacked topbars with two back arrow buttons.
+- **Root Cause:** The identity screen rendered its own top bar while `MainActivity` was simultaneously rendering the global topbar because the destination was a sub-screen.
+- **Fix:** Sub-screens no longer render a top bar. `MainActivity.openSubScreen()` owns title, back arrow and the action menu for every pushed fragment. `fragment_identity.xml` deliberately carries no toolbar.
 
 ---
 
@@ -82,29 +83,32 @@ This file serves as the permanent persistent memory and historical engineering l
 
 | Component | File Path | Primary Role |
 | :--- | :--- | :--- |
-| `MainAppScreen` | `ui/compose/MainAppScreen.kt` | Root scaffold, navigation drawer, global topbar, back press handler |
-| `DashboardScreen` | `ui/dashboard/DashboardScreen.kt` | Minimalist dashboard host (Broadcast, Clock, Kernel Mod, External Mod) |
-| `KernelModsCard` | `ui/dashboard/kernel_mods/KernelModsCard.kt` | Cyber Purple card, root daemon bridge, floating overlay loader |
-| `ExternalModsCard` | `ui/dashboard/external_mods/ExternalModsCard.kt` | Cyan Blue card, user-space in-memory overlay loader |
-| `DeviceIdentityScreen` | `ui/identity/DeviceIdentityScreen.kt` | Anti-Blacklist UI, real brand/model lock, dynamic hardware spoofer |
+| `MainActivity` | `ui/MainActivity.kt` | Drawer shell, `Destination` enum, `FragmentContainerView` host, back handling, session verify |
+| `LoginActivity` | `ui/login/LoginActivity.kt` | Auth host (LAUNCHER), swaps Login/Signup/ForgotPassword fragments |
+| `DashboardFragment` | `ui/dashboard/DashboardFragment.kt` | Minimalist dashboard: broadcast, clock, kernel mod, external mod |
+| `LoaderFragment` | `ui/loader/LoaderFragment.kt` | Kernel release readout, driver/root state, QX + RT modes, terminal |
+| `DenyListFragment` | `ui/denylist/DenyListFragment.kt` | Root cloak: environment readout, global switch, per-process isolation |
+| `IdentityFragment` | `ui/identity/IdentityFragment.kt` | Anti-Blacklist UI, real brand/model lock, dynamic hardware spoofer |
+| `ModEngine` / `ModRuntime` | `ui/mod/ModEngine.kt`, `ui/mod/ModRuntime.kt` | Per-variant scan/self-heal/download/launch; one bridge per variant |
+| `ModFlowDialog` | `ui/dialogs/ModFlowDialog.kt` | Six-stage mod launch state machine |
 | `DeviceIdentityManager` | `data/DeviceIdentityManager.kt` | SSAID XML injection, Luhn IMEI generator, resetprop masking, token cleaner |
 | `ModDownloader` | `data/ModDownloader.kt` | Resilient package downloader, cache buffering, self-healing root unpacker |
 | `InteractiveProcessBridge` | `data/InteractiveProcessBridge.kt` | Su process lifecycle, terminal stdout pipe, stdin auth injection |
-| `LicenseClockCard` | `ui/clock/LicenseClockCard.kt` | Real-time digital expiry countdown clock |
+| `LicenseClock` | `ui/clock/LicenseClock.kt` | Monotonic per-second expiry countdown flow |
 
 ---
 
 ## 5. UI Layout Breaking Bugs & Path Toast Fixes
 
-### Bug 1: Filter Chips Vertical Letter Wrapping (`AddFundsScreen.kt` & `UserSupportScreen.kt`)
+### Bug 1: Filter Chips Vertical Letter Wrapping (wallet & support screens)
 - **Symptoms:** Filter chips (e.g. `REJECTED`, `ANSWERED`) collapsed horizontally into 1-character columns on standard DPI devices.
-- **Root Cause:** Filter chip rows lacked `Modifier.horizontalScroll(rememberScrollState())` and chip label texts lacked `maxLines = 1, softWrap = false`.
-- **Fix:** Added `Modifier.horizontalScroll(rememberScrollState())` and strict `maxLines = 1, softWrap = false` to all filter tab rows. Also added `formatTransactionDate` to convert raw UTC ISO timestamps into human-readable date/time (`dd MMM, hh:mm a`).
+- **Root Cause:** The chip rows were laid out in a wrapping container without a scroll axis, and chip labels had no line limit.
+- **Fix:** In the XML rebuild the filter chips were folded into the search/pull-to-refresh model (`fragment_support.xml` keeps a single `input_search`, `fragment_add_funds.xml` shows the full ledger). Every remaining label that can wrap carries `android:maxLines="1"` and is inside a `NestedScrollView`, so no chip can be squeezed into a character column. Date formatting lives in the row adapter (`TransactionAdapter.formatDate`) and converts raw UTC timestamps into `dd MMM, hh:mm a`.
 
-### Bug 2: "Randomize All" Button Text Clipping (`DeviceIdentityScreen.kt`)
+### Bug 2: "Randomize All" Button Text Clipping (identity screen)
 - **Symptoms:** The "Randomize All" button clipped the bottom word ("All" -> `^ll`).
-- **Root Cause:** Hardcoded `height(44.dp)` combined with M3 default `horizontalPadding(24.dp)` forced text onto 2 lines, which the fixed height clipped.
-- **Fix:** Added `contentPadding = PaddingValues(horizontal = 8.dp, vertical = 0.dp)`, `labelMedium` font style, and `maxLines = 1, softWrap = false, overflow = TextOverflow.Ellipsis`.
+- **Root Cause:** A fixed `44dp` height combined with the Material default horizontal padding forced the label onto two lines, which the fixed height clipped.
+- **Fix:** `fragment_identity.xml` uses `android:minHeight` instead of a fixed height, `android:maxLines="1"`, `android:singleLine="true"`, `android:ellipsize="end"`, and a `Text.Nin.*` label style. No fixed height anywhere on that button.
 
 ### Bug 3: Raw Internal File Path Toast on Mod Download Error
 - **Symptoms:** Downloading a mod on a device with restrictive root permissions displayed a raw system path toast (`/data/user/0/com.andorid.ninmods/files/kern...`).

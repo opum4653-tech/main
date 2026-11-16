@@ -43,13 +43,6 @@ data class AppVersionData(
     val isForceUpdate: Boolean
 )
 
-data class AppConfigData(
-    val maintenanceMode: Boolean,
-    val maintenanceMessage: String,
-    val brandName: String,
-    val telegramSupport: String
-)
-
 data class UserTicketItem(
     val id: Int,
     val subject: String,
@@ -414,13 +407,6 @@ object AuthApiClient {
     }
 
     /**
-     * Backward-compatible getProfile call routed via UserRepository for caching
-     */
-    suspend fun getProfile(apiKey: String): Result<UserProfileData> {
-        return com.andorid.ninmods.data.UserRepository.getProfile(apiKey)
-    }
-
-    /**
      * GET /api/v2/app/version (Check for official software updates)
      */
     suspend fun checkAppVersion(appType: String = "loader"): Result<AppVersionData> = withContext(Dispatchers.IO) {
@@ -446,88 +432,52 @@ object AuthApiClient {
     }
 
     /**
-     * POST /api/v2/app/heartbeat (Sync license timer with server in real time)
-     */
-    suspend fun sendHeartbeat(
-        licenseKey: String,
-        hwid: String,
-        sessionToken: String = ""
-    ): Result<Long> = withContext(Dispatchers.IO) {
-        try {
-            val payload = JSONObject().apply {
-                put("license_key", licenseKey.trim())
-                put("hwid", hwid.trim())
-                if (sessionToken.isNotBlank()) put("session_token", sessionToken.trim())
-            }
-            val (code, responseBody) = sendPostRequest(AppConfig.APP_HEARTBEAT_URL, payload.toString())
-            val json = parseJsonResponse(responseBody, code)
-            if (code in 200..299 && (json.optBoolean("success", false) || json.optString("status") == "active")) {
-                val remSec = json.optLong("remaining_seconds", 0L)
-                Result.success(remSec)
-            } else {
-                val err = json.optString("message", json.optString("error", "Heartbeat failed"))
-                Result.failure(Exception(err))
-            }
-        } catch (e: Exception) {
-            Result.failure(Exception(sanitizeNetworkException(e)))
-        }
-    }
-
-    /**
-     * GET /api/v2/app/config (Check maintenance mode and server announcements)
-     */
-    suspend fun fetchAppConfig(): Result<AppConfigData> = withContext(Dispatchers.IO) {
-        try {
-            val (code, responseBody) = sendGetRequest("${AppConfig.API_BASE_URL}/app/config")
-            val json = parseJsonResponse(responseBody, code)
-            if (code in 200..299 && json.optBoolean("success", false)) {
-                val brand = json.optJSONObject("brand")
-                val config = AppConfigData(
-                    maintenanceMode = json.optBoolean("maintenance_mode", false),
-                    maintenanceMessage = json.optString("maintenance_message", ""),
-                    brandName = brand?.optString("name", "NINMODS") ?: "NINMODS",
-                    telegramSupport = brand?.optString("telegram_support", "https://t.me/ninmods") ?: "https://t.me/ninmods"
-                )
-                Result.success(config)
-            } else {
-                Result.failure(Exception(json.optString("error", "Failed to retrieve configuration")))
-            }
-        } catch (e: Exception) {
-            Result.failure(Exception(sanitizeNetworkException(e)))
-        }
-    }
-
-    /**
      * POST /api/v2/app/bug-report (Send crash diagnostics to systems engineering)
      */
     suspend fun submitBugReport(
-        licenseKey: String,
-        hwid: String,
+        title: String,
+        description: String,
         deviceModel: String,
+        androidVersion: String,
+        appVersion: String,
         kernelVersion: String,
-        logcatTrace: String,
-        description: String
-    ): Result<String> = withContext(Dispatchers.IO) {
+        isRoot: Boolean,
+        licenseKey: String? = null,
+        hwid: String? = null,
+        logcatTrace: String? = null,
+        userId: Int? = null
+    ): Result<BasicResponse> = withContext(Dispatchers.IO) {
         try {
             val payload = JSONObject().apply {
-                put("license_key", licenseKey.trim())
-                put("hwid", hwid.trim())
-                put("device_model", deviceModel.trim())
-                put("android_version", android.os.Build.VERSION.RELEASE)
-                put("kernel_version", kernelVersion.trim())
-                put("logcat_trace", logcatTrace)
+                put("title", title.trim())
                 put("description", description.trim())
+                put("device_model", deviceModel)
+                put("android_version", androidVersion)
+                put("app_version", appVersion)
+                put("kernel_version", kernelVersion)
+                put("is_root", if (isRoot) 1 else 0)
+                if (!licenseKey.isNullOrBlank()) put("license_key", licenseKey)
+                if (!hwid.isNullOrBlank()) put("hwid", hwid)
+                if (!logcatTrace.isNullOrBlank()) put("logcat_trace", logcatTrace)
+                if (userId != null && userId > 0) put("user_id", userId)
             }
-            val (code, responseBody) = sendPostRequest("${AppConfig.API_BASE_URL}/app/bug-report", payload.toString())
-            val json = parseJsonResponse(responseBody, code)
-            if (code in 200..299 && json.optBoolean("success", false)) {
-                val msg = json.optString("message", "Bug report received successfully.")
-                Result.success(msg)
+
+            val (code, body) = sendPostRequest(AppConfig.BUG_REPORT_URL, payload.toString())
+            if (code in 200..299) {
+                val json = JSONObject(body)
+                Result.success(
+                    BasicResponse(
+                        success = json.optBoolean("success", true),
+                        message = json.optString("message", "Bug report received successfully.")
+                    )
+                )
             } else {
-                Result.failure(Exception(json.optString("error", "Bug report submission failed")))
+                val json = runCatching { JSONObject(body) }.getOrNull()
+                val errMsg = json?.optString("error") ?: "Server returned error ($code)"
+                Result.failure(Exception(errMsg))
             }
         } catch (e: Exception) {
-            Result.failure(Exception(sanitizeNetworkException(e)))
+            Result.failure(e)
         }
     }
 
@@ -686,56 +636,6 @@ object AuthApiClient {
                 Result.success(list)
             } else {
                 Result.failure(Exception("Failed to fetch notifications: HTTP ${response.code}"))
-            }
-        } catch (e: Exception) {
-            Result.failure(e)
-        }
-    }
-
-    /**
-     * POST /api/v2/app/bug-report
-     */
-    suspend fun submitBugReport(
-        title: String,
-        description: String,
-        deviceModel: String,
-        androidVersion: String,
-        appVersion: String,
-        kernelVersion: String,
-        isRoot: Boolean,
-        licenseKey: String? = null,
-        hwid: String? = null,
-        logcatTrace: String? = null,
-        userId: Int? = null
-    ): Result<BasicResponse> = withContext(Dispatchers.IO) {
-        try {
-            val payload = JSONObject().apply {
-                put("title", title.trim())
-                put("description", description.trim())
-                put("device_model", deviceModel)
-                put("android_version", androidVersion)
-                put("app_version", appVersion)
-                put("kernel_version", kernelVersion)
-                put("is_root", if (isRoot) 1 else 0)
-                if (!licenseKey.isNullOrBlank()) put("license_key", licenseKey)
-                if (!hwid.isNullOrBlank()) put("hwid", hwid)
-                if (!logcatTrace.isNullOrBlank()) put("logcat_trace", logcatTrace)
-                if (userId != null && userId > 0) put("user_id", userId)
-            }
-
-            val (code, body) = sendPostRequest(AppConfig.BUG_REPORT_URL, payload.toString())
-            if (code in 200..299) {
-                val json = JSONObject(body)
-                Result.success(
-                    BasicResponse(
-                        success = json.optBoolean("success", true),
-                        message = json.optString("message", "Bug report received successfully.")
-                    )
-                )
-            } else {
-                val json = runCatching { JSONObject(body) }.getOrNull()
-                val errMsg = json?.optString("error") ?: "Server returned error ($code)"
-                Result.failure(Exception(errMsg))
             }
         } catch (e: Exception) {
             Result.failure(e)

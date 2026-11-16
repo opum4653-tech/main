@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:gravity="center_vertical"
+    android:minHeight="@dimen/touch_target"
+    android:orientation="horizontal"
+    android:paddingStart="@dimen/space_sm"
+    android:paddingTop="@dimen/space_xs"
+    android:paddingEnd="@dimen/space_sm"
+    android:paddingBottom="@dimen/space_xs">
+
+    <TextView
+        android:id="@+id/process_name"
+        style="@style/Text.Nin.Value"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:textSize="@dimen/text_caption" />
+
+    <com.google.android.material.materialswitch.MaterialSwitch
+        android:id="@+id/process_switch"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:minWidth="@dimen/touch_target" />
+
+</LinearLayout>

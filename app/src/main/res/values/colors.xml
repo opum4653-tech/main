@@ -1,6 +1,54 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- APatch Dark Color Palette (Material Design 3) -->
+
+    <!-- Base surface ladder. Ordered darkest to lightest. -->
+    <color name="nin_background">#121316</color>
+    <color name="nin_surface">#1A1C1E</color>
+    <color name="nin_surface_variant">#24262A</color>
+    <color name="nin_surface_raised">#2C2F34</color>
+    <color name="nin_terminal_bg">#0D0E11</color>
+
+    <!-- Accents -->
+    <color name="nin_primary">#D0BCFF</color>
+    <color name="nin_on_primary">#381E72</color>
+    <color name="nin_primary_container">#4F378B</color>
+    <color name="nin_on_primary_container">#EADDFF</color>
+    <color name="nin_secondary">#CCC2DC</color>
+    <color name="nin_on_secondary">#332D41</color>
+    <color name="nin_tertiary">#EFB8C8</color>
+    <color name="nin_on_tertiary">#492532</color>
+
+    <!-- Text -->
+    <color name="nin_text_primary">#E3E2E6</color>
+    <color name="nin_text_secondary">#C4C6D0</color>
+    <color name="nin_text_disabled">#6E7079</color>
+    <color name="nin_outline">#44474F</color>
+    <color name="nin_outline_variant">#2E3135</color>
+
+    <!-- Semantic states -->
+    <color name="nin_success">#81C784</color>
+    <color name="nin_success_container">#1B3721</color>
+    <color name="nin_warning">#FFB74D</color>
+    <color name="nin_warning_container">#3A2A0F</color>
+    <color name="nin_error">#FFB4AB</color>
+    <color name="nin_error_container">#93000A</color>
+    <color name="nin_info">#9ECAFF</color>
+    <color name="nin_info_container">#00497D</color>
+
+    <!-- Mod card identity accents (kernel = violet, external = cyan) -->
+    <color name="nin_kernel_accent">#B388FF</color>
+    <color name="nin_kernel_ring">#7C4DFF</color>
+    <color name="nin_external_accent">#4DD0E1</color>
+    <color name="nin_external_ring">#00ACC1</color>
+
+    <!-- Terminal log levels -->
+    <color name="nin_log_system">#9ECAFF</color>
+    <color name="nin_log_root">#81C784</color>
+    <color name="nin_log_error">#FFB4AB</color>
+    <color name="nin_log_cancel">#FFB74D</color>
+    <color name="nin_log_default">#C4C6D0</color>
+
+    <!-- Legacy aliases kept because themes.xml and the Compose palette reference them -->
     <color name="apatch_background">#121316</color>
     <color name="apatch_surface">#1A1C1E</color>
     <color name="apatch_surface_variant">#24262A</color>
@@ -15,4 +63,10 @@
     <color name="apatch_error_container">#93000A</color>
     <color name="apatch_outline">#44474F</color>
     <color name="apatch_terminal_bg">#0D0E11</color>
+
+    <!-- Transparent helpers for ripple-less selectable rows -->
+    <color name="nin_transparent">#00000000</color>
+    <color name="nin_scrim">#99000000</color>
+    <color name="nin_ripple">#33D0BCFF</color>
+
 </resources>

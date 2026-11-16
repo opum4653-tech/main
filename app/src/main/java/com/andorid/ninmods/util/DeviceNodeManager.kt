@@ -57,8 +57,4 @@ object DeviceNodeManager {
 
         return found.distinct()
     }
-
-    fun isDriverActive(): Boolean {
-        return checkActiveNodes().isNotEmpty()
-    }
 }

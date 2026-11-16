@@ -1,4 +1,4 @@
-name: Build Driver Loader APK
+name: Build NinMods APK
 
 on:
   push:
@@ -7,6 +7,10 @@ on:
   pull_request:
     branches: [ main, master ]
   workflow_dispatch:
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build:
@@ -21,92 +25,92 @@ jobs:
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
-          distribution: 'temurin'
+          distribution: temurin
           java-version: '17'
 
-      - name: Install Gradle 8.2
-        run: |
-          mkdir -p /tmp/gradle_dist
-          echo "Downloading Gradle 8.2 distribution from mirror..."
-          curl -L --retry 5 --retry-delay 2 "https://mirrors.cloud.tencent.com/gradle/gradle-8.2-bin.zip" -o /tmp/gradle_dist/gradle-8.2-bin.zip
-          unzip -q /tmp/gradle_dist/gradle-8.2-bin.zip -d /tmp/gradle_dist/
-          echo "Gradle 8.2 unpacked successfully:"
-          /tmp/gradle_dist/gradle-8.2/bin/gradle -v
-
-      - name: Setup Android SDK
+      - name: Set up Android SDK
         uses: android-actions/setup-android@v4
-        with:
-          packages: ''
 
-      - name: Clean Local Properties & Accept Licenses
+      - name: Install SDK packages
+        run: |
+          sdkmanager --install "platform-tools" "platforms;android-34" "build-tools;34.0.0"
+          yes | sdkmanager --licenses > /dev/null 2>&1 || true
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Prepare local.properties
         run: |
           rm -f local.properties
-          yes | sdkmanager --licenses || true
+          printf 'sdk.dir=%s\n' "$ANDROID_HOME" > local.properties
+          cat local.properties
 
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      - name: Build with Gradle
-        run: |
-          set -o pipefail
-          echo "org.gradle.jvmargs=-Xmx2048m" >> gradle.properties
-          /tmp/gradle_dist/gradle-8.2/bin/gradle assembleRelease --stacktrace --no-daemon 2>&1 | tee build.log
+      - name: Build debug
+        run: ./gradlew :app:assembleDebug --stacktrace --no-daemon
 
-      - name: Check Build Status
+      - name: Build release
+        continue-on-error: true
+        run: ./gradlew :app:assembleRelease --stacktrace --no-daemon
+
+      - name: Collect APKs
+        id: apk
+        if: always()
         run: |
-          if ! ls app/build/outputs/apk/release/*.apk 1> /dev/null 2>&1; then
-            echo "ERROR: Release APK was not generated!"
+          set -e
+          mkdir -p out
+          find app/build/outputs/apk -name '*.apk' -exec cp {} out/ \;
+          ls -lh out || true
+          COUNT=$(ls out/*.apk 2>/dev/null | wc -l)
+          echo "count=$COUNT" >> "$GITHUB_OUTPUT"
+          if [ "$COUNT" -eq 0 ]; then
+            echo "::error::No APK was produced by either variant"
             exit 1
           fi
-          echo "SUCCESS: Found APK:"
-          ls -lh app/build/outputs/apk/release/*.apk
 
-      - name: Upload Build Log Artifact
+      - name: Resolve version
+        id: ver
         if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: build-log
-          path: build.log
-
-      - name: Upload Release Artifact
-        if: success()
-        uses: actions/upload-artifact@v4
-        with:
-          name: DriverLoader-Release
-          path: app/build/outputs/apk/release/*.apk
-          retention-days: 14
-
-      - name: Resolve Release Tag
-        id: release_tag
         run: |
-          if [ "${{ startsWith(github.ref, 'refs/tags/') }}" = "true" ]; then
-            echo "tag=${{ github.ref_name }}" >> $GITHUB_OUTPUT
+          NAME=$(grep -m1 'versionName = ' app/build.gradle.kts | sed 's/.*"\(.*\)".*/\1/')
+          CODE=$(grep -m1 'versionCode = ' app/build.gradle.kts | sed 's/[^0-9]//g')
+          echo "name=$NAME" >> "$GITHUB_OUTPUT"
+          echo "code=$CODE" >> "$GITHUB_OUTPUT"
+
+      - name: Upload APK artifact
+        if: always() && steps.apk.outputs.count != '0'
+        uses: actions/upload-artifact@v4
+        with:
+          name: NinMods-${{ steps.ver.outputs.name }}-${{ steps.ver.outputs.code }}
+          path: out/*.apk
+          retention-days: 30
+
+      - name: Resolve release tag
+        id: tag
+        if: always()
+        run: |
+          if [[ "${{ github.ref }}" == refs/tags/* ]]; then
+            echo "tag=${{ github.ref_name }}" >> "$GITHUB_OUTPUT"
           else
-            VER=$(grep 'versionName = ' app/build.gradle.kts | head -n 1 | sed 's/.*"\(.*\)".*/\1/')
-            echo "tag=v${VER}" >> $GITHUB_OUTPUT
+            echo "tag=v${{ steps.ver.outputs.name }}" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Publish to GitHub Releases
-        if: success() && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/'))
+      - name: Publish release
+        if: success() && github.event_name != 'pull_request' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/'))
         uses: ncipollo/release-action@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          tag: ${{ steps.release_tag.outputs.tag }}
-          name: "NINMODS Official Release ${{ steps.release_tag.outputs.tag }}"
+          tag: ${{ steps.tag.outputs.tag }}
+          name: NinMods ${{ steps.tag.outputs.tag }}
           body: |
-            ## NINMODS Official Release
-            - **SUPER MODS Native Floating Engine**:
-              - In-app license check, zero separate APK install.
-              - Native Canvas ESP & aim tracking engine running directly inside loader.
-              - Unified card design with 1-tap launch, stop, and update.
-            - **Official Magisk DenyList Manager**:
-              - Real root-level Zygote namespace isolation using topjohnwu LibSu.
-              - 1-tap Auto-Cloak for Free Fire, Free Fire MAX, and Google Play Services.
-              - Component-level process scanner with individual checkboxes.
-            - **Harmonized Card Design & Typography**:
-              - 100% adherence to official MaterialTheme design system.
-              - Clean layout matching Kernel Mod and External Mod cards.
-          artifacts: "app/build/outputs/apk/release/*.apk"
+            NinMods ${{ steps.ver.outputs.name }} (build ${{ steps.ver.outputs.code }})
+
+            - Java/Kotlin View-system rebuild: every screen is an XML layout hosted by a real Android component.
+            - Driver loader, overlay engine, denylist cloak and identity spoofer unchanged.
+            - Compose removed from the dependency graph.
+          artifacts: out/*.apk
           allowUpdates: true
           replacesArtifacts: true
           makeLatest: true

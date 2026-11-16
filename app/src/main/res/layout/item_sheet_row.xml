@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/sheet_row_root"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bg_row_selectable"
+    android:gravity="center_vertical"
+    android:minHeight="@dimen/row_min_height"
+    android:orientation="horizontal"
+    android:paddingStart="@dimen/screen_gutter_wide"
+    android:paddingEnd="@dimen/screen_gutter_wide">
+
+    <ImageView
+        android:id="@+id/sheet_row_icon"
+        android:layout_width="@dimen/icon_md"
+        android:layout_height="@dimen/icon_md"
+        android:contentDescription="@string/sheet_selected"
+        android:src="@drawable/ic_check_circle"
+        app:tint="@color/nin_primary"
+/>
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/space_md"
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:paddingTop="@dimen/space_sm"
+        android:paddingBottom="@dimen/space_sm">
+
+        <TextView
+            android:id="@+id/sheet_row_title"
+            style="@style/Text.Nin.ItemTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ellipsize="middle"
+            android:maxLines="1" />
+
+        <TextView
+            android:id="@+id/sheet_row_subtitle"
+            style="@style/Text.Nin.Caption"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_xxs"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:visibility="gone" />
+
+    </LinearLayout>
+
+</LinearLayout>

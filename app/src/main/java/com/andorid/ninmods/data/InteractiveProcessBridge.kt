@@ -44,9 +44,6 @@ class InteractiveProcessBridge(
     private val _outputLines = MutableSharedFlow<String>(extraBufferCapacity = 64)
     val outputLines: SharedFlow<String> = _outputLines.asSharedFlow()
 
-    private val _executionStatus = MutableStateFlow<String?>(null)
-    val executionStatus: StateFlow<String?> = _executionStatus.asStateFlow()
-
     /**
      * Start root execution of a script or binary file.
      */
@@ -63,7 +60,6 @@ class InteractiveProcessBridge(
         scope.launch(Dispatchers.IO) {
             try {
                 userRequestedStop = false
-                _executionStatus.value = "Starting execution..."
                 _licensePromptTriggered.value = false
                 _isReadyToStart.value = false
 
@@ -162,21 +158,17 @@ class InteractiveProcessBridge(
                                 (window.contains("Active", ignoreCase = true) && window.contains("Runtime", ignoreCase = true))
                             ) {
                                 _isRunning.value = true
-                                _executionStatus.value = "Active & Running in RAM"
                             }
                         }
                     } catch (_: Exception) {}
                 }
 
                 val exitCode = proc.waitFor()
-                val wasRunning = _isRunning.value
-                val wasReady = _isReadyToStart.value
                 val isNormalTeardown = userRequestedStop || exitCode in listOf(0, 137, 143)
                 _isProcessAlive.value = false
                 _isRunning.value = false
                 _licensePromptTriggered.value = false
                 _isReadyToStart.value = false
-                _executionStatus.value = if (exitCode == 0 || isNormalTeardown) "Stopped" else "Exited (Code $exitCode)"
 
                 if (exitCode != 0 && !isNormalTeardown) {
                     launch(Dispatchers.Main) {
@@ -194,7 +186,6 @@ class InteractiveProcessBridge(
                 _isProcessAlive.value = false
                 _isRunning.value = false
                 val err = e.message ?: "Failed to spawn root process"
-                _executionStatus.value = "Execution failed: $err"
                 launch(Dispatchers.Main) {
                     onError(err)
                 }
@@ -232,14 +223,15 @@ class InteractiveProcessBridge(
         _isRunning.value = false
         _licensePromptTriggered.value = false
         _isReadyToStart.value = false
+        // stdin was consumed by the exec'd child; closing our handle is the only clean move.
         try {
-            outputStream?.writeBytes("exit\n")
-            outputStream?.flush()
+            outputStream?.close()
         } catch (_: Exception) {}
         try {
             activeProcess?.destroy()
         } catch (_: Exception) {}
         readerJob?.cancel()
+        readerJob = null
         activeProcess = null
         outputStream = null
         // Ensure root background instances are truly wiped

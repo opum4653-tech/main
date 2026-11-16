@@ -12,3 +12,6 @@
 .cxx
 local.properties
 app/build/
+
+# Release signing material is never committed.
+keystore.properties

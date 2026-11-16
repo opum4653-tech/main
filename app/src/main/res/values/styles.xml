@@ -1,0 +1,225 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- ============================================================
+         Shape appearances. Corner radii come from dimens.xml so the
+         whole app re-scales from one place.
+         ============================================================ -->
+
+    <style name="ShapeAppearance.Nin.Card" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">@dimen/radius_card</item>
+    </style>
+
+    <style name="ShapeAppearance.Nin.Item" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">@dimen/radius_item</item>
+    </style>
+
+    <style name="ShapeAppearance.Nin.Button" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">@dimen/radius_button</item>
+    </style>
+
+    <style name="ShapeAppearance.Nin.Pill" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">50%</item>
+    </style>
+
+    <!-- ============================================================
+         Typography. Every text view in the app uses one of these.
+         ============================================================ -->
+
+    <style name="Text.Nin.ScreenTitle" parent="TextAppearance.Material3.HeadlineSmall">
+        <item name="android:textColor">@color/nin_text_primary</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="Text.Nin.CardTitle" parent="TextAppearance.Material3.TitleMedium">
+        <item name="android:textColor">@color/nin_text_primary</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="Text.Nin.ItemTitle" parent="TextAppearance.Material3.TitleSmall">
+        <item name="android:textColor">@color/nin_text_primary</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="Text.Nin.SectionLabel" parent="TextAppearance.Material3.LabelMedium">
+        <item name="android:textColor">@color/nin_text_secondary</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:letterSpacing">0.08</item>
+        <item name="android:textAllCaps">true</item>
+    </style>
+
+    <style name="Text.Nin.Body" parent="TextAppearance.Material3.BodyMedium">
+        <item name="android:textColor">@color/nin_text_secondary</item>
+    </style>
+
+    <style name="Text.Nin.Caption" parent="TextAppearance.Material3.BodySmall">
+        <item name="android:textColor">@color/nin_text_secondary</item>
+    </style>
+
+    <style name="Text.Nin.Value" parent="TextAppearance.Material3.BodyMedium">
+        <item name="android:textColor">@color/nin_text_primary</item>
+        <item name="android:fontFamily">monospace</item>
+        <item name="android:textIsSelectable">true</item>
+    </style>
+
+    <style name="Text.Nin.Clock" parent="TextAppearance.Material3.DisplaySmall">
+        <item name="android:textColor">@color/nin_text_primary</item>
+        <item name="android:fontFamily">monospace</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:letterSpacing">0.06</item>
+        <item name="android:textSize">@dimen/text_clock</item>
+    </style>
+
+    <style name="Text.Nin.Terminal" parent="TextAppearance.Material3.BodySmall">
+        <item name="android:textColor">@color/nin_log_default</item>
+        <item name="android:fontFamily">monospace</item>
+        <item name="android:textSize">@dimen/text_caption</item>
+        <item name="android:lineSpacingExtra">2dp</item>
+    </style>
+
+    <!-- ============================================================
+         Containers
+         ============================================================ -->
+
+    <style name="Widget.Nin.Card" parent="Widget.Material3.CardView.Filled">
+        <item name="cardBackgroundColor">@color/nin_surface_variant</item>
+        <item name="cardElevation">@dimen/card_elevation</item>
+        <item name="cardCornerRadius">@dimen/radius_card</item>
+        <item name="strokeWidth">0dp</item>
+        <item name="contentPadding">@dimen/card_padding</item>
+    </style>
+
+    <style name="Widget.Nin.Card.Inner" parent="Widget.Nin.Card">
+        <item name="cardBackgroundColor">@color/nin_surface</item>
+        <item name="cardCornerRadius">@dimen/radius_item</item>
+        <item name="contentPadding">0dp</item>
+        <item name="rippleColor">@color/nin_ripple</item>
+        <item name="android:clickable">true</item>
+        <item name="android:focusable">true</item>
+    </style>
+
+    <style name="Widget.Nin.Card.Outlined" parent="Widget.Nin.Card">
+        <item name="cardBackgroundColor">@color/nin_surface</item>
+        <item name="strokeWidth">@dimen/card_stroke</item>
+        <item name="strokeColor">@color/nin_outline_variant</item>
+    </style>
+
+    <!-- ============================================================
+         Buttons
+         ============================================================ -->
+
+    <style name="Widget.Nin.Button.Primary" parent="Widget.Material3.Button">
+        <item name="android:minHeight">@dimen/button_height</item>
+        <item name="cornerRadius">@dimen/radius_button</item>
+        <item name="backgroundTint">@color/nin_primary</item>
+        <item name="android:textColor">@color/nin_on_primary</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:letterSpacing">0</item>
+        <item name="rippleColor">@color/nin_ripple</item>
+    </style>
+
+    <style name="Widget.Nin.Button.Outline" parent="Widget.Material3.Button.OutlinedButton">
+        <item name="android:minHeight">@dimen/button_height</item>
+        <item name="cornerRadius">@dimen/radius_button</item>
+        <item name="strokeColor">@color/nin_outline</item>
+        <item name="android:textColor">@color/nin_text_primary</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:letterSpacing">0</item>
+        <item name="rippleColor">@color/nin_ripple</item>
+    </style>
+
+    <style name="Widget.Nin.Button.Text" parent="Widget.Material3.Button.TextButton">
+        <item name="android:textColor">@color/nin_primary</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:letterSpacing">0</item>
+        <item name="rippleColor">@color/nin_ripple</item>
+    </style>
+
+    <style name="Widget.Nin.Button.Icon" parent="Widget.Material3.Button.IconButton">
+        <item name="android:minWidth">@dimen/touch_target</item>
+        <item name="android:minHeight">@dimen/touch_target</item>
+        <item name="iconTint">@color/nin_text_secondary</item>
+        <item name="rippleColor">@color/nin_ripple</item>
+    </style>
+
+    <!-- ============================================================
+         Text fields
+         ============================================================ -->
+
+    <style name="Widget.Nin.TextInput" parent="Widget.Material3.TextInputLayout.FilledBox">
+        <item name="boxBackgroundColor">@color/nin_surface_variant</item>
+        <item name="boxCornerRadiusTopStart">@dimen/radius_button</item>
+        <item name="boxCornerRadiusTopEnd">@dimen/radius_button</item>
+        <item name="boxCornerRadiusBottomStart">@dimen/radius_button</item>
+        <item name="boxCornerRadiusBottomEnd">@dimen/radius_button</item>
+        <item name="boxStrokeWidth">0dp</item>
+        <item name="boxStrokeWidthFocused">1dp</item>
+        <item name="boxStrokeColor">@color/nin_primary</item>
+        <item name="hintTextColor">@color/nin_text_secondary</item>
+        <item name="android:textColorHint">@color/nin_text_secondary</item>
+        <item name="errorTextColor">@color/nin_error</item>
+    </style>
+
+    <style name="Widget.Nin.TextInput.EditText" parent="Widget.Material3.TextInputEditText.FilledBox">
+        <item name="android:textColor">@color/nin_text_primary</item>
+        <item name="android:textSize">@dimen/text_body</item>
+    </style>
+
+    <!-- ============================================================
+         Toolbar
+         ============================================================ -->
+
+    <style name="Widget.Nin.Toolbar" parent="Widget.Material3.Toolbar">
+        <item name="android:background">@color/nin_background</item>
+        <item name="titleTextColor">@color/nin_text_primary</item>
+        <item name="subtitleTextColor">@color/nin_text_secondary</item>
+        <item name="navigationIconTint">@color/nin_text_primary</item>
+        <item name="titleTextAppearance">@style/TextAppearance.Material3.TitleLarge</item>
+    </style>
+
+    <!-- ============================================================
+         Drawer navigation
+         ============================================================ -->
+
+    <style name="Widget.Nin.NavigationView" parent="Widget.Material3.NavigationView">
+        <item name="android:background">@color/nin_surface</item>
+        <item name="itemIconTint">@color/nav_item_tint</item>
+        <item name="itemTextColor">@color/nav_item_tint</item>
+        <item name="itemShapeAppearanceOverlay">@style/ShapeAppearance.Nin.Item</item>
+        <item name="itemShapeFillColor">@color/nin_primary_container</item>
+        <item name="elevation">0dp</item>
+        <item name="subheaderColor">@color/nin_text_secondary</item>
+        <item name="subheaderTextAppearance">@style/TextAppearance.Material3.LabelMedium</item>
+    </style>
+
+    <!-- ============================================================
+         Status badge (small pill with colour + label)
+         ============================================================ -->
+
+    <style name="Widget.Nin.Badge" parent="">
+        <item name="android:paddingStart">10dp</item>
+        <item name="android:paddingEnd">10dp</item>
+        <item name="android:paddingTop">4dp</item>
+        <item name="android:paddingBottom">4dp</item>
+        <item name="android:textSize">@dimen/text_micro</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textAllCaps">true</item>
+        <item name="android:letterSpacing">0.06</item>
+    </style>
+
+    <!-- ============================================================
+         Dividers
+         ============================================================ -->
+
+    <style name="Widget.Nin.Divider" parent="">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">1dp</item>
+        <item name="android:background">@color/nin_outline_variant</item>
+    </style>
+
+</resources>

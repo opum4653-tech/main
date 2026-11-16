@@ -20,8 +20,7 @@ data class LoaderUiState(
     val isDriverLoaded: Boolean = false,
     val activeNodes: List<String> = emptyList(),
     val logMessages: List<String> = emptyList(),
-    val isWorking: Boolean = false,
-    val matchingDrivers: List<File> = emptyList()
+    val isWorking: Boolean = false
 )
 
 class MainViewModel(application: Application) : AndroidViewModel(application) {
@@ -143,15 +142,6 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         driverDownloadJob = null
         _uiState.value = _uiState.value.copy(isWorking = false)
         appendLog("[CANCEL] Driver download cancelled by user.")
-    }
-
-    suspend fun getDriversForMode(mode: String): List<File> {
-        return repository.getAllDrivers(mode)
-    }
-
-    suspend fun getMatchingDrivers(mode: String): List<File> {
-        val kernel = _uiState.value.kernelRelease
-        return repository.findMatchingDrivers(kernel, mode)
     }
 
     fun loadDriverScript(file: File) {
