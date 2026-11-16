@@ -175,6 +175,9 @@ class ModEngine(
         }
     }
 
+    /** The key already bound to the account, used to prefill the license dialog. */
+    fun cachedKey(): String = sessionManager?.activeLicenseKey.orEmpty()
+
     fun stop() = bridge.stop()
 
     val isRunning: StateFlow<Boolean> get() = bridge.isRunning

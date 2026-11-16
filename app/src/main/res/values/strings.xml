@@ -460,6 +460,7 @@
     <string name="dialog_sync_handshake">[*] Synchronizing secure handshake…</string>
     <string name="dialog_license_authorized">[+] Cloud License Authorized!</string>
     <string name="dialog_license_ready">[+] Ready to load into memory.</string>
+    <string name="dialog_restarting_with_key">[*] Restarting engine with the verified key.</string>
     <string name="dialog_license_validated">[+] License validated! Engine authorized and ready.</string>
     <string name="dialog_kernel_driver_missing">Kernel Driver Missing: %1$s\n\nPlease load your matching kernel driver in the Driver Loader tab before starting NinMods Kernel.</string>
     <string name="dialog_kernel_engine_error">Kernel Engine Error: %1$s\n\nPlease ensure Superuser is granted and a compatible kernel driver is loaded.</string>

@@ -73,6 +73,19 @@ class ModFlowDialog : BottomSheetDialogFragment() {
 
         binding.dialogCancel.setOnClickListener { dismiss() }
         binding.dialogConfirm.setOnClickListener { primaryAction() }
+        // The key field advertises imeOptions=actionDone. Without this listener
+        // the Done key on the keyboard closed nothing and submitted nothing.
+        binding.dialogInput.setOnEditorActionListener { _, actionId, event ->
+            val isDone = actionId == android.view.inputmethod.EditorInfo.IME_ACTION_DONE ||
+                (event != null && event.keyCode == android.view.KeyEvent.KEYCODE_ENTER &&
+                    event.action == android.view.KeyEvent.ACTION_DOWN)
+            if (isDone && stage == Stage.License && !licenseVerified) {
+                verifyKey()
+                true
+            } else {
+                false
+            }
+        }
 
         viewLifecycleOwner.lifecycleScope.launch {
             val cacheDir = engine.cacheDir()
@@ -94,7 +107,6 @@ class ModFlowDialog : BottomSheetDialogFragment() {
     private enum class Stage { Confirm, Downloading, RootRequired, License, Running, StopConfirm }
 
     private var stage: Stage = Stage.Confirm
-    private var downloadedThisSession = false
     private var licenseVerified = false
     private var submittedKey: String? = null
     private var pendingErrorMessage: String? = null
@@ -106,6 +118,10 @@ class ModFlowDialog : BottomSheetDialogFragment() {
         binding.dialogProgress.visibility = View.GONE
         binding.dialogTerminal.visibility = View.GONE
         binding.dialogInputLayout.visibility = View.GONE
+        // Downloading hides the confirm button. Every later stage has to bring
+        // it back, otherwise the license prompt renders with a dead Verify
+        // button and the key can never be submitted.
+        binding.dialogConfirm.visibility = View.VISIBLE
         binding.dialogConfirm.isEnabled = true
 
         when (next) {
@@ -147,12 +163,22 @@ class ModFlowDialog : BottomSheetDialogFragment() {
                 }
                 binding.dialogTerminal.visibility = View.VISIBLE
                 binding.dialogInputLayout.visibility = if (licenseVerified) View.GONE else View.VISIBLE
-                binding.dialogInput.setText(submittedKey.orEmpty())
+                // Only overwrite the field when there is something authoritative
+                // to write. Re-rendering after a server rejection used to erase
+                // whatever the user had just typed.
+                val prefill = submittedKey ?: enginePrefillKey()
+                if (!licenseVerified && !prefill.isNullOrBlank() &&
+                    binding.dialogInput.text?.toString().isNullOrBlank()
+                ) {
+                    binding.dialogInput.setText(prefill)
+                }
                 binding.dialogCancel.setText(R.string.action_close)
                 binding.dialogConfirm.setText(
                     if (licenseVerified) R.string.action_start else R.string.action_verify
                 )
-                pendingErrorMessage?.let { binding.dialogInputLayout.error = it }
+                // The error line belongs to the last failed attempt only. Leaving
+                // it set after a success made a verified key still look rejected.
+                binding.dialogInputLayout.error = pendingErrorMessage
                 binding.dialogTerminal.scrollToPosition((terminalLines.size - 1).coerceAtLeast(0))
             }
 
@@ -173,6 +199,8 @@ class ModFlowDialog : BottomSheetDialogFragment() {
             }
         }
     }
+
+    private fun enginePrefillKey(): String? = engine.cachedKey().takeIf { it.isNotBlank() }
 
     private fun primaryAction() {
         val mod = item ?: return
@@ -204,7 +232,6 @@ class ModFlowDialog : BottomSheetDialogFragment() {
             result.fold(
                 onSuccess = { file ->
                     item = mod.copy(file = file, isDownloaded = true)
-                    downloadedThisSession = true
                     launchMod()
                 },
                 onFailure = { error ->
@@ -267,6 +294,11 @@ class ModFlowDialog : BottomSheetDialogFragment() {
                 },
                 onError = { message ->
                     if (_binding != null) {
+                        // The binary can die right after we accepted the key
+                        // server-side; its own online check may still fail. Drop
+                        // the verified flag or the next tap sends START into a
+                        // closed pipe and looks like a silent no-op.
+                        licenseVerified = false
                         appendTerminal("[-] $message")
                         pendingErrorMessage = message
                         render(Stage.License)
@@ -279,6 +311,21 @@ class ModFlowDialog : BottomSheetDialogFragment() {
                 chunk.split('\n').forEach { line ->
                     val trimmed = line.trimEnd()
                     if (trimmed.isNotBlank()) appendTerminal(trimmed)
+                }
+            }
+        }
+
+        // The binary is the authority on its own gate: it re-checks the key
+        // online and prints "Awaiting START signal" only when it accepted it.
+        // Mirror that so the Start button appears when the engine is actually
+        // ready, not the moment the app's own HTTP call returned 200.
+        viewLifecycleOwner.lifecycleScope.launch {
+            engine.readyToStart.collect { ready ->
+                if (!ready || _binding == null) return@collect
+                if (!licenseVerified) {
+                    licenseVerified = true
+                    pendingErrorMessage = null
+                    render(Stage.License)
                 }
             }
         }
@@ -305,18 +352,33 @@ class ModFlowDialog : BottomSheetDialogFragment() {
             result.fold(
                 onSuccess = { info ->
                     submittedKey = key
+                    pendingErrorMessage = null
+                    binding.dialogInputLayout.error = null
                     engine.persistLicense(key, info.remainingSeconds)
                     appendTerminal(getString(R.string.dialog_license_authorized))
                     appendTerminal(getString(R.string.dialog_license_ready))
 
                     val sent = engine.bridge.sendInput(key)
-                    if (!sent || !engine.isProcessAlive.value) {
+                    if (sent && engine.isProcessAlive.value) {
+                        licenseVerified = true
+                        render(Stage.License)
+                    } else {
+                        // Piping the key failed, so the binary never saw it and
+                        // will never print "Awaiting START". Restart it with the
+                        // key already exported; the ready collector flips the
+                        // dialog to Start once the engine confirms it accepted.
+                        appendTerminal(getString(R.string.dialog_restarting_with_key))
+                        licenseVerified = false
+                        render(Stage.License)
                         engine.relaunchWithKey(mod, key) { message ->
-                            if (_binding != null) appendTerminal("[-] $message")
+                            if (_binding != null) {
+                                licenseVerified = false
+                                appendTerminal("[-] $message")
+                                pendingErrorMessage = message
+                                render(Stage.License)
+                            }
                         }
                     }
-                    licenseVerified = true
-                    render(Stage.License)
                 },
                 onFailure = { error ->
                     val message = error.message ?: getString(R.string.dialog_server_rejected)
@@ -358,8 +420,11 @@ class ModFlowDialog : BottomSheetDialogFragment() {
 
     private fun appendTerminal(line: String) {
         terminalLines.addLast(line)
+        // The deque is trimmed from the front, so row positions shift. A
+        // positional notify would desync the adapter from the list; the list is
+        // capped at 60 short rows, so a full rebind is the honest move.
         while (terminalLines.size > 60) terminalLines.removeFirst()
-        (binding.dialogTerminal.adapter as? TerminalAdapter)?.notifyItemInserted(terminalLines.size)
+        (binding.dialogTerminal.adapter as? TerminalAdapter)?.notifyDataSetChanged()
         binding.dialogTerminal.scrollToPosition(terminalLines.lastIndex)
     }
 

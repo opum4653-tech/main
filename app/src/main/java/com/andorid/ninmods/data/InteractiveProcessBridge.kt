@@ -29,6 +29,16 @@ class InteractiveProcessBridge(
     private var readerJob: Job? = null
     private var userRequestedStop = false
 
+    /**
+     * Every start() takes the next generation. A start/teardown coroutine that
+     * finds the counter moved on knows a newer session owns the bridge and must
+     * not touch shared state. Without this, killing a process and immediately
+     * relaunching one let the dying coroutine's finally{} clear the fresh
+     * session's stdin handle, which looked exactly like "the key never got sent".
+     */
+    private var generation = 0
+    @Volatile private var activeGeneration = 0
+
     private val _isProcessAlive = MutableStateFlow(false)
     val isProcessAlive: StateFlow<Boolean> = _isProcessAlive.asStateFlow()
 
@@ -41,7 +51,10 @@ class InteractiveProcessBridge(
     private val _isReadyToStart = MutableStateFlow(false)
     val isReadyToStart: StateFlow<Boolean> = _isReadyToStart.asStateFlow()
 
-    private val _outputLines = MutableSharedFlow<String>(extraBufferCapacity = 64)
+    // replay keeps the first lines alive. The dialog subscribes a few
+    // milliseconds after start() and the binary prints its banner and license
+    // prompt immediately; without replay those lines were silently dropped.
+    private val _outputLines = MutableSharedFlow<String>(replay = 64, extraBufferCapacity = 64)
     val outputLines: SharedFlow<String> = _outputLines.asSharedFlow()
 
     /**
@@ -56,6 +69,9 @@ class InteractiveProcessBridge(
         onError: (String) -> Unit = {}
     ) {
         if (_isProcessAlive.value) return
+
+        val myGeneration = ++generation
+        activeGeneration = myGeneration
 
         scope.launch(Dispatchers.IO) {
             try {
@@ -127,12 +143,17 @@ class InteractiveProcessBridge(
 
                             val window = accumulated.takeLast(512).toString()
 
-                            // Detect license prompt in terminal output even without trailing newline
-                            if (window.contains("Enter API Access Key", ignoreCase = true) ||
-                                window.contains("Enter License Key", ignoreCase = true) ||
-                                window.contains("[?] Enter", ignoreCase = true) ||
-                                (window.contains("Authentication", ignoreCase = true) && window.contains("Key", ignoreCase = true))
-                            ) {
+                            // Detect the license prompt. Only the literal prompts
+                            // the binary prints count: "[?] Enter License / Access
+                            // Key: " and the older "[?] Enter API Access Key: ".
+                            // A looser matcher ("Authentication" + "Key") fired on
+                            // the startup banner, so an already-authorised session
+                            // was asked for its key a second time.
+                            val promptSeen =
+                                window.contains("Enter License / Access Key", ignoreCase = true) ||
+                                    window.contains("Enter API Access Key", ignoreCase = true) ||
+                                    window.contains("Enter License Key", ignoreCase = true)
+                            if (promptSeen) {
                                 if (!_licensePromptTriggered.value) {
                                     _licensePromptTriggered.value = true
                                     launch(Dispatchers.Main) {
@@ -164,6 +185,8 @@ class InteractiveProcessBridge(
                 }
 
                 val exitCode = proc.waitFor()
+                // A newer start() owns the bridge now; leave its state alone.
+                if (myGeneration != activeGeneration) return@launch
                 val isNormalTeardown = userRequestedStop || exitCode in listOf(0, 137, 143)
                 _isProcessAlive.value = false
                 _isRunning.value = false
@@ -183,6 +206,7 @@ class InteractiveProcessBridge(
                 }
 
             } catch (e: Exception) {
+                if (myGeneration != activeGeneration) return@launch
                 _isProcessAlive.value = false
                 _isRunning.value = false
                 val err = e.message ?: "Failed to spawn root process"
@@ -190,7 +214,7 @@ class InteractiveProcessBridge(
                     onError(err)
                 }
             } finally {
-                cleanup()
+                if (myGeneration == activeGeneration) cleanup()
             }
         }
     }
@@ -203,7 +227,10 @@ class InteractiveProcessBridge(
         try {
             out.writeBytes("${text.trim()}\n")
             out.flush()
-            _licensePromptTriggered.value = false
+            // Deliberately do not clear the prompt flag here. The detection
+            // window keeps the last 512 characters, so clearing it let the same
+            // stale prompt line fire again on the next read and re-rendered the
+            // license stage right after a submission.
             true
         } catch (e: Exception) {
             false
@@ -215,6 +242,9 @@ class InteractiveProcessBridge(
      */
     fun stop() {
         userRequestedStop = true
+        // Invalidate the running session so its teardown coroutine does not
+        // clear the state of the next start().
+        activeGeneration = ++generation
         cleanup()
     }
 
