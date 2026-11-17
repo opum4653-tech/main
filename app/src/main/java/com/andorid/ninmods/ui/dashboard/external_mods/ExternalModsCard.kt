@@ -593,7 +593,6 @@ fun ExternalModsCard(
                                 )
                             }
                         }
-                        }
                     }
                 }
             }

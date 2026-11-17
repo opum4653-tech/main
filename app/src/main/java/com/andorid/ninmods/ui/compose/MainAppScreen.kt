@@ -521,7 +521,7 @@ fun MainAppScreen(
                             val token = sessionManager.authToken ?: ""
                             if (token.isNotBlank()) {
                                 withContext(Dispatchers.IO) {
-                                    AuthApiClient.getUserProfile(token).onSuccess { profileData ->
+                                    AuthApiClient.getProfile(token).onSuccess { profileData ->
                                         sessionManager.userBalance = profileData.balance
                                         sessionManager.userName = profileData.username
                                     }
