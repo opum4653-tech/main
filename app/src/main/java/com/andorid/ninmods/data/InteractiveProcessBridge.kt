@@ -102,15 +102,17 @@ class InteractiveProcessBridge(
                 if (licenseKey.isNotBlank()) {
                     val safeKey = licenseKey.replace("'", "'\\''")
                     out.writeBytes("export NIN_LICENSE_KEY='$safeKey'\n")
+                    out.writeBytes("export NIN_PREAUTHORIZED='1'\n")
                 }
                 out.writeBytes("export NIN_SERVER_URL='${com.andorid.ninmods.config.AppConfig.BASE_URL.trimEnd('/')}'\n")
                 out.writeBytes("export LD_LIBRARY_PATH='/apex/com.android.i18n/lib64:/apex/com.android.runtime/lib64:/system/lib64:/vendor/lib64:/apex/com.android.i18n/lib:/apex/com.android.runtime/lib:/system/lib:/vendor/lib:'\"\$LD_LIBRARY_PATH\"\n")
 
+                val safeKeyArg = if (licenseKey.isNotBlank()) " '${licenseKey.replace("'", "'\\''")}'" else ""
                 // Launch using exec so the su process is directly replaced by the mod binary
                 if (executableFile.name.endsWith(".sh")) {
-                    out.writeBytes("exec sh '$safePath'\n")
+                    out.writeBytes("exec sh '$safePath'$safeKeyArg\n")
                 } else {
-                    out.writeBytes("exec '$safePath'\n")
+                    out.writeBytes("exec '$safePath'$safeKeyArg\n")
                 }
                 out.flush()
 

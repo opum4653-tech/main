@@ -345,50 +345,59 @@ fun KernelModsCard(
                         isSubmitting = true,
                         errorMessage = null,
                         terminalLogs = (state.terminalLogs + listOf(
-                            "[*] Submitting license key to engine...",
-                            "[*] Awaiting kernel authorization..."
+                            "[*] Verifying license key with authorization server...",
+                            "[*] Synchronizing secure handshake..."
                         )).takeLast(40)
                     )
                     scope.launch {
                         val deviceHwid = com.andorid.ninmods.util.DeviceIdentifier.getHwid(context)
 
-                        // 1. Cache key in session
-                        sessionManager?.let { sm ->
-                            sm.activeLicenseKey = submittedKey
-                        }
+                        // 1. Concurrently synchronize activation with server API
+                        val activationResult = com.andorid.ninmods.network.AuthApiClient.activateLicense(
+                            licenseKey = submittedKey,
+                            hwid = deviceHwid
+                        )
 
-                        // 2. Feed key to the engine stdin
-                        val sent = processBridge.sendInput(submittedKey)
-                        if (!sent || !processBridge.isProcessAlive.value) {
-                            selectedModForAction?.let { mod ->
-                                processBridge.stop()
-                                processBridge.start(
-                                    executableFile = mod.file,
-                                    deviceHwid = deviceHwid,
-                                    licenseKey = submittedKey,
-                                    onLicensePrompt = {
-                                        val current = unifiedDialogState
-                                        if (current !is UnifiedModDialogState.LicenseAuth) {
-                                            unifiedDialogState = UnifiedModDialogState.LicenseAuth(
-                                                initialKey = submittedKey,
-                                                isSubmitting = false,
-                                                errorMessage = null,
-                                                isVerified = false
-                                            )
-                                        }
-                                    },
-                                    onError = { errMsg ->
-                                        val current = unifiedDialogState
-                                        if (current is UnifiedModDialogState.LicenseAuth) {
-                                            unifiedDialogState = current.copy(
-                                                isSubmitting = false,
-                                                errorMessage = errMsg,
-                                                terminalLogs = (current.terminalLogs + listOf("[-] $errMsg")).takeLast(40)
-                                            )
-                                        }
-                                    }
-                                )
+                        if (activationResult.isSuccess) {
+                            val licInfo = activationResult.getOrNull()
+                            sessionManager?.let { sm ->
+                                sm.activeLicenseKey = submittedKey
+                                sm.serverRemainingSeconds = licInfo?.remainingSeconds ?: 86400L
                             }
+
+                            // 2. Feed to stdin pipe if alive, or cleanly restart process with pre-authenticated key
+                            val sent = processBridge.sendInput(submittedKey)
+                            if (!sent || !processBridge.isProcessAlive.value) {
+                                selectedModForAction?.let { mod ->
+                                    processBridge.stop()
+                                    processBridge.start(
+                                        executableFile = mod.file,
+                                        deviceHwid = deviceHwid,
+                                        licenseKey = submittedKey,
+                                        onLicensePrompt = {},
+                                        onError = { errMsg ->
+                                            val current = unifiedDialogState
+                                            if (current is UnifiedModDialogState.LicenseAuth) {
+                                                unifiedDialogState = current.copy(
+                                                    isSubmitting = false,
+                                                    errorMessage = errMsg,
+                                                    terminalLogs = (current.terminalLogs + listOf("[-] $errMsg")).takeLast(40)
+                                                )
+                                            }
+                                        }
+                                    )
+                                }
+                            }
+                        } else {
+                            val err = activationResult.exceptionOrNull()?.message ?: "License key invalid or rejected by server"
+                            unifiedDialogState = state.copy(
+                                isSubmitting = false,
+                                errorMessage = err,
+                                terminalLogs = (state.terminalLogs + listOf(
+                                    "[-] Server rejection: $err",
+                                    "[-] Please verify license expiration and device HWID binding."
+                                )).takeLast(40)
+                            )
                         }
                     }
                 }
