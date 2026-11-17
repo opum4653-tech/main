@@ -518,15 +518,18 @@ fun MainAppScreen(
                     onRefresh = {
                         scope.launch {
                             isRefreshing = true
-                            when (currentDestination) {
-                                MainDestination.DASHBOARD -> {
-                                    sessionManager.refreshUserBalance()
+                            val token = sessionManager.authToken ?: ""
+                            if (token.isNotBlank()) {
+                                withContext(Dispatchers.IO) {
+                                    AuthApiClient.getUserProfile(token).onSuccess { profileData ->
+                                        sessionManager.userBalance = profileData.balance
+                                        sessionManager.userName = profileData.username
+                                    }
                                 }
+                            }
+                            when (currentDestination) {
                                 MainDestination.DENYLIST -> {
                                     triggerDenyListRefresh++
-                                }
-                                MainDestination.PROFILE -> {
-                                    sessionManager.refreshUserBalance()
                                 }
                                 MainDestination.LOADER -> {
                                     viewModel.refreshStatus()

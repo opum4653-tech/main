@@ -62,10 +62,10 @@ fun CreateTicketScreen(
         )
 
         // APatch Unified Form Card
-        ElevatedCard(
+        OutlinedCard(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(20.dp),
-            colors = CardDefaults.elevatedCardColors(
+            colors = CardDefaults.outlinedCardColors(
                 containerColor = MaterialTheme.colorScheme.surface
             ),
             border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.35f)),

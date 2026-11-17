@@ -163,10 +163,10 @@ fun SubmitDepositScreen(
                 modifier = Modifier.padding(start = 4.dp)
             )
 
-            ElevatedCard(
+            OutlinedCard(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(20.dp),
-                colors = CardDefaults.elevatedCardColors(
+                colors = CardDefaults.outlinedCardColors(
                     containerColor = MaterialTheme.colorScheme.surface
                 ),
                 border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.35f)),
@@ -305,10 +305,10 @@ fun SubmitDepositScreen(
                 modifier = Modifier.padding(start = 4.dp)
             )
 
-            ElevatedCard(
+            OutlinedCard(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(20.dp),
-                colors = CardDefaults.elevatedCardColors(
+                colors = CardDefaults.outlinedCardColors(
                     containerColor = MaterialTheme.colorScheme.surface
                 ),
                 border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.35f)),

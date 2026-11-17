@@ -26,11 +26,13 @@ import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Terminal
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedCard
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import com.andorid.ninmods.ui.component.ModActionButtonsRow
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -491,20 +493,6 @@ fun ExternalModsCard(
                         val isRunning = isProcessRunning && activeModId == mod.id
 
                         ElevatedCard(
-                            onClick = {
-                                if (!mod.isDownloaded) {
-                                    // 1. Not downloaded -> Show unified download confirmation dialog
-                                    selectedModForAction = mod
-                                    unifiedDialogState = UnifiedModDialogState.ConfirmDownload(mod.name)
-                                } else if (isRunning) {
-                                    // 2. Already active -> Ask to stop
-                                    selectedModForAction = mod
-                                    unifiedDialogState = UnifiedModDialogState.StopConfirm(mod.name)
-                                } else {
-                                    // 3. Downloaded -> Launch mod with root & license checks
-                                    launchMod(mod)
-                                }
-                            },
                             modifier = Modifier.fillMaxWidth(),
                             shape = RoundedCornerShape(16.dp),
                             colors = CardDefaults.elevatedCardColors(
@@ -512,117 +500,99 @@ fun ExternalModsCard(
                             ),
                             elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
                         ) {
-                            Row(
+                            Column(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(vertical = 14.dp, horizontal = 14.dp),
-                                verticalAlignment = Alignment.CenterVertically
+                                    .padding(vertical = 12.dp, horizontal = 14.dp)
                             ) {
-                                // Official App Logo container
-                                Surface(
-                                    shape = CircleShape,
-                                    color = when {
-                                        isRunning -> MaterialTheme.colorScheme.primaryContainer
-                                        !mod.isDownloaded -> MaterialTheme.colorScheme.surfaceVariant
-                                        else -> MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f)
-                                    },
-                                    modifier = Modifier.size(48.dp)
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                    Box(
-                                        modifier = Modifier.fillMaxSize(),
-                                        contentAlignment = Alignment.Center
+                                    // Official App Logo container
+                                    Surface(
+                                        shape = CircleShape,
+                                        color = when {
+                                            isRunning -> MaterialTheme.colorScheme.primaryContainer
+                                            !mod.isDownloaded -> MaterialTheme.colorScheme.surfaceVariant
+                                            else -> MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f)
+                                        },
+                                        modifier = Modifier.size(46.dp)
                                     ) {
-                                        if (isRunning) {
-                                            Icon(
-                                                imageVector = Icons.Filled.PlayArrow,
-                                                contentDescription = "Running",
-                                                tint = MaterialTheme.colorScheme.primary,
-                                                modifier = Modifier.size(26.dp)
-                                            )
-                                        } else {
-                                            // Official Software Logo
-                                            Image(
-                                                painter = painterResource(id = R.drawable.logo_n),
-                                                contentDescription = mod.name,
-                                                contentScale = ContentScale.Fit,
-                                                modifier = Modifier
-                                                    .size(32.dp)
-                                                    .clip(CircleShape)
-                                            )
+                                        Box(
+                                            modifier = Modifier.fillMaxSize(),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            if (isRunning) {
+                                                Icon(
+                                                    imageVector = Icons.Filled.PlayArrow,
+                                                    contentDescription = "Running",
+                                                    tint = MaterialTheme.colorScheme.primary,
+                                                    modifier = Modifier.size(24.dp)
+                                                )
+                                            } else {
+                                                Image(
+                                                    painter = painterResource(id = R.drawable.logo_n),
+                                                    contentDescription = mod.name,
+                                                    contentScale = ContentScale.Fit,
+                                                    modifier = Modifier
+                                                        .size(30.dp)
+                                                        .clip(CircleShape)
+                                                )
+                                            }
                                         }
                                     }
-                                }
 
-                                Spacer(modifier = Modifier.width(14.dp))
+                                    Spacer(modifier = Modifier.width(12.dp))
 
-                                Column(modifier = Modifier.weight(1f)) {
-                                    Text(
-                                        text = mod.name,
-                                        style = MaterialTheme.typography.titleMedium,
-                                        fontWeight = FontWeight.Bold,
-                                        color = MaterialTheme.colorScheme.onSurface,
-                                        maxLines = 1,
-                                        overflow = TextOverflow.Ellipsis
-                                    )
+                                    Column(modifier = Modifier.weight(1f)) {
+                                        Text(
+                                            text = mod.name,
+                                            style = MaterialTheme.typography.titleMedium,
+                                            fontWeight = FontWeight.Bold,
+                                            color = MaterialTheme.colorScheme.onSurface,
+                                            maxLines = 1,
+                                            overflow = TextOverflow.Ellipsis
+                                        )
 
-                                    Spacer(modifier = Modifier.height(2.dp))
+                                        Spacer(modifier = Modifier.height(2.dp))
 
-                                    Text(
-                                        text = if (isRunning) "Process active & running in RAM" else "Official in-memory client engine",
-                                        style = MaterialTheme.typography.bodySmall,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                        maxLines = 1,
-                                        overflow = TextOverflow.Ellipsis
-                                    )
-                                }
-
-                                Spacer(modifier = Modifier.width(8.dp))
-
-                                // Update / Re-download icon button if already downloaded
-                                if (mod.isDownloaded && !isRunning) {
-                                    IconButton(
-                                        onClick = {
-                                            selectedModForAction = mod
-                                            unifiedDialogState = UnifiedModDialogState.ConfirmDownload(mod.name)
-                                        },
-                                        modifier = Modifier.size(32.dp)
-                                    ) {
-                                        Icon(
-                                            imageVector = Icons.Filled.CloudDownload,
-                                            contentDescription = "Update Mod",
-                                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                                            modifier = Modifier.size(18.dp)
+                                        Text(
+                                            text = if (isRunning) "Process active & running in RAM" else "Official in-memory client engine",
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                            maxLines = 1,
+                                            overflow = TextOverflow.Ellipsis
                                         )
                                     }
-                                    Spacer(modifier = Modifier.width(4.dp))
                                 }
 
-                                // Status badge
-                                Surface(
-                                    shape = RoundedCornerShape(8.dp),
-                                    color = when {
-                                        isRunning -> MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)
-                                        !mod.isDownloaded -> MaterialTheme.colorScheme.surfaceVariant
-                                        else -> MaterialTheme.colorScheme.secondary.copy(alpha = 0.15f)
-                                    }
-                                ) {
-                                    Text(
-                                        text = when {
-                                            isRunning -> "ACTIVE"
-                                            !mod.isDownloaded -> "AVAILABLE"
-                                            else -> "READY"
-                                        },
-                                        fontSize = 11.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        color = when {
-                                            isRunning -> MaterialTheme.colorScheme.primary
-                                            !mod.isDownloaded -> MaterialTheme.colorScheme.onSurfaceVariant
-                                            else -> MaterialTheme.colorScheme.secondary
-                                        },
-                                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
-                                    )
-                                }
+                                Spacer(modifier = Modifier.height(10.dp))
+                                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f))
+                                Spacer(modifier = Modifier.height(4.dp))
+
+                                // Official 4-Action Serial Icon Buttons Row
+                                ModActionButtonsRow(
+                                    isDownloaded = mod.isDownloaded,
+                                    isRunning = isRunning,
+                                    onStopClick = {
+                                        selectedModForAction = mod
+                                        unifiedDialogState = UnifiedModDialogState.StopConfirm(mod.name)
+                                    },
+                                    onStartClick = { launchMod(mod) },
+                                    onUpdateClick = {
+                                        selectedModForAction = mod
+                                        unifiedDialogState = UnifiedModDialogState.ConfirmDownload(mod.name)
+                                    },
+                                    onDownloadClick = {
+                                        selectedModForAction = mod
+                                        unifiedDialogState = UnifiedModDialogState.ConfirmDownload(mod.name)
+                                    },
+                                    modifier = Modifier.fillMaxWidth(),
+                                    accentColor = MaterialTheme.colorScheme.primary
+                                )
                             }
+                        }
                         }
                     }
                 }
