@@ -186,16 +186,7 @@ fun ProfileScreen(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Box(modifier = Modifier.fillMaxWidth()) {
-                    IconButton(
-                        onClick = { refreshProfile(forceRefresh = true) },
-                        modifier = Modifier.align(Alignment.TopEnd)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Filled.Refresh,
-                            contentDescription = "Refresh Profile",
-                            tint = MaterialTheme.colorScheme.primary
-                        )
-                    }
+
 
                     Column(
                         modifier = Modifier.fillMaxWidth(),
@@ -441,14 +432,7 @@ fun ProfileScreen(
                         }
                     }
 
-                    IconButton(onClick = { refreshProfile(forceRefresh = true) }) {
-                        Icon(
-                            imageVector = Icons.Filled.Refresh,
-                            contentDescription = "Refresh Balance",
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(20.dp)
-                        )
-                    }
+
                 }
 
                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f))

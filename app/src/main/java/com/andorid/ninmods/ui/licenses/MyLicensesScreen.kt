@@ -156,14 +156,7 @@ fun MyLicensesScreen(
                     modifier = Modifier.padding(start = 4.dp)
                 )
 
-                IconButton(onClick = { loadKeys() }, modifier = Modifier.size(32.dp)) {
-                    Icon(
-                        imageVector = Icons.Filled.Refresh,
-                        contentDescription = "Refresh Keys",
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(20.dp)
-                    )
-                }
+
             }
         }
 

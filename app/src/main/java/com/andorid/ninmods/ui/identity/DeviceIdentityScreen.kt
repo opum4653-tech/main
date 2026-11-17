@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.sp
 import com.andorid.ninmods.data.DeviceIdentityManager
 import com.andorid.ninmods.data.DeviceIdentityState
 import com.andorid.ninmods.ui.component.AppButtonLoadingIndicator
+import com.andorid.ninmods.ui.component.appOutlinedTextFieldColors
 import kotlinx.coroutines.launch
 
 @Composable
@@ -408,12 +409,7 @@ fun ApatchIdentityField(
                     color = MaterialTheme.colorScheme.onSurface
                 ),
                 shape = RoundedCornerShape(12.dp),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = MaterialTheme.colorScheme.primary,
-                    unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
-                    focusedContainerColor = MaterialTheme.colorScheme.surface,
-                    unfocusedContainerColor = MaterialTheme.colorScheme.surface
-                ),
+                colors = appOutlinedTextFieldColors(),
                 singleLine = true
             )
 

@@ -24,6 +24,7 @@ import com.andorid.ninmods.network.AuthApiClient
 import com.andorid.ninmods.network.UserTicketItem
 import com.andorid.ninmods.network.UserTicketMessageItem
 import com.andorid.ninmods.ui.component.AppButtonLoadingIndicator
+import com.andorid.ninmods.ui.component.appOutlinedTextFieldColors
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
@@ -176,12 +177,7 @@ fun UserTicketChatScreen(
                     placeholder = { Text("Write a message...") },
                     modifier = Modifier.weight(1f),
                     shape = RoundedCornerShape(24.dp),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = MaterialTheme.colorScheme.primary,
-                        unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
-                        focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
-                        unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)
-                    ),
+                    colors = appOutlinedTextFieldColors(),
                     maxLines = 4,
                     enabled = !isSending
                 )

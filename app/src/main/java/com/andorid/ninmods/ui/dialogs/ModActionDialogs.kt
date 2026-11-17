@@ -79,6 +79,7 @@ import androidx.compose.ui.window.DialogProperties
 import androidx.compose.ui.window.DialogWindowProvider
 import androidx.compose.ui.window.SecureFlagPolicy
 import com.andorid.ninmods.ui.component.AppButtonLoadingIndicator
+import com.andorid.ninmods.ui.component.appOutlinedTextFieldColors
 import com.andorid.ninmods.util.ui.APDialogBlurBehindUtils
 
 /**
@@ -304,12 +305,7 @@ fun ApatchUnifiedModDialog(
                                     label = { Text("License Key") },
                                     singleLine = true,
                                     visualTransformation = if (isKeyVisible) VisualTransformation.None else PasswordVisualTransformation(),
-                                    colors = OutlinedTextFieldDefaults.colors(
-                                        focusedBorderColor = MaterialTheme.colorScheme.primary,
-                                        unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.6f),
-                                        focusedContainerColor = MaterialTheme.colorScheme.surface,
-                                        unfocusedContainerColor = MaterialTheme.colorScheme.surface
-                                    ),
+                                    colors = appOutlinedTextFieldColors(),
                                     trailingIcon = {
                                         IconButton(onClick = { isKeyVisible = !isKeyVisible }) {
                                             Icon(
@@ -860,10 +856,7 @@ fun ApatchLicenseKeyDialog(
                     enabled = !isSubmitting,
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(16.dp),
-                    colors = TextFieldDefaults.colors(
-                        focusedContainerColor = MaterialTheme.colorScheme.surface,
-                        unfocusedContainerColor = MaterialTheme.colorScheme.surface
-                    ),
+                    colors = appOutlinedTextFieldColors(),
                     trailingIcon = {
                         val icon = if (passwordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
                         IconButton(onClick = { passwordVisible = !passwordVisible }) {

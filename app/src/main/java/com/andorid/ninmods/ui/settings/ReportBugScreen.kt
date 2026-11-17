@@ -2,6 +2,7 @@ package com.andorid.ninmods.ui.settings
 
 import android.os.Build
 import android.widget.Toast
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -23,6 +24,7 @@ import com.andorid.ninmods.data.SessionManager
 import com.andorid.ninmods.data.ShellExecutor
 import com.andorid.ninmods.network.AuthApiClient
 import com.andorid.ninmods.ui.component.AppButtonLoadingIndicator
+import com.andorid.ninmods.ui.component.appOutlinedTextFieldColors
 import com.andorid.ninmods.util.DeviceIdentifier
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -130,8 +132,9 @@ fun ReportBugScreen(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(20.dp),
             colors = CardDefaults.elevatedCardColors(
-                containerColor = MaterialTheme.colorScheme.surfaceVariant
+                containerColor = MaterialTheme.colorScheme.surface
             ),
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.35f)),
             elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
         ) {
             Column(
@@ -140,13 +143,7 @@ fun ReportBugScreen(
                     .padding(18.dp),
                 verticalArrangement = Arrangement.spacedBy(14.dp)
             ) {
-                val fieldColors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = MaterialTheme.colorScheme.primary,
-                    unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.6f),
-                    focusedContainerColor = MaterialTheme.colorScheme.surface,
-                    unfocusedContainerColor = MaterialTheme.colorScheme.surface,
-                    disabledContainerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.6f)
-                )
+                val fieldColors = appOutlinedTextFieldColors()
 
                 OutlinedTextField(
                     value = title,

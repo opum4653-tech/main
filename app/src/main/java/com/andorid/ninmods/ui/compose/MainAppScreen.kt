@@ -42,6 +42,8 @@ import com.andorid.ninmods.network.ActiveNotificationItem
 import com.andorid.ninmods.network.AuthApiClient
 import com.andorid.ninmods.network.UserTicketItem
 import com.andorid.ninmods.ui.MainViewModel
+import com.andorid.ninmods.ui.component.AppPullToRefreshLayout
+import com.andorid.ninmods.ui.component.GlobalNetworkBannerContainer
 import com.andorid.ninmods.ui.dashboard.DashboardScreen
 import com.andorid.ninmods.ui.denylist.DenyListScreen
 import com.andorid.ninmods.ui.identity.DeviceIdentityScreen
@@ -487,15 +489,7 @@ fun MainAppScreen(
                         }
                     },
                     actions = {
-                        if (currentDestination == MainDestination.DENYLIST) {
-                            IconButton(onClick = { triggerDenyListRefresh++ }) {
-                                Icon(
-                                    imageVector = Icons.Filled.Refresh,
-                                    contentDescription = "Refresh",
-                                    tint = MaterialTheme.colorScheme.onSurface
-                                )
-                            }
-                        } else if (!isSubScreen) {
+                        if (!isSubScreen) {
                             IconButton(onClick = { currentDestination = MainDestination.PROFILE }) {
                                 Icon(
                                     painter = painterResource(id = R.drawable.ic_user_profile),
@@ -512,16 +506,47 @@ fun MainAppScreen(
                 )
             }
         ) { innerPadding ->
-            AnimatedContent(
-                targetState = currentDestination,
-                transitionSpec = {
-                    fadeIn(animationSpec = tween(280)) togetherWith fadeOut(animationSpec = tween(280))
-                },
-                label = "MainAppScreenDestinationTransition",
+            var isRefreshing by remember { mutableStateOf(false) }
+
+            GlobalNetworkBannerContainer(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(innerPadding)
-            ) { destination ->
+            ) { scrollModifier ->
+                AppPullToRefreshLayout(
+                    isRefreshing = isRefreshing,
+                    onRefresh = {
+                        scope.launch {
+                            isRefreshing = true
+                            when (currentDestination) {
+                                MainDestination.DASHBOARD -> {
+                                    sessionManager.refreshUserBalance()
+                                }
+                                MainDestination.DENYLIST -> {
+                                    triggerDenyListRefresh++
+                                }
+                                MainDestination.PROFILE -> {
+                                    sessionManager.refreshUserBalance()
+                                }
+                                MainDestination.LOADER -> {
+                                    viewModel.refreshStatus()
+                                }
+                                else -> {}
+                            }
+                            delay(800L)
+                            isRefreshing = false
+                        }
+                    },
+                    modifier = scrollModifier.fillMaxSize()
+                ) {
+                    AnimatedContent(
+                        targetState = currentDestination,
+                        transitionSpec = {
+                            fadeIn(animationSpec = tween(280)) togetherWith fadeOut(animationSpec = tween(280))
+                        },
+                        label = "MainAppScreenDestinationTransition",
+                        modifier = Modifier.fillMaxSize()
+                    ) { destination ->
                 when (destination) {
                     MainDestination.DASHBOARD -> DashboardScreen(
                         sessionManager = sessionManager
@@ -597,6 +622,8 @@ fun MainAppScreen(
             }
         }
     }
+}
+}
 
     // Material 3 In-App Broadcast / Popup Alert Dialog
     popupNotificationToShow?.let { notif ->

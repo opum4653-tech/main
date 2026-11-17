@@ -31,6 +31,7 @@ import com.andorid.ninmods.data.DenyListManager
 import com.andorid.ninmods.data.InstalledAppItem
 import com.andorid.ninmods.data.RootEnvironmentInfo
 import com.andorid.ninmods.ui.component.AppButtonLoadingIndicator
+import com.andorid.ninmods.ui.component.appOutlinedTextFieldColors
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -194,12 +195,7 @@ fun DenyListScreen(
                         },
                         singleLine = true,
                         shape = RoundedCornerShape(14.dp),
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = MaterialTheme.colorScheme.primary,
-                            unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.6f),
-                            focusedContainerColor = MaterialTheme.colorScheme.surface,
-                            unfocusedContainerColor = MaterialTheme.colorScheme.surface
-                        )
+                        colors = appOutlinedTextFieldColors()
                     )
 
                     // Filter Chips (Horizontal scroll pill tabs)

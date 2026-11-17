@@ -443,19 +443,7 @@ fun KernelModsCard(
                     color = CyberPurple
                 )
 
-                Spacer(modifier = Modifier.weight(1f))
 
-                IconButton(
-                    onClick = { refreshMods() },
-                    modifier = Modifier.size(28.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Filled.Refresh,
-                        contentDescription = "Refresh",
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.size(16.dp)
-                    )
-                }
             }
 
             Spacer(modifier = Modifier.height(14.dp))
