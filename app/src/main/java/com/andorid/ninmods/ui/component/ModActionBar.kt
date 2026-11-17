@@ -1,36 +1,39 @@
 package com.andorid.ninmods.ui.component
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CloudDownload
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material.icons.filled.SystemUpdateAlt
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
 /**
  * Universal Official 4-Action Serial Icon Buttons for Dashboard Mods.
- * Strict State Machine:
- * - When NOT downloaded: ONLY Download is enabled. Stop, Start, Update are disabled & dimmed.
- * - When DOWNLOADED & NOT running: Start & Update are enabled. Download is disabled. Stop is disabled.
- * - When RUNNING: ONLY Stop is enabled. Start, Update, Download are disabled.
- *
- * Sequence (from right-to-left as specified by dj):
+ * Rendered as structured box-style action tiles:
  * [STOP] [START] [UPDATE] [DOWNLOAD (right-most)]
+ *
+ * Strict State Machine:
+ * - When NOT downloaded: ONLY Download is enabled. Stop, Start, Update are disabled & dimmed boxes.
+ * - When DOWNLOADED & NOT running: Start & Update are enabled. Download is disabled. Stop is disabled.
+ * - When RUNNING: ONLY Stop is enabled (danger alert box). Start, Update, Download are disabled.
  */
 @Composable
 fun ModActionButtonsRow(
@@ -53,98 +56,95 @@ fun ModActionButtonsRow(
         horizontalArrangement = Arrangement.End,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // 1. STOP Button
-        IconButton(
-            onClick = onStopClick,
+        // 1. STOP Box Button
+        ModActionBoxButton(
+            icon = Icons.Filled.Stop,
+            contentDescription = "Stop Mod",
             enabled = stopEnabled,
-            modifier = Modifier.size(38.dp)
-        ) {
-            Surface(
-                shape = CircleShape,
-                color = if (stopEnabled) MaterialTheme.colorScheme.error.copy(alpha = 0.15f) else Color.Transparent,
-                modifier = Modifier.size(34.dp)
-            ) {
-                Box(contentAlignment = Alignment.Center) {
-                    Icon(
-                        imageVector = Icons.Filled.Stop,
-                        contentDescription = "Stop Mod",
-                        tint = if (stopEnabled) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.22f),
-                        modifier = Modifier.size(20.dp)
-                    )
-                }
-            }
-        }
+            onClick = onStopClick,
+            activeContainerColor = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.6f),
+            activeBorderColor = MaterialTheme.colorScheme.error.copy(alpha = 0.5f),
+            activeIconColor = MaterialTheme.colorScheme.error,
+            iconSize = 20.dp
+        )
 
-        Spacer(modifier = Modifier.width(6.dp))
+        Spacer(modifier = Modifier.width(8.dp))
 
-        // 2. START Button
-        IconButton(
-            onClick = onStartClick,
+        // 2. START Box Button
+        ModActionBoxButton(
+            icon = Icons.Filled.PlayArrow,
+            contentDescription = "Start Mod",
             enabled = startEnabled,
-            modifier = Modifier.size(38.dp)
-        ) {
-            Surface(
-                shape = CircleShape,
-                color = if (startEnabled) accentColor.copy(alpha = 0.15f) else Color.Transparent,
-                modifier = Modifier.size(34.dp)
-            ) {
-                Box(contentAlignment = Alignment.Center) {
-                    Icon(
-                        imageVector = Icons.Filled.PlayArrow,
-                        contentDescription = "Start Mod",
-                        tint = if (startEnabled) accentColor else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.22f),
-                        modifier = Modifier.size(22.dp)
-                    )
-                }
-            }
-        }
+            onClick = onStartClick,
+            activeContainerColor = Color(0xFF22C55E).copy(alpha = 0.18f),
+            activeBorderColor = Color(0xFF22C55E).copy(alpha = 0.5f),
+            activeIconColor = Color(0xFF22C55E),
+            iconSize = 22.dp
+        )
 
-        Spacer(modifier = Modifier.width(6.dp))
+        Spacer(modifier = Modifier.width(8.dp))
 
-        // 3. UPDATE Button
-        IconButton(
-            onClick = onUpdateClick,
+        // 3. UPDATE Box Button
+        ModActionBoxButton(
+            icon = Icons.Filled.SystemUpdateAlt,
+            contentDescription = "Update Mod",
             enabled = updateEnabled,
-            modifier = Modifier.size(38.dp)
-        ) {
-            Surface(
-                shape = CircleShape,
-                color = if (updateEnabled) MaterialTheme.colorScheme.secondary.copy(alpha = 0.15f) else Color.Transparent,
-                modifier = Modifier.size(34.dp)
-            ) {
-                Box(contentAlignment = Alignment.Center) {
-                    Icon(
-                        imageVector = Icons.Filled.SystemUpdateAlt,
-                        contentDescription = "Update Mod",
-                        tint = if (updateEnabled) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.22f),
-                        modifier = Modifier.size(19.dp)
-                    )
-                }
-            }
-        }
+            onClick = onUpdateClick,
+            activeContainerColor = accentColor.copy(alpha = 0.18f),
+            activeBorderColor = accentColor.copy(alpha = 0.45f),
+            activeIconColor = accentColor,
+            iconSize = 19.dp
+        )
 
-        Spacer(modifier = Modifier.width(6.dp))
+        Spacer(modifier = Modifier.width(8.dp))
 
-        // 4. DOWNLOAD Button (Right-most)
-        IconButton(
-            onClick = onDownloadClick,
+        // 4. DOWNLOAD Box Button (Right-most)
+        ModActionBoxButton(
+            icon = Icons.Filled.CloudDownload,
+            contentDescription = "Download Mod",
             enabled = downloadEnabled,
-            modifier = Modifier.size(38.dp)
+            onClick = onDownloadClick,
+            activeContainerColor = accentColor.copy(alpha = 0.22f),
+            activeBorderColor = accentColor.copy(alpha = 0.55f),
+            activeIconColor = accentColor,
+            iconSize = 20.dp
+        )
+    }
+}
+
+@Composable
+private fun ModActionBoxButton(
+    icon: ImageVector,
+    contentDescription: String,
+    enabled: Boolean,
+    onClick: () -> Unit,
+    activeContainerColor: Color,
+    activeBorderColor: Color,
+    activeIconColor: Color,
+    iconSize: Dp = 20.dp
+) {
+    val containerColor = if (enabled) activeContainerColor else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.45f)
+    val borderColor = if (enabled) activeBorderColor else MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f)
+    val iconColor = if (enabled) activeIconColor else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.22f)
+
+    Surface(
+        onClick = onClick,
+        enabled = enabled,
+        shape = RoundedCornerShape(10.dp),
+        color = containerColor,
+        border = BorderStroke(1.dp, borderColor),
+        modifier = Modifier.size(38.dp)
+    ) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
         ) {
-            Surface(
-                shape = CircleShape,
-                color = if (downloadEnabled) accentColor.copy(alpha = 0.15f) else Color.Transparent,
-                modifier = Modifier.size(34.dp)
-            ) {
-                Box(contentAlignment = Alignment.Center) {
-                    Icon(
-                        imageVector = Icons.Filled.CloudDownload,
-                        contentDescription = "Download Mod",
-                        tint = if (downloadEnabled) accentColor else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.22f),
-                        modifier = Modifier.size(20.dp)
-                    )
-                }
-            }
+            Icon(
+                imageVector = icon,
+                contentDescription = contentDescription,
+                tint = iconColor,
+                modifier = Modifier.size(iconSize)
+            )
         }
     }
 }

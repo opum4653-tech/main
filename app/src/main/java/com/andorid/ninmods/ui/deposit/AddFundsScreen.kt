@@ -216,6 +216,22 @@ fun AddFundsScreen(
                     verticalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
                     items(filteredTransactions, key = { it.id }) { tx ->
+                        val statusNormalized = tx.status.lowercase(Locale.US)
+                        val (pillBg, pillTextColor) = when (statusNormalized) {
+                            "completed", "approved" -> Pair(
+                                MaterialTheme.colorScheme.primary.copy(alpha = 0.15f),
+                                MaterialTheme.colorScheme.primary
+                            )
+                            "pending" -> Pair(
+                                MaterialTheme.colorScheme.tertiary.copy(alpha = 0.18f),
+                                MaterialTheme.colorScheme.tertiary
+                            )
+                            else -> Pair(
+                                MaterialTheme.colorScheme.error.copy(alpha = 0.15f),
+                                MaterialTheme.colorScheme.error
+                            )
+                        }
+
                         ElevatedCard(
                             modifier = Modifier.fillMaxWidth(),
                             shape = RoundedCornerShape(20.dp),
@@ -227,117 +243,145 @@ fun AddFundsScreen(
                             Column(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(16.dp),
-                                verticalArrangement = Arrangement.spacedBy(8.dp)
+                                    .padding(16.dp)
                             ) {
+                                // Section Header (Dashboard style)
                                 Row(
                                     modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.SpaceBetween,
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                    Row(
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        horizontalArrangement = Arrangement.spacedBy(10.dp)
+                                    Icon(
+                                        imageVector = Icons.Filled.AccountBalanceWallet,
+                                        contentDescription = null,
+                                        tint = MaterialTheme.colorScheme.primary,
+                                        modifier = Modifier.size(20.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Text(
+                                        text = "TRANSACTION #${tx.id}",
+                                        style = MaterialTheme.typography.labelLarge,
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.primary
+                                    )
+                                }
+
+                                Spacer(modifier = Modifier.height(14.dp))
+
+                                // Inner Item Card (Exact Dashboard Mod Inner Card Style)
+                                ElevatedCard(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    shape = RoundedCornerShape(16.dp),
+                                    colors = CardDefaults.elevatedCardColors(
+                                        containerColor = MaterialTheme.colorScheme.surface
+                                    ),
+                                    elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+                                ) {
+                                    Column(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(vertical = 12.dp, horizontal = 14.dp)
                                     ) {
-                                        Surface(
-                                            shape = CircleShape,
-                                            color = MaterialTheme.colorScheme.primaryContainer,
-                                            modifier = Modifier.size(40.dp)
+                                        // Top Row: Avatar + Amount + Status Pill
+                                        Row(
+                                            modifier = Modifier.fillMaxWidth(),
+                                            verticalAlignment = Alignment.CenterVertically
                                         ) {
-                                            Box(
-                                                modifier = Modifier.fillMaxSize(),
-                                                contentAlignment = Alignment.Center
+                                            Surface(
+                                                shape = CircleShape,
+                                                color = MaterialTheme.colorScheme.primaryContainer,
+                                                modifier = Modifier.size(44.dp)
                                             ) {
-                                                Icon(
-                                                    imageVector = Icons.Filled.AccountBalanceWallet,
-                                                    contentDescription = null,
-                                                    tint = MaterialTheme.colorScheme.primary,
-                                                    modifier = Modifier.size(20.dp)
+                                                Box(
+                                                    modifier = Modifier.fillMaxSize(),
+                                                    contentAlignment = Alignment.Center
+                                                ) {
+                                                    Icon(
+                                                        imageVector = Icons.Filled.ReceiptLong,
+                                                        contentDescription = null,
+                                                        tint = MaterialTheme.colorScheme.primary,
+                                                        modifier = Modifier.size(22.dp)
+                                                    )
+                                                }
+                                            }
+
+                                            Spacer(modifier = Modifier.width(12.dp))
+
+                                            Column(modifier = Modifier.weight(1f)) {
+                                                Text(
+                                                    text = "${tx.type.uppercase(Locale.US)} • $${String.format(Locale.US, "%.2f", tx.amount)} ${tx.currency}",
+                                                    style = MaterialTheme.typography.titleMedium,
+                                                    fontWeight = FontWeight.Bold,
+                                                    color = MaterialTheme.colorScheme.onSurface,
+                                                    maxLines = 1,
+                                                    overflow = TextOverflow.Ellipsis
+                                                )
+                                                Spacer(modifier = Modifier.height(2.dp))
+                                                Text(
+                                                    text = tx.paymentMethod ?: "Direct Gateway",
+                                                    style = MaterialTheme.typography.bodySmall,
+                                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                                    maxLines = 1,
+                                                    overflow = TextOverflow.Ellipsis
+                                                )
+                                            }
+
+                                            Spacer(modifier = Modifier.width(8.dp))
+
+                                            Surface(
+                                                shape = RoundedCornerShape(8.dp),
+                                                color = pillBg
+                                            ) {
+                                                Text(
+                                                    text = tx.status.uppercase(Locale.US),
+                                                    style = MaterialTheme.typography.labelSmall,
+                                                    fontWeight = FontWeight.Bold,
+                                                    color = pillTextColor,
+                                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
                                                 )
                                             }
                                         }
 
-                                        Column {
+                                        Spacer(modifier = Modifier.height(10.dp))
+                                        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f))
+                                        Spacer(modifier = Modifier.height(8.dp))
+
+                                        // Bottom Row: TrxID and Date
+                                        Row(
+                                            modifier = Modifier.fillMaxWidth(),
+                                            horizontalArrangement = Arrangement.SpaceBetween,
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
                                             Text(
-                                                text = "${tx.type.uppercase(Locale.US)} • $${String.format(Locale.US, "%.2f", tx.amount)} ${tx.currency}",
-                                                style = MaterialTheme.typography.titleSmall,
-                                                fontWeight = FontWeight.Bold,
-                                                color = MaterialTheme.colorScheme.onSurface
-                                            )
-                                            Text(
-                                                text = tx.paymentMethod ?: "Direct Gateway",
+                                                text = if (!tx.trxId.isNullOrBlank()) "TrxID: ${tx.trxId}" else (tx.adminNotes ?: "No TrxID provided"),
                                                 style = MaterialTheme.typography.bodySmall,
-                                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                                maxLines = 1,
+                                                overflow = TextOverflow.Ellipsis,
+                                                modifier = Modifier.weight(1f, fill = false)
+                                            )
+
+                                            if (!tx.createdAt.isNullOrBlank()) {
+                                                Spacer(modifier = Modifier.width(8.dp))
+                                                Text(
+                                                    text = formatTransactionDate(tx.createdAt),
+                                                    style = MaterialTheme.typography.labelSmall,
+                                                    color = MaterialTheme.colorScheme.outline,
+                                                    maxLines = 1
+                                                )
+                                            }
+                                        }
+
+                                        if (!tx.adminNotes.isNullOrBlank() && !tx.trxId.isNullOrBlank()) {
+                                            Spacer(modifier = Modifier.height(4.dp))
+                                            Text(
+                                                text = "Note: ${tx.adminNotes}",
+                                                style = MaterialTheme.typography.bodySmall,
+                                                color = MaterialTheme.colorScheme.primary,
+                                                maxLines = 1,
+                                                overflow = TextOverflow.Ellipsis
                                             )
                                         }
                                     }
-
-                                    val statusNormalized = tx.status.lowercase(Locale.US)
-                                    val (pillBg, pillTextColor) = when (statusNormalized) {
-                                        "completed", "approved" -> Pair(
-                                            MaterialTheme.colorScheme.primary.copy(alpha = 0.15f),
-                                            MaterialTheme.colorScheme.primary
-                                        )
-                                        "pending" -> Pair(
-                                            MaterialTheme.colorScheme.tertiary.copy(alpha = 0.18f),
-                                            MaterialTheme.colorScheme.tertiary
-                                        )
-                                        else -> Pair(
-                                            MaterialTheme.colorScheme.error.copy(alpha = 0.15f),
-                                            MaterialTheme.colorScheme.error
-                                        )
-                                    }
-
-                                    Surface(
-                                        shape = RoundedCornerShape(8.dp),
-                                        color = pillBg
-                                    ) {
-                                        Text(
-                                            text = tx.status.uppercase(Locale.US),
-                                            style = MaterialTheme.typography.labelSmall,
-                                            fontWeight = FontWeight.Bold,
-                                            color = pillTextColor,
-                                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-                                        )
-                                    }
-                                }
-
-                                HorizontalDivider(
-                                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.25f),
-                                    modifier = Modifier.padding(vertical = 2.dp)
-                                )
-
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Text(
-                                        text = if (!tx.trxId.isNullOrBlank()) "TrxID: ${tx.trxId}" else (tx.adminNotes ?: "No TrxID provided"),
-                                        style = MaterialTheme.typography.bodySmall,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                        maxLines = 1,
-                                        overflow = TextOverflow.Ellipsis,
-                                        modifier = Modifier.weight(1f, fill = false)
-                                    )
-
-                                    if (!tx.createdAt.isNullOrBlank()) {
-                                        Spacer(modifier = Modifier.width(8.dp))
-                                        Text(
-                                            text = formatTransactionDate(tx.createdAt),
-                                            style = MaterialTheme.typography.labelSmall,
-                                            color = MaterialTheme.colorScheme.outline,
-                                            maxLines = 1
-                                        )
-                                    }
-                                }
-
-                                if (!tx.adminNotes.isNullOrBlank() && !tx.trxId.isNullOrBlank()) {
-                                    Text(
-                                        text = "Note: ${tx.adminNotes}",
-                                        style = MaterialTheme.typography.bodySmall,
-                                        color = MaterialTheme.colorScheme.primary
-                                    )
                                 }
                             }
                         }
